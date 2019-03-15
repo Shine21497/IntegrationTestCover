@@ -182,8 +182,8 @@
                 if (!d3.event.active) {
                     forceSimulation.alphaTarget(0)
                 }
-                d.fx = null
-                d.fy = null
+                d.fx = d3.event.x
+                d.fy = d3.event.y
             }
         }
     }
