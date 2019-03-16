@@ -1,7 +1,6 @@
 <template>
     <div>
         <svg>
-
         </svg>
     </div>
 </template>
@@ -50,7 +49,7 @@
             forceSimulation = d3
                 .forceSimulation()
                 .force('link', d3.forceLink())
-                .force('charge', d3.forceManyBody())
+                .force('charge', function(d) { return d._children ? -d.size / 0 : -300; })
                 .force('center', d3.forceCenter())
 //4. 初始化力导向图
             //生成节点数据
@@ -171,12 +170,12 @@
                     //设置衰减系数，对节点位置移动过程的模拟，数值越高移动越快，数值范围[0，1]
                     forceSimulation.alphaTarget(0.8).restart()
                 }
-                d.fx = d.x
-                d.fy = d.y
+                d.fx = null
+                d.fy = null
             },
             dragEnd(d) {
-                d.fx = d3.event.x
-                d.fy = d3.event.y
+                d.fx = null
+                d.fy = null
             },
             drag(d) {
                 if (!d3.event.active) {
