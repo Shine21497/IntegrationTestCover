@@ -1,11 +1,13 @@
 <template>
     <div id="container" class="container">
+        <button v-on:click="getdemodata">重载关系图</button>
         <!--<div id="topo" class="topo" ref="topo"></div>-->
     </div>
 </template>
 
 <script type="text/ecmascript-6">
     import * as d3 from 'd3'
+    import { getDemoData } from '@/api/d3topo.js'
 
     export default {
         name: 'app',
@@ -36,6 +38,10 @@
                 var links = this.relation.links
                 console.log(nodes)
 
+                // 移除上一个画布（如果有的话）
+                if(d3.select('#container').selectAll("svg").size() > 0){
+                    d3.select('#container').selectAll("svg").remove();
+                }
 //      设置画布，获取id为app的对象，添加svg，这里的图像用了svg，意为可缩放矢量图形，它与其他图片格式相比较，svg更加小，因为是矢量图，放大不会失帧。具体可以自行百度svg相关知识
                 var svg = d3.select('#container').append('svg')
                     .attr('xmlns', 'http://www.w3.org/2000/svg')
@@ -309,6 +315,15 @@
                             return d.x
                         })
                 })
+            },
+            getdemodata (){
+                getDemoData().then(response => {
+                    // console.log(response);
+                    this.relation = response;
+                    this.showd3()
+                })
+                // this.relation = JSON.parse('{"nodes":[{"name":"BetterVicky","type":0},{"name":"杭州市高新区（滨江）萧宏小额贷款有限公司","type":1},{"name":"HHHHH","type":1},{"name":"杭州萧山党山企业担保有限公司","type":1},{"name":"EMMMMMMM","type":2},{"name":"申盛集团有限公司","type":2}],"links":[{"source":0,"target":1,"relation":"对外投资"},{"source":0,"target":2,"relation":"对外投资"},{"source":0,"target":3,"relation":"对外投资"},{"source":4,"target":0,"relation":"投资"},{"source":5,"target":4,"relation":"投资"}],"code":200,"message":"请求成功"}')
+                // this.showd3()
             }
         },
         created () {
