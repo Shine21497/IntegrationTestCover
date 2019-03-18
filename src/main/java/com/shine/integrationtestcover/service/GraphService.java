@@ -30,6 +30,16 @@ public class GraphService {
     public void setFilename(String filename) {
         this.filename = filename;
     }
+    public ArrayList<HashMap<String, Object>> getVertex() {
+        ArrayList<HashMap<String, Object>> result = new ArrayList<>();
+        for(int i = 0; i < this.vertexResult.size(); i++){
+            HashMap<String, Object> node = new HashMap<>();
+            node.put("name", vertexResult.get(i));
+            node.put("type", (new Random()).nextInt(3));
+            result.add(node);
+        }
+        return result;
+    }
     public ArrayList<String> getVertexResult() {
         return vertexResult;
     }
@@ -62,7 +72,7 @@ public class GraphService {
     }
 
     //获取所有节点名称
-    public ArrayList<List> getEdges(){
+    public ArrayList<HashMap> getEdges(){
 
         int vertexNum=vertexResult.size();
         GraphAlo graph = new GraphAlo(vertexNum);
@@ -77,13 +87,13 @@ public class GraphService {
             int endVertex = vertexResult.indexOf(tempList[2]);
             graph.insertEdge(startVertex, endVertex, 1);
         }
-        ArrayList<List> edges=new ArrayList<>();
+        ArrayList<HashMap> edges=new ArrayList<>();
         for(int i=0;i<vertexNum;i++){
             for(int j=0;j<vertexNum;j++){
                 if(graph.getWeight(i,j)==1){
-                   List content=new LinkedList();
-                    content.add(i);
-                    content.add(j);
+                   HashMap<String, Integer> content=new HashMap();
+                    content.put("source", i);
+                    content.put("target", j);
                     edges.add(content);
 
                 }
