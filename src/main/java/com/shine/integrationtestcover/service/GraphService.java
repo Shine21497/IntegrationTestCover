@@ -52,6 +52,7 @@ public class GraphService {
         parseJarService.setFilename(filename);
         parseJarService.setPath(path);
         this.invokeString= parseJarService.getInvoking();
+       // System.out.println("invokeString" +invokeString.size());
     }
     public void initiate(){
         parse();
@@ -67,20 +68,25 @@ public class GraphService {
             vertex.add(tempList[2]);
         }
         vertexResult = new ArrayList<String>(new HashSet<String>(vertex));//
+        System.out.println("vertexResult:"+vertexResult.size());
 
 
     }
 
-    //获取所有节点名称
+    //获取所有边
     public ArrayList<HashMap> getEdges(){
+
+        int numOfEdge=0;
 
         int vertexNum=vertexResult.size();
         GraphAlo graph = new GraphAlo(vertexNum);
 
         for(int i=0;i<vertexResult.size();i++) {
             graph.insertVertex(vertexResult.get(i));
+
         }
 
+      
         for (String temp : result) {
             String[] tempList = temp.split(" ");
             int startVertex = vertexResult.indexOf(tempList[0]);
@@ -91,6 +97,7 @@ public class GraphService {
         for(int i=0;i<vertexNum;i++){
             for(int j=0;j<vertexNum;j++){
                 if(graph.getWeight(i,j)==1){
+                    numOfEdge++;
                    HashMap<String, Integer> content=new HashMap();
                     content.put("source", i);
                     content.put("target", j);
@@ -99,7 +106,7 @@ public class GraphService {
                 }
             }
         }
-        System.out.println(edges);
+        System.out.println("num"+numOfEdge);
         return edges;
 
     }

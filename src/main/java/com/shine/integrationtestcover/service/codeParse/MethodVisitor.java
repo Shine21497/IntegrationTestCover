@@ -13,6 +13,7 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ReturnInstruction;
 import org.springframework.stereotype.Service;
 
+import java.util.Calendar;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -28,13 +29,14 @@ public class MethodVisitor extends EmptyVisitor  {
     private String format;
     private String DegreeClass;
     private String DegreeMethod;
-    private List<String> CallRelationship;
+    private static List<String> CallRelationship=new LinkedList<>();
+
+
 
     public MethodVisitor(MethodGen m, JavaClass jc) {
         visitedClass = jc;
         mg = m;
         cp = mg.getConstantPool();
-        CallRelationship=new LinkedList<>();
 
     }
 
@@ -43,6 +45,7 @@ public class MethodVisitor extends EmptyVisitor  {
             return;
         for (InstructionHandle ih = mg.getInstructionList().getStart();
              ih != null; ih = ih.getNext()) {
+
             Instruction i = ih.getInstruction();
 
             if (!visitInstruction(i))
@@ -59,15 +62,18 @@ public class MethodVisitor extends EmptyVisitor  {
 
     @Override
     public void visitINVOKEVIRTUAL(INVOKEVIRTUAL i) {
+
         String formatInternal = "%s";
         this.DegreeClass = String.format(formatInternal,i.getReferenceType(cp));
         this.DegreeMethod = i.getMethodName(cp);
-        System.out.println(visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod);
-        CallRelationship.add(visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod);
+        String output=visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
+        CallRelationship.add(output);
+        System.out.println(output);
+
 
     }
 
-    public List<String> getCallRelationship() {
+   public List<String> getCallRelationship() {
         return CallRelationship;
     }
 }
