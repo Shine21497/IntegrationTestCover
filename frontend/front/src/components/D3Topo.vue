@@ -38,6 +38,8 @@
                 var links = this.relation.links
                 console.log(nodes)
 
+                var movednodes = []
+
                 // 移除上一个画布（如果有的话）
                 if(d3.select('#container').selectAll("svg").size() > 0){
                     d3.select('#container').selectAll("svg").remove();
@@ -47,6 +49,13 @@
                     .attr('xmlns', 'http://www.w3.org/2000/svg')
                     .attr('version', '2.0')
                     .attr('class', 'svg')//给svg设置了一个class样式，主要作用是长宽设置为100%
+                    .on('dblclick',(d,i) => {
+                        movednodes.forEach(node => {
+                            node.fx = null;
+                            node.fy = null;
+                        });
+                        movednodes = [];
+                    })
 //        设置力布局，使用d3 v4版本的力导向布局
                 var force = d3.forceSimulation()
                     .force('center', d3.forceCenter(width / 2, height / 2))//设置力导向布局的中心点，创建一个力中心，设置为画布长宽的一半，所以拓扑图会在画布的中心点
@@ -129,8 +138,9 @@
                         if (!d3.event.active) {
                             force.alphaTarget(0)
                         }
-                        d.fx = null
-                        d.fy = null
+                        d.fx = d3.event.x
+                        d.fy = d3.event.y
+                        movednodes.push(d);
                     })
 
 //        设置节点
@@ -318,12 +328,9 @@
             },
             getdemodata (){
                 getDemoData().then(response => {
-                    // console.log(response);
                     this.relation = response;
                     this.showd3()
                 })
-                // this.relation = JSON.parse('{"nodes":[{"name":"BetterVicky","type":0},{"name":"杭州市高新区（滨江）萧宏小额贷款有限公司","type":1},{"name":"HHHHH","type":1},{"name":"杭州萧山党山企业担保有限公司","type":1},{"name":"EMMMMMMM","type":2},{"name":"申盛集团有限公司","type":2}],"links":[{"source":0,"target":1,"relation":"对外投资"},{"source":0,"target":2,"relation":"对外投资"},{"source":0,"target":3,"relation":"对外投资"},{"source":4,"target":0,"relation":"投资"},{"source":5,"target":4,"relation":"投资"}],"code":200,"message":"请求成功"}')
-                // this.showd3()
             }
         },
         created () {
