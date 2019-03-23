@@ -1,6 +1,5 @@
 <template>
     <div id="container" class="container">
-        <button v-on:click="getdemodata">重载关系图</button>
         <!--<div id="topo" class="topo" ref="topo"></div>-->
     </div>
 </template>
@@ -158,17 +157,10 @@
                                 return 0
                             }
                         })
-                        /**
-                         * 改本svg的层级，这个主要是因为在svg中z-index是无效的，svg根据绘制的先后顺序，后绘制的排在最上面，就像贴纸，
-                         * 后贴的会盖住前面贴的。所以我们希望在被选中时，能够把节点和节点对应的文字提到最上一层，我们就可以通过d3来选择到点击的对象，然后通过raise方法来提到最上一层
-                         * 下同
-                         */
                     })
                     .on('touchend', (d, i) => {
 //            手指移开后，所有关系文本设置透明度为1
-                        edgesText.style('fill-opacity', function (edge) {
-                            return 1.0
-                        })
+                        edgesText.style('fill-opacity', 1.0);
                     })
                     .on('click', (d, i) => {
                         console.log("click");
@@ -183,9 +175,7 @@
                         d3.select('#nodetext' + i).raise()
                     })
                     .on('mouseout', (d, i) => {
-                        edgesText.attr('fill-opacity', function (edge) {
-                            return 1;
-                        })
+                        edgesText.style('fill-opacity',1.0);
                         d3.select('#nodetext' + i).classed('highlighted',false);
                     })
                     .on('dblclick', (d, i) => {
