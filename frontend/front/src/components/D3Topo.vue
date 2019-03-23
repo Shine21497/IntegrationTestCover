@@ -106,10 +106,8 @@
 //        设置拖拽
                 var drag = d3.drag()
                     .on('start', (d, i) => {
-                        console.log('drag start');
                         if (!d3.event.active) {
                             //拖拽开始回调
-                            console.log('!d3.event.active');
                             force.alphaTarget(0.1).restart() // 这个方法可以用在在交互时重新启动仿真，比如拖拽了某个节点，重新进行布局。这个必须要进行设置不然会拖动不了。
                         }
                         //d.fixed = true //偏移后固定不动
@@ -328,7 +326,6 @@
     .highlighted {
         font-weight: bold;
         font-size: 15px;
-        background-color: gray;
     }
 
     .linetext {
