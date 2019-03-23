@@ -10,7 +10,7 @@
                         <div slot="tip" class="el-upload__tip">只能上传jar文件</div>
                     </el-upload>
                 </el-card>
-                <el-card :body-style="{ padding: '0px' }"class="card">
+                <el-card :body-style="{ padding: '0px' }" class="card">
                     <el-container class="formbody">
                         <el-form ref="form" :model="form" label-width="80px">
                             <el-form-item label="Jar包选择">

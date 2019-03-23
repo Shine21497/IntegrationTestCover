@@ -38,7 +38,6 @@
                 var links = this.relation.links
                 console.log(nodes)
 
-                var movednodes = []
 
                 // 移除上一个画布（如果有的话）
                 if(d3.select('#container').selectAll("svg").size() > 0){
@@ -49,13 +48,6 @@
                     .attr('xmlns', 'http://www.w3.org/2000/svg')
                     .attr('version', '2.0')
                     .attr('class', 'svg')//给svg设置了一个class样式，主要作用是长宽设置为100%
-                    .on('dblclick',(d,i) => {
-                        movednodes.forEach(node => {
-                            node.fx = null;
-                            node.fy = null;
-                        });
-                        movednodes = [];
-                    })
 //        设置力布局，使用d3 v4版本的力导向布局
                 var force = d3.forceSimulation()
                     .force('center', d3.forceCenter(width / 2, height / 2))//设置力导向布局的中心点，创建一个力中心，设置为画布长宽的一半，所以拓扑图会在画布的中心点
@@ -119,14 +111,18 @@
 //        设置拖拽
                 var drag = d3.drag()
                     .on('start', (d, i) => {
+                        console.log('drag start');
                         if (!d3.event.active) {
-//              拖拽开始回调
+                            //拖拽开始回调
+                            console.log('!d3.event.active');
                             force.alphaTarget(0.1).restart() // 这个方法可以用在在交互时重新启动仿真，比如拖拽了某个节点，重新进行布局。这个必须要进行设置不然会拖动不了。
                         }
                         //d.fixed = true //偏移后固定不动
-//            d3.event.sourceEvent.stopPropagation()
-                        d.fx = null//记录当前默认位置（x - 节点当前的 x-位置，如果要为某个节点设置默认的位置，则需要为该节点设置如下两个属性:fx =x位置）
-                        d.fy = null
+                        if(!d.fixed)
+                        {
+                            d.fx = null//记录当前默认位置（x - 节点当前的 x-位置，如果要为某个节点设置默认的位置，则需要为该节点设置如下两个属性:fx =x位置）
+                            d.fy = null
+                        }
                     })
                     .on('drag', (d, i) => {
 //            拖动时，设置拖动后默认位置的x，y
@@ -138,10 +134,10 @@
                         if (!d3.event.active) {
                             force.alphaTarget(0)
                         }
-                        d.fx = d3.event.x
-                        d.fy = d3.event.y
-                        movednodes.push(d);
+                        d.fixed = true;
                     })
+
+                var nodetype = ['nodeOrange','nodeBlue','nodeRed'];
 
 //        设置节点
                 var node = g.selectAll('circle')
@@ -151,13 +147,7 @@
                     .attr('r', nodeSize)
                     .attr('class', (d, i) => {
 //            为不同的节点设置不同的css样式
-                        if (d.type === 0) {
-                            return 'nodeOrange'
-                        } else if (d.type === 1) {
-                            return 'nodeBlue'
-                        } else if (d.type === 2) {
-                            return 'nodeRed'
-                        }
+                        return nodetype[d.type] + ' node';
                     })
                     .attr('id', (d, i) => {
 //            为每个节点设置不同的id
@@ -177,8 +167,6 @@
                          * 后贴的会盖住前面贴的。所以我们希望在被选中时，能够把节点和节点对应的文字提到最上一层，我们就可以通过d3来选择到点击的对象，然后通过raise方法来提到最上一层
                          * 下同
                          */
-                        d3.select('#node' + i).raise()
-                        d3.select('#nodetext' + i).raise()
                     })
                     .on('touchend', (d, i) => {
 //            手指移开后，所有关系文本设置透明度为1
@@ -186,8 +174,8 @@
                             return 1.0
                         })
                     })
-                    .on('mousedown', (d, i) => {
-                        console.log("down")
+                    .on('click', (d, i) => {
+                        console.log("click");
                         edgesText.style('fill-opacity', function (edge) {
                             if (edge.source === d || edge.target === d) {
                                 return 1.0
@@ -199,10 +187,18 @@
                         d3.select('#nodetext' + i).raise()
                     })
                     .on('mouseout', (d, i) => {
-                        console.log('tttt')
                         edgesText.attr('fill-opacity', function (edge) {
-                            return 1
+                            return 1;
                         })
+                        d3.select('#nodetext' + i).classed('highlighted',false);
+                    })
+                    .on('dblclick', (d, i) => {
+                        console.log('dbl');
+                        d.fx = null
+                        d.fy = null
+                    })
+                    .on('mouseover',(d,i) => {
+                        d3.select('#nodetext' + i).classed('highlighted',true);
                     })
                     .call(drag)//监听拖动事件
 //
@@ -257,42 +253,8 @@
                                     .text(function () { return bot })
                             }
                         }
-                    })
-                    .attr('cursor', 'default')//设置鼠标样式
-                    .on('touchmove', (d, i) => {
-                        edgesText.style('fill-opacity', function (edge) {
-                            if (edge.source === d || edge.target === d) {
-                                return 1.0
-                            } else {
-                                return 0
-                            }
-                        })
-                        //改本svg的层级
-                        d3.select('#node' + i).raise()
-                        d3.select('#nodetext' + i).raise()
-                    })
-                    .on('touchend', (d, i) => {
-                        edgesText.style('fill-opacity', function (edge) {
-                            return 1.0
-                        })
-                    })
-                    .on('mousedown', (d, i) => {
-                        edgesText.style('fill-opacity', function (edge) {
-                            if (edge.source === d || edge.target === d) {
-                                return 1.0
-                            } else {
-                                return 0
-                            }
-                        })
-                        d3.select('#node' + i).raise()
-                        d3.select('#nodetext' + i).raise()
-                    })
-                    .on('mouseout', (d, i) => {
-                        edgesText.style('fill-opacity', function (edge) {
-                            return 1.0
-                        })
-                    })
-                    .call(drag)
+                    });
+
 //        设置node和edge
                 force.nodes(nodes)
                     .force('link', d3.forceLink(links).distance(linkDistance).strength(0.1))
@@ -374,6 +336,13 @@
         font-family: SimSun;
         fill: #fff;
         position: relative;
+        pointer-events: none;
+    }
+
+    .highlighted {
+        font-weight: bold;
+        font-size: 15px;
+        background-color: gray;
     }
 
     .linetext {
@@ -396,18 +365,23 @@
         stroke-width: 0.5px;
     }
 
-    .nodeOrange {
+    .node{
         position: relative;
+    }
+
+    .node:hover{
+        cursor: pointer;
+    }
+
+    .nodeOrange {
         fill: #ff7438 !important;
     }
 
     .nodeRed {
-        position: relative;
         fill: #ff4238 !important;
     }
 
     .nodeBlue {
-        position: relative;
         fill: #029ed9 !important;
     }
 </style>
