@@ -39,10 +39,6 @@
                 console.log(nodes)
 
 
-                // 移除上一个画布（如果有的话）
-                if(d3.select('#container').selectAll("svg").size() > 0){
-                    d3.select('#container').selectAll("svg").remove();
-                }
 //      设置画布，获取id为app的对象，添加svg，这里的图像用了svg，意为可缩放矢量图形，它与其他图片格式相比较，svg更加小，因为是矢量图，放大不会失帧。具体可以自行百度svg相关知识
                 var svg = d3.select('#container').append('svg')
                     .attr('xmlns', 'http://www.w3.org/2000/svg')
