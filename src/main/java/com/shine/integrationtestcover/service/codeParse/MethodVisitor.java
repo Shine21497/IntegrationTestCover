@@ -13,9 +13,7 @@ import org.apache.bcel.generic.MethodGen;
 import org.apache.bcel.generic.ReturnInstruction;
 import org.springframework.stereotype.Service;
 
-import java.util.Calendar;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 
 /** parse method in class and output call info
@@ -29,14 +27,24 @@ public class MethodVisitor extends EmptyVisitor  {
     private String format;
     private String DegreeClass;
     private String DegreeMethod;
-    private static List<String> CallRelationship=new LinkedList<>();
-
+    private static List<String> callRelationship = new LinkedList<>();
+    public static HashSet<String> classes = new HashSet<>();
+    public static HashMap<String, ArrayList<String>> methods = new HashMap<>();
+    public static boolean ifOnlySelfPackage = false;
+    public static String[] packageNames = {};
 
 
     public MethodVisitor(MethodGen m, JavaClass jc) {
         visitedClass = jc;
         mg = m;
         cp = mg.getConstantPool();
+        classes.add(jc.getClassName());
+        if(methods.containsKey(jc.getClassName())) {
+            methods.get(jc.getClassName()).add(mg.getName());
+        } else {
+            methods.put(jc.getClassName(), new ArrayList<>());
+            methods.get(jc.getClassName()).add(mg.getName());
+        }
 
     }
 
@@ -66,14 +74,24 @@ public class MethodVisitor extends EmptyVisitor  {
         String formatInternal = "%s";
         this.DegreeClass = String.format(formatInternal,i.getReferenceType(cp));
         this.DegreeMethod = i.getMethodName(cp);
-        String output=visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
-        CallRelationship.add(output);
-        System.out.println(output);
+        if(!this.DegreeClass.startsWith("java")) {
+            for(String packageName: packageNames) {
+                if(!this.DegreeClass.startsWith(packageName)) {
+                    String output = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
+                    callRelationship.add(output);
+                    System.out.println(output);
+                }
+            }
 
-
+        }
     }
 
-   public List<String> getCallRelationship() {
-        return CallRelationship;
+    public static List<String> getCallRelationship() {
+        return callRelationship;
     }
+
+    public static void setCallRelationshipEmpty() {
+        callRelationship = new LinkedList<>();
+    }
+
 }
