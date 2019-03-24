@@ -1,6 +1,7 @@
 package com.shine.integrationtestcover.service;
 
 import com.shine.integrationtestcover.service.codeParse.ClassVisitor;
+import com.shine.integrationtestcover.service.codeParse.MethodVisitor;
 import org.apache.bcel.classfile.ClassParser;
 import org.springframework.stereotype.Service;
 
@@ -63,7 +64,9 @@ public class ParseJarService {
             System.err.println("Error while processing jar: " + e.getMessage());
             e.printStackTrace();
         }
-        return visitor.getCallRelationship();
+        List<String> res = MethodVisitor.getCallRelationship();
+        MethodVisitor.setCallRelationshipEmpty();
+        return res;
 
     }
 

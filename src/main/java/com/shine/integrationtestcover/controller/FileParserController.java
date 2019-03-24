@@ -22,10 +22,10 @@ public class FileParserController {
     BaseConfig baseConfig;
 
     @RequestMapping(value = "/relation",method = RequestMethod.GET)
-    public HashMap<String, Object> getInvokeRelationship(@RequestParam String name){
+    public HashMap<String, Object> getInvokeRelationship(@RequestParam String name, @RequestParam String packages){
+        MethodVisitor.packageNames = packages.isEmpty()? new String[]{""}: packages.split("\n");
         graphService.setFilename(name);
         graphService.setPath(baseConfig.getUploadedFilePath());
-       // graphService.setPath("C://Users//22831//Desktop");
         graphService.initiate();
         ArrayList edges=graphService.getEdges();
         ArrayList<HashMap<String, Object>> vertex=graphService.getVertex();

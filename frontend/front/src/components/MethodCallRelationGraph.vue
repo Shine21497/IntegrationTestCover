@@ -24,7 +24,7 @@
                                 </el-select>
                             </el-form-item>
                             <el-form-item label="包范围">
-                                <
+                                <el-input type="textarea" v-model="form.packages" placeholder="请输入包范围"></el-input>
                             </el-form-item>
                             <el-form-item>
                                 <el-button type="primary" size="small" @click="generateGraph()">立即创建</el-button>
@@ -85,7 +85,8 @@
                 cname: '',
                 fileList:[],
                 form: {
-                    selectedjar: ''
+                    selectedjar: '',
+                    packages:''
                 },
                 adjustform: {
                     selectedClass: '',
@@ -101,6 +102,14 @@
         methods: {
             goToNode() {
 
+
+            },
+            findNodeByName(name) {
+                for(let node in this.relation.nodes) {
+                    if(node.name == name) {
+                        return node
+                    }
+                }
             },
             getClass(prov) {
                 this.methods = this.classMethodMap[prov]
@@ -115,7 +124,7 @@
             },
             generateGraph(){
                 let _this = this
-                getRelationByFileName(this.form.selectedjar).then(response => {
+                getRelationByFileName(this.form.selectedjar, this.form.packages).then(response => {
                     console.log(response)
                     _this.relation.nodes = response.nodes
                     _this.relation.links = response.links
@@ -148,7 +157,6 @@
 //        赋值数据集
                 var nodes = this.relation.nodes
                 var links = this.relation.links
-                console.log(nodes)
 
                 // 移除上一个画布（如果有的话）
                 if(d3.select('#container').selectAll("svg").size() > 0){

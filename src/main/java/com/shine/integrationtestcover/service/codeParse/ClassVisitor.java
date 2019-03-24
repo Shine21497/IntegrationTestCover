@@ -19,17 +19,12 @@ public class ClassVisitor extends EmptyVisitor{
     private JavaClass clazz;
     private ConstantPoolGen constants;
     private String classReferenceFormat;
-    private List<String> classCallRelationship;
 
-    public List<String> getCallRelationship() {
-        return classCallRelationship;
-    }
 
     public ClassVisitor(JavaClass jc) {
         clazz = jc;
         constants = new ConstantPoolGen(clazz.getConstantPool());
         classReferenceFormat = "C:" + clazz.getClassName() + " %s";
-        classCallRelationship = new LinkedList<>();
     }
 
     public void visitJavaClass(JavaClass jc) {
@@ -39,18 +34,14 @@ public class ClassVisitor extends EmptyVisitor{
             methods[i].accept(this);
     }
 
-    MethodVisitor visitor;
     public void visitMethod(Method method) {
         MethodGen mg = new MethodGen(method, clazz.getClassName(), constants);
-        visitor = new MethodVisitor(mg, clazz);
+        MethodVisitor visitor = new MethodVisitor(mg, clazz);
         visitor.start();
     }
 
     public void start() {
         visitJavaClass(clazz);
-        classCallRelationship = visitor.getCallRelationship();
-        System.out.println("ClassCallRelationship  size  is:"+classCallRelationship.size());
-
     }
 
 

@@ -31,7 +31,7 @@ public class MethodVisitor extends EmptyVisitor  {
     public static HashSet<String> classes = new HashSet<>();
     public static HashMap<String, ArrayList<String>> methods = new HashMap<>();
     public static boolean ifOnlySelfPackage = false;
-    public static String packageName = "";
+    public static String[] packageNames = {};
 
 
     public MethodVisitor(MethodGen m, JavaClass jc) {
@@ -74,15 +74,24 @@ public class MethodVisitor extends EmptyVisitor  {
         String formatInternal = "%s";
         this.DegreeClass = String.format(formatInternal,i.getReferenceType(cp));
         this.DegreeMethod = i.getMethodName(cp);
-        String output=visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
-        callRelationship.add(output);
-        System.out.println(output);
+        if(!this.DegreeClass.startsWith("java")) {
+            for(String packageName: packageNames) {
+                if(!this.DegreeClass.startsWith(packageName)) {
+                    String output = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
+                    callRelationship.add(output);
+                    System.out.println(output);
+                }
+            }
 
-
+        }
     }
 
-    public List<String> getCallRelationship() {
+    public static List<String> getCallRelationship() {
         return callRelationship;
+    }
+
+    public static void setCallRelationshipEmpty() {
+        callRelationship = new LinkedList<>();
     }
 
 }
