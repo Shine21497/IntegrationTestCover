@@ -157,6 +157,7 @@
 //        赋值数据集
                 var nodes = this.relation.nodes
                 var links = this.relation.links
+                
 
                 // 移除上一个画布（如果有的话）
                 if(d3.select('#container').selectAll("svg").size() > 0){
