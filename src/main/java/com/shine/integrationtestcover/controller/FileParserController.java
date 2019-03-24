@@ -3,16 +3,14 @@ package com.shine.integrationtestcover.controller;
 
 import com.shine.integrationtestcover.config.BaseConfig;
 import com.shine.integrationtestcover.service.GraphService;
+import com.shine.integrationtestcover.service.codeParse.MethodVisitor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 public class FileParserController {
@@ -34,6 +32,10 @@ public class FileParserController {
         HashMap<String, Object> result = new HashMap<>();
         result.put("nodes", vertex);
         result.put("links", edges);
+        result.put("classes", MethodVisitor.classes.toArray());
+        result.put("classMethodMap", MethodVisitor.methods);
+        MethodVisitor.classes = new HashSet<>();
+        MethodVisitor.methods = new HashMap<>();
         return result;
 
     }

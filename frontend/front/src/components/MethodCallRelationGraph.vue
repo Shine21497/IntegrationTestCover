@@ -23,8 +23,40 @@
                                     </el-option>
                                 </el-select>
                             </el-form-item>
+                            <el-form-item label="包范围">
+                                <
+                            </el-form-item>
                             <el-form-item>
                                 <el-button type="primary" size="small" @click="generateGraph()">立即创建</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </el-container>
+                </el-card>
+                <el-card :body-style="{ padding: '0px' }"class="card">
+                    <el-container class="formbody">
+                        <el-form ref="form" :model="adjustform" label-width="80px">
+                            <el-form-item label="类选择">
+                                <el-select filterable  v-model="adjustform.selectedClass" placeholder="请选择类" @change="getClass($event)">
+                                    <el-option
+                                            v-for="item in classes"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="方法选择">
+                                <el-select filterable  v-model="adjustform.selectedMethod" placeholder="请选择类" @visible-change="showfilelist">
+                                    <el-option
+                                            v-for="item in methods"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" size="small" @click="goToNode()">立即定位</el-button>
                             </el-form-item>
                         </el-form>
                     </el-container>
@@ -55,10 +87,24 @@
                 form: {
                     selectedjar: ''
                 },
-                uploadedFiles:[]
+                adjustform: {
+                    selectedClass: '',
+                    selectedMethod: ''
+
+                },
+                uploadedFiles:[],
+                classes:["a", "b"],
+                methods:[],
+                classMethodMap:{"a": ["a","b"], "b": ["a","c"]}
             }
         },
         methods: {
+            goToNode() {
+
+            },
+            getClass(prov) {
+                this.methods = this.classMethodMap[prov]
+            },
             showfilelist(open){
                 if(open) {
                     let _this = this
@@ -71,7 +117,10 @@
                 let _this = this
                 getRelationByFileName(this.form.selectedjar).then(response => {
                     console.log(response)
-                    _this.relation = response
+                    _this.relation.nodes = response.nodes
+                    _this.relation.links = response.links
+                    _this.classes = response.classes
+                    _this.classMethodMap = response.classMethodMap
                     _this.showd3()
                 })
             },

@@ -36,39 +36,38 @@ public class ParseJarService {
     }
 
     public List<String> getInvoking(){
-            ClassParser cp;
-            try {
-                File f = new File(path+"//"+filename);
-                if (!f.exists()) {
-                    System.err.println("Jar file " + filename + " does not exist");
-                }
-
-                JarFile jar = new JarFile(f);
-
-                Enumeration<JarEntry> entries = jar.entries();
-                while (entries.hasMoreElements()) {
-                    JarEntry entry = entries.nextElement();
-                    if (entry.isDirectory())
-                        continue;
-
-                    if (!entry.getName().endsWith(".class"))
-                        continue;
-
-                    cp = new ClassParser(path+"//"+filename, entry.getName());
-                    visitor = new ClassVisitor(cp.parse());
-                    visitor.start();
-
-                }
-            } catch (IOException e) {
-                System.err.println("Error while processing jar: " + e.getMessage());
-                e.printStackTrace();
+        ClassParser cp;
+        try {
+            File f = new File(path+"//"+filename);
+            if (!f.exists()) {
+                System.err.println("Jar file " + filename + " does not exist");
             }
-            return visitor.getCallRelationship();
 
+            JarFile jar = new JarFile(f);
+
+            Enumeration<JarEntry> entries = jar.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry entry = entries.nextElement();
+                if (entry.isDirectory())
+                    continue;
+
+                if (!entry.getName().endsWith(".class"))
+                    continue;
+
+                cp = new ClassParser(path+"//"+filename, entry.getName());
+                visitor = new ClassVisitor(cp.parse());
+                visitor.start();
+
+            }
+        } catch (IOException e) {
+            System.err.println("Error while processing jar: " + e.getMessage());
+            e.printStackTrace();
         }
-
+        return visitor.getCallRelationship();
 
     }
+
+}
 
 
 

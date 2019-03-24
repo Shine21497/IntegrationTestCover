@@ -14,22 +14,28 @@ public class GraphService {
 
     private String path;
     private String filename;
-    private  ArrayList<String> vertexResult;
-    private  ArrayList<String> result;
+    private ArrayList<String> vertexResult;
+    private ArrayList<String> result;
     private List<String> invokeString;
+    private HashSet<String> classes;
+    private HashMap<String, ArrayList<String>> methods;
 
     public String getPath() {
         return path;
     }
+
     public void setPath(String path) {
         this.path = path;
     }
+
     public String getFilename() {
         return filename;
     }
+
     public void setFilename(String filename) {
         this.filename = filename;
     }
+
     public ArrayList<HashMap<String, Object>> getVertex() {
         ArrayList<HashMap<String, Object>> result = new ArrayList<>();
         for(int i = 0; i < this.vertexResult.size(); i++){
@@ -40,9 +46,11 @@ public class GraphService {
         }
         return result;
     }
+
     public ArrayList<String> getVertexResult() {
         return vertexResult;
     }
+
     public void setVertexResult(ArrayList<String> vertexResult) {
         this.vertexResult = vertexResult;
     }
@@ -54,6 +62,7 @@ public class GraphService {
         this.invokeString= parseJarService.getInvoking();
        // System.out.println("invokeString" +invokeString.size());
     }
+
     public void initiate(){
         parse();
         result=new ArrayList<String>();
@@ -109,6 +118,22 @@ public class GraphService {
         System.out.println("num"+numOfEdge);
         return edges;
 
+    }
+
+    public HashSet<String> getClasses() {
+        return classes;
+    }
+
+    public void setClasses(HashSet<String> classes) {
+        this.classes = classes;
+    }
+
+    public HashMap<String, ArrayList<String>> getMethods() {
+        return methods;
+    }
+
+    public void setMethods(HashMap<String, ArrayList<String>> methods) {
+        this.methods = methods;
     }
 
 
