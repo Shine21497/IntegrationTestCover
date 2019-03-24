@@ -1,6 +1,5 @@
 <template>
     <div id="container" class="container">
-        <button v-on:click="getdemodata">重载关系图</button>
         <!--<div id="topo" class="topo" ref="topo"></div>-->
     </div>
 </template>
@@ -38,10 +37,7 @@
                 var links = this.relation.links
                 console.log(nodes)
 
-                // 移除上一个画布（如果有的话）
-                if(d3.select('#container').selectAll("svg").size() > 0){
-                    d3.select('#container').selectAll("svg").remove();
-                }
+
 //      设置画布，获取id为app的对象，添加svg，这里的图像用了svg，意为可缩放矢量图形，它与其他图片格式相比较，svg更加小，因为是矢量图，放大不会失帧。具体可以自行百度svg相关知识
                 var svg = d3.select('#container').append('svg')
                     .attr('xmlns', 'http://www.w3.org/2000/svg')
@@ -111,13 +107,15 @@
                 var drag = d3.drag()
                     .on('start', (d, i) => {
                         if (!d3.event.active) {
-//              拖拽开始回调
+                            //拖拽开始回调
                             force.alphaTarget(0.1).restart() // 这个方法可以用在在交互时重新启动仿真，比如拖拽了某个节点，重新进行布局。这个必须要进行设置不然会拖动不了。
                         }
                         //d.fixed = true //偏移后固定不动
-//            d3.event.sourceEvent.stopPropagation()
-                        d.fx = null//记录当前默认位置（x - 节点当前的 x-位置，如果要为某个节点设置默认的位置，则需要为该节点设置如下两个属性:fx =x位置）
-                        d.fy = null
+                        if(!d.fixed)
+                        {
+                            d.fx = null//记录当前默认位置（x - 节点当前的 x-位置，如果要为某个节点设置默认的位置，则需要为该节点设置如下两个属性:fx =x位置）
+                            d.fy = null
+                        }
                     })
                     .on('drag', (d, i) => {
 //            拖动时，设置拖动后默认位置的x，y
@@ -129,9 +127,10 @@
                         if (!d3.event.active) {
                             force.alphaTarget(0)
                         }
-                        d.fx = null
-                        d.fy = null
+                        d.fixed = true;
                     })
+
+                var nodetype = ['nodeOrange','nodeBlue','nodeRed'];
 
 //        设置节点
                 var node = g.selectAll('circle')
@@ -141,13 +140,7 @@
                     .attr('r', nodeSize)
                     .attr('class', (d, i) => {
 //            为不同的节点设置不同的css样式
-                        if (d.type === 0) {
-                            return 'nodeOrange'
-                        } else if (d.type === 1) {
-                            return 'nodeBlue'
-                        } else if (d.type === 2) {
-                            return 'nodeRed'
-                        }
+                        return nodetype[d.type] + ' node';
                     })
                     .attr('id', (d, i) => {
 //            为每个节点设置不同的id
@@ -162,22 +155,13 @@
                                 return 0
                             }
                         })
-                        /**
-                         * 改本svg的层级，这个主要是因为在svg中z-index是无效的，svg根据绘制的先后顺序，后绘制的排在最上面，就像贴纸，
-                         * 后贴的会盖住前面贴的。所以我们希望在被选中时，能够把节点和节点对应的文字提到最上一层，我们就可以通过d3来选择到点击的对象，然后通过raise方法来提到最上一层
-                         * 下同
-                         */
-                        d3.select('#node' + i).raise()
-                        d3.select('#nodetext' + i).raise()
                     })
                     .on('touchend', (d, i) => {
 //            手指移开后，所有关系文本设置透明度为1
-                        edgesText.style('fill-opacity', function (edge) {
-                            return 1.0
-                        })
+                        edgesText.style('fill-opacity', 1.0);
                     })
-                    .on('mousedown', (d, i) => {
-                        console.log("down")
+                    .on('click', (d, i) => {
+                        console.log("click");
                         edgesText.style('fill-opacity', function (edge) {
                             if (edge.source === d || edge.target === d) {
                                 return 1.0
@@ -189,10 +173,16 @@
                         d3.select('#nodetext' + i).raise()
                     })
                     .on('mouseout', (d, i) => {
-                        console.log('tttt')
-                        edgesText.attr('fill-opacity', function (edge) {
-                            return 1
-                        })
+                        edgesText.style('fill-opacity',1.0);
+                        d3.select('#nodetext' + i).classed('highlighted',false);
+                    })
+                    .on('dblclick', (d, i) => {
+                        console.log('dbl');
+                        d.fx = null
+                        d.fy = null
+                    })
+                    .on('mouseover',(d,i) => {
+                        d3.select('#nodetext' + i).classed('highlighted',true);
                     })
                     .call(drag)//监听拖动事件
 //
@@ -247,42 +237,8 @@
                                     .text(function () { return bot })
                             }
                         }
-                    })
-                    .attr('cursor', 'default')//设置鼠标样式
-                    .on('touchmove', (d, i) => {
-                        edgesText.style('fill-opacity', function (edge) {
-                            if (edge.source === d || edge.target === d) {
-                                return 1.0
-                            } else {
-                                return 0
-                            }
-                        })
-                        //改本svg的层级
-                        d3.select('#node' + i).raise()
-                        d3.select('#nodetext' + i).raise()
-                    })
-                    .on('touchend', (d, i) => {
-                        edgesText.style('fill-opacity', function (edge) {
-                            return 1.0
-                        })
-                    })
-                    .on('mousedown', (d, i) => {
-                        edgesText.style('fill-opacity', function (edge) {
-                            if (edge.source === d || edge.target === d) {
-                                return 1.0
-                            } else {
-                                return 0
-                            }
-                        })
-                        d3.select('#node' + i).raise()
-                        d3.select('#nodetext' + i).raise()
-                    })
-                    .on('mouseout', (d, i) => {
-                        edgesText.style('fill-opacity', function (edge) {
-                            return 1.0
-                        })
-                    })
-                    .call(drag)
+                    });
+
 //        设置node和edge
                 force.nodes(nodes)
                     .force('link', d3.forceLink(links).distance(linkDistance).strength(0.1))
@@ -318,12 +274,9 @@
             },
             getdemodata (){
                 getDemoData().then(response => {
-                    // console.log(response);
                     this.relation = response;
                     this.showd3()
                 })
-                // this.relation = JSON.parse('{"nodes":[{"name":"BetterVicky","type":0},{"name":"杭州市高新区（滨江）萧宏小额贷款有限公司","type":1},{"name":"HHHHH","type":1},{"name":"杭州萧山党山企业担保有限公司","type":1},{"name":"EMMMMMMM","type":2},{"name":"申盛集团有限公司","type":2}],"links":[{"source":0,"target":1,"relation":"对外投资"},{"source":0,"target":2,"relation":"对外投资"},{"source":0,"target":3,"relation":"对外投资"},{"source":4,"target":0,"relation":"投资"},{"source":5,"target":4,"relation":"投资"}],"code":200,"message":"请求成功"}')
-                // this.showd3()
             }
         },
         created () {
@@ -367,6 +320,12 @@
         font-family: SimSun;
         fill: #fff;
         position: relative;
+        pointer-events: none;
+    }
+
+    .highlighted {
+        font-weight: bold;
+        font-size: 15px;
     }
 
     .linetext {
@@ -389,18 +348,23 @@
         stroke-width: 0.5px;
     }
 
-    .nodeOrange {
+    .node{
         position: relative;
+    }
+
+    .node:hover{
+        cursor: pointer;
+    }
+
+    .nodeOrange {
         fill: #ff7438 !important;
     }
 
     .nodeRed {
-        position: relative;
         fill: #ff4238 !important;
     }
 
     .nodeBlue {
-        position: relative;
         fill: #029ed9 !important;
     }
 </style>
