@@ -76,7 +76,7 @@ public class MethodVisitor extends EmptyVisitor  {
         this.DegreeMethod = i.getMethodName(cp);
         if(!this.DegreeClass.startsWith("java")) {
             for(String packageName: packageNames) {
-                if(!this.DegreeClass.startsWith(packageName)) {
+                if(this.DegreeClass.startsWith(packageName)) {
                     String output = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
                     callRelationship.add(output);
                     System.out.println(output);

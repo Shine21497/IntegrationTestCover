@@ -318,7 +318,7 @@
     .nodetext {
         font-size: 12px;
         font-family: SimSun;
-        fill: #fff;
+        fill: #000;
         position: relative;
         pointer-events: none;
     }

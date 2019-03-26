@@ -96,18 +96,28 @@
                 uploadedFiles:[],
                 classes:["a", "b"],
                 methods:[],
-                classMethodMap:{"a": ["a","b"], "b": ["a","c"]}
+                classMethodMap:{"a": ["a","b"], "b": ["a","c"]},
+                g:{},
+                tempTrans:{},
+                lastNode: {x: 510, y: 300}
             }
         },
         methods: {
             goToNode() {
-
+                var node = this.findNodeByName(this.adjustform.selectedClass + ":" + this.adjustform.selectedMethod)
+                var trans = this.tempTrans
+                trans.x = 510 - node.x
+                trans.y = 300 - node.y
+                console.log(trans)
+                console.log(this.relation.nodes)
+                this.g.attr('transform', trans)
 
             },
             findNodeByName(name) {
-                for(let node in this.relation.nodes) {
-                    if(node.name == name) {
-                        return node
+                for(let index in this.relation.nodes) {
+                    if(this.relation.nodes[index].name == name) {
+                        console.log(this.relation.nodes[index])
+                        return this.relation.nodes[index]
                     }
                 }
             },
@@ -124,14 +134,17 @@
             },
             generateGraph(){
                 let _this = this
-                getRelationByFileName(this.form.selectedjar, this.form.packages).then(response => {
-                    console.log(response)
-                    _this.relation.nodes = response.nodes
-                    _this.relation.links = response.links
-                    _this.classes = response.classes
-                    _this.classMethodMap = response.classMethodMap
-                    _this.showd3()
+                this.$nextTick(() => {
+                    getRelationByFileName(this.form.selectedjar, this.form.packages).then(response => {
+                        _this.relation.nodes = response.nodes
+                        _this.relation.links = response.links
+                        _this.classes = response.classes
+                        _this.classMethodMap = response.classMethodMap
+                        console.log(response.classMethodMap)
+                        _this.showd3()
+                    })
                 })
+
             },
             submitUpload() {
                 this.$refs.upload.submit();
@@ -177,19 +190,23 @@
 //        设置缩放
 //        svg下嵌套g标签，缩放都在g标签上进行
                 var g = svg.append('g')
+                this.g = g
+                var _this = this
 //        d3.zoom是设置缩放，pc端是滚轮进行缩放，在移动端可以通过两指进行缩放
                 var zoomObj = d3.zoom()
                     .scaleExtent([0.5, 1.2]) // 设置缩放范围
                     .on('zoom', () => {
                         //监听zoom事件，zoom发生时，调用该方法
                         const transform = d3.event.transform //获取缩放和偏移的数据，不懂得同学可以自行通过console.log(d3.event.transform)滑动滚轮查看数据变化
+                        _this.tempTrans = d3.event.transform
+                        console.log(d3.event.transform.toString())
                         g.attr('transform', transform)   // 设置缩放和偏移量 transform对象自带toString()方法
                     })
                     .on('end', () => {
 //            该方法在缩放时间结束后回调
                         // code
                     })
-                svg.call(zoomObj)
+                svg.call(zoomObj).on("dblclick.zoom", null)
 //        绘制箭头
                 //箭头
                 // eslint-disable-next-line no-unused-vars
@@ -294,6 +311,7 @@
                         })
                         d3.select('#node' + i).raise()
                         d3.select('#nodetext' + i).raise()
+                        console.log(d)
                     })
                     .on('mouseout', (d, i) => {
                         edgesText.style('fill-opacity',1.0);
@@ -404,6 +422,8 @@
         },
         created () {
             this.$nextTick(() => {
+                //this.relation = JSON.parse('{"nodes":[{"name":"BetterVicky","type":0},{"name":"杭州市高新区（滨江）萧宏小额贷款有限公司","type":1},{"name":"浙江合德建设有限公司","type":1},{"name":"杭州萧山党山企业担保有限公司","type":1},{"name":"林爱萍","type":2},{"name":"申盛集团有限公司","type":2}],"links":[{"source":0,"target":1,"relation":"对外投资"},{"source":0,"target":2,"relation":"对外投资"},{"source":0,"target":3,"relation":"对外投资"},{"source":4,"target":0,"relation":"投资"},{"source":5,"target":0,"relation":"投资"}],"code":200,"message":"请求成功"}')
+                this.showd3()
             })
         }
     }
@@ -430,7 +450,7 @@
         background: #0583f2;
         border: none;
         border-radius: 2px;
-        color: #fff;
+        color: #000;
         z-index: 200;
     &:hover {
          background: #1e82d9;
@@ -450,7 +470,7 @@
     .nodetext {
         font-size: 12px;
         font-family: SimSun;
-        fill: #fff;
+        fill: #000;
         position: relative;
         pointer-events: none;
     }
@@ -458,6 +478,7 @@
     .highlighted {
         font-weight: bold;
         font-size: 15px;
+        color:black;
     }
 
     .linetext {
