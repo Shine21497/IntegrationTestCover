@@ -421,8 +421,8 @@
         },
         created () {
             this.$nextTick(() => {
-                this.relation = JSON.parse('{"nodes":[{"name":"BetterVicky","type":0},{"name":"BetterVicky","type":1},{"name":"MyTestClass","type":1},{"name":"MyRunner","type":1},{"name":"VideoCapture","type":2},{"name":"Render","type":2}],"links":[{"source":0,"target":1,"relation":"对外投资"},{"source":0,"target":2,"relation":"对外投资"},{"source":0,"target":3,"relation":"对外投资"},{"source":4,"target":0,"relation":"投资"},{"source":5,"target":0,"relation":"投资"}],"code":200,"message":"请求成功"}')
-                this.showd3()
+                // this.relation = JSON.parse('{"nodes":[{"name":"BetterVicky.method1","type":0},{"name":"BetterVicky.method2","type":1},{"name":"MyTestClass.method1","type":1},{"name":"MyRunner.methodhaha","type":1},{"name":"VideoCapture.methodxixi","type":2},{"name":"Render.Methodhehe","type":2}],"links":[{"source":0,"target":1,"relation":"对外投资"},{"source":0,"target":2,"relation":"对外投资"},{"source":0,"target":3,"relation":"对外投资"},{"source":4,"target":0,"relation":"投资"},{"source":5,"target":0,"relation":"投资"}],"code":200,"message":"请求成功"}')
+                // this.showd3()
             })
         }
     }
