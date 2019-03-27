@@ -32,7 +32,7 @@
                         </el-form>
                     </el-container>
                 </el-card>
-                <el-card :body-style="{ padding: '0px' }"class="card">
+                <el-card :body-style="{ padding: '0px' }" class="card">
                     <el-container class="formbody">
                         <el-form ref="form" :model="adjustform" label-width="80px">
                             <el-form-item label="类选择">
@@ -272,16 +272,15 @@
                         d.fixed = true;
                     })
 
-                var nodetype = ['nodeOrange','nodeBlue','nodeRed'];
 //        设置节点
                 var node = g.selectAll('circle')
                     .data(nodes)
                     .enter()
                     .append('circle')
                     .attr('r', nodeSize)
-                    .attr('class', (d, i) => {
-//            为不同的节点设置不同的css样式
-                        return nodetype[d.type] + ' node';
+                    .attr('class','node')
+                    .attr('fill',(d,i) => {
+                        return stringToColour(d.name.split(".")[0]);
                     })
                     .attr('id', (d, i) => {
 //            为每个节点设置不同的id
@@ -422,10 +421,23 @@
         },
         created () {
             this.$nextTick(() => {
-                //this.relation = JSON.parse('{"nodes":[{"name":"BetterVicky","type":0},{"name":"杭州市高新区（滨江）萧宏小额贷款有限公司","type":1},{"name":"浙江合德建设有限公司","type":1},{"name":"杭州萧山党山企业担保有限公司","type":1},{"name":"林爱萍","type":2},{"name":"申盛集团有限公司","type":2}],"links":[{"source":0,"target":1,"relation":"对外投资"},{"source":0,"target":2,"relation":"对外投资"},{"source":0,"target":3,"relation":"对外投资"},{"source":4,"target":0,"relation":"投资"},{"source":5,"target":0,"relation":"投资"}],"code":200,"message":"请求成功"}')
-                this.showd3()
+                // this.relation = JSON.parse('{"nodes":[{"name":"BetterVicky.method1","type":0},{"name":"BetterVicky.method2","type":1},{"name":"MyTestClass.method1","type":1},{"name":"MyRunner.methodhaha","type":1},{"name":"VideoCapture.methodxixi","type":2},{"name":"Render.Methodhehe","type":2}],"links":[{"source":0,"target":1,"relation":"对外投资"},{"source":0,"target":2,"relation":"对外投资"},{"source":0,"target":3,"relation":"对外投资"},{"source":4,"target":0,"relation":"投资"},{"source":5,"target":0,"relation":"投资"}],"code":200,"message":"请求成功"}')
+                // this.showd3()
             })
         }
+    }
+
+    function stringToColour(str) {
+        var hash = 0;
+        for (var i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        var colour = '#';
+        for (var i = 0; i < 3; i++) {
+            var value = (hash >> (i * 8)) & 0xFF;
+            colour += ('00' + value.toString(16)).substr(-2);
+        }
+        return colour;
     }
 </script>
 
