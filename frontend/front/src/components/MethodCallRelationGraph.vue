@@ -224,7 +224,7 @@
                         .attr('stroke-width', 2)//箭头宽度
                         .append('path')
                         .attr('d', 'M0,-5L10,0L0,5')//箭头的路径
-                        .attr('fill', '#ff7438')//箭头颜色
+                        //.attr('fill', '#ff7438')//箭头颜色
 
 //        设置连线
                 var edgesLine = g.selectAll('line')
@@ -232,7 +232,7 @@
                     .enter()
                     .append('path')
                     .attr('class', 'edgelabel')//添加class样式
-                    .style('stroke', '#ff7438')//添加颜色
+                    //.style('stroke', '#ff7438')//添加颜色
                     .style('stroke-width', 1)//连接线粗细度
                     .attr('marker-end', 'url(#resolved)')//设置线的末尾为刚刚的箭头
 //        设置连接线中间关系文本
@@ -487,10 +487,37 @@
         pointer-events: none;
     }
 
+//   箭头颜色
+    #resolved{
+        fill:#FFD700;
+    }
+
+//   滑动鼠标显示连线效果，移到网页外连线消失
+    .edgelabel{
+     stroke-width: 6px;
+     fill: transparent;
+     stroke:#DC143C;
+     stroke-dasharray: 85 400;
+     stroke-dashoffset: -220;
+     transition: 1s all ease
+    }
+
+    svg:hover .edgelabel {
+      stroke-dasharray: 70 0;
+      stroke-width: 3px;
+      stroke-dashoffset: 0;
+      stroke:#FFD700;
+    }
+
+//    字体火焰效果
     .highlighted {
-        font-weight: bold;
-        font-size: 15px;
-        color:black;
+        font-style:italic;
+        font-weight:bold;
+        font-size: 18px;
+        font-family:sans-serif;
+        fill:#483D8B;
+        text-shadow: 0 -5px 4px #FFFF00,2px -10px 6px #FFA500,-2px -15px 11px #FF6347,2px -25px 18px #FF0000;
+        transition: 1s;
     }
 
     .linetext {
