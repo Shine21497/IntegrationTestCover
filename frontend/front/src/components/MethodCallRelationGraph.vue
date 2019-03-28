@@ -442,6 +442,11 @@
 </script>
 
 <style scoped lang="less">
+   header{
+        font-family: "Arial Black";
+        font-size: 25px;
+
+    }
     .formbody {
         margin:25px 0px 25px 0px;
     }
