@@ -98,8 +98,7 @@
                 methods:[],
                 classMethodMap:{"a": ["a","b"], "b": ["a","c"]},
                 g:{},
-                tempTrans:{},
-                lastNode: {x: 510, y: 300}
+                tempTrans: d3.zoomIdentity.translate(0, 0).scale(1),
             }
         },
         methods: {
@@ -110,8 +109,9 @@
                 trans.k = 1;
                 this.g.attr('transform',trans);
                 
-                trans.x = 510 - node.x
-                trans.y = 300 - node.y
+                trans.x = (510 - node.x) * trans.k
+                trans.y = (300 - node.y) * trans.k
+                
                 console.log(trans)
                 console.log(this.relation.nodes)
                 this.g.attr('transform', trans)
