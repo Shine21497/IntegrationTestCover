@@ -1,8 +1,7 @@
 <template>
+    <!-- <el-header>Method Call Relation Graph</el-header> -->
     <el-container>
-        <el-header>Method Call Relation Graph</el-header>
-        <el-container>
-            <el-aside width="350px">
+        <!-- <el-aside width="350px">
                 <el-card :body-style="{ padding: '0px' }" class="card">
                     <el-upload class="upload" action="/apiurl/uploadJar" accept="application/jar" :before-upload="onBeforeUpload" ref="upload" :file-list="fileList" :auto-upload="false">
                         <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
@@ -61,11 +60,71 @@
                         </el-form>
                     </el-container>
                 </el-card>
-            </el-aside>
-            <el-main>
-                <div id="container" class="container"></div>
-            </el-main>
-        </el-container>
+        </el-aside> -->
+        <el-main style="padding:0;">
+            <div id="container" class="container">
+                <svg id="mainsvg" class="svg">
+
+                </svg>
+            </div>
+            <div id="thumb-container">
+                <svg id="thumb" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
+                    <use xlink:href="#mainsvg" />
+                </svg>
+            </div>
+        </el-main>
+        <div class="myfoot">
+                <!-- <el-upload class="upload" action="/apiurl/uploadJar" accept="application/jar" :before-upload="onBeforeUpload" ref="upload" :file-list="fileList" :auto-upload="false">
+                    <el-button slot="trigger" size="small" type="primary">选取jar包</el-button>
+                    <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+                </el-upload> -->
+                <el-container>
+                        <el-form :inline="true" ref="form" :model="form" label-width="80px">
+                            <el-form-item label="Jar包选择">
+                                <el-select v-model="form.selectedjar" placeholder="请选择jar包" @visible-change="showfilelist" filterable @change="generateGraph()">
+                                    <el-option
+                                            v-for="item in uploadedFiles"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item >
+                                <el-input v-model="form.packages" placeholder="请输入包范围"></el-input>
+                            </el-form-item>
+                            <!-- <el-form-item>
+                                <el-button type="primary" size="small" @click="generateGraph()">立即创建</el-button>
+                            </el-form-item> -->
+                        </el-form>
+
+                        <el-form :inline="true" ref="form" :model="adjustform" label-width="80px">
+                            <el-form-item >
+                                <el-select filterable  v-model="adjustform.selectedClass" placeholder="请选择类" @change="getClass($event)">
+                                    <el-option
+                                            v-for="item in classes"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item >
+                                <el-select filterable  v-model="adjustform.selectedMethod" placeholder="请选择方法" @visible-change="showfilelist">
+                                    <el-option
+                                            v-for="item in methods"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" @click="goToNode()" icon="el-icon-location-outline" plain>立即定位</el-button>
+                            </el-form-item>
+                        </el-form>
+                </el-container>
+        </div>
     </el-container>
 </template>
 
@@ -98,7 +157,8 @@
                 methods:[],
                 classMethodMap:{"a": ["a","b"], "b": ["a","c"]},
                 g:{},
-                tempTrans: d3.zoomIdentity.translate(0, 0).scale(1),
+                tempTrans:{},
+                lastNode: {x: 510, y: 300}
             }
         },
         methods: {
@@ -108,14 +168,12 @@
                 
                 trans.k = 1;
                 this.g.attr('transform',trans);
-                
-                trans.x = (510 - node.x) * trans.k
-                trans.y = (300 - node.y) * trans.k
-                
-                console.log(trans)
-                console.log(this.relation.nodes)
-                this.g.attr('transform', trans)
 
+                trans.x = 510 - node.x
+                trans.y = 300 - node.y
+                // console.log(trans)
+                // console.log(this.relation.nodes)
+                this.g.attr('transform', trans)
             },
             findNodeByName(name) {
                 for(let index in this.relation.nodes) {
@@ -157,7 +215,7 @@
 
             },
             showd3 () {
-//        获取body高度和宽度
+                //        获取body高度和宽度
                 let height = document.body.clientHeight
                 let width = document.body.clientWidth
 
@@ -167,51 +225,48 @@
                 }
 
                 window.addEventListener('onorientationchange' in window ? 'orientationchange' : 'resize', change, false)
-//        节点大小（圆圈大小）
+                //        节点大小（圆圈大小）
                 const nodeSize = 35
-//        初始化时连接线的距离长度
+                //        初始化时连接线的距离长度
                 const linkDistance = 130
-//        赋值数据集
+                //        赋值数据集
                 var nodes = this.relation.nodes
                 var links = this.relation.links
                 
-
+                var svg = d3.select('#mainsvg');
+                
                 // 移除上一个画布（如果有的话）
-                if(d3.select('#container').selectAll("svg").size() > 0){
-                    d3.select('#container').selectAll("svg").remove();
+                if(svg.selectAll("g").size() > 0){
+                    svg.selectAll("g").remove();
                 }
-//      设置画布，获取id为app的对象，添加svg，这里的图像用了svg，意为可缩放矢量图形，它与其他图片格式相比较，svg更加小，因为是矢量图，放大不会失帧。具体可以自行百度svg相关知识
-                var svg = d3.select('#container').append('svg')
-                    .attr('xmlns', 'http://www.w3.org/2000/svg')
-                    .attr('version', '2.0')
-                    .attr('class', 'svg')//给svg设置了一个class样式，主要作用是长宽设置为100%
-//        设置力布局，使用d3 v4版本的力导向布局
+
+                    //        设置力布局，使用d3 v4版本的力导向布局
                 var force = d3.forceSimulation()
                     .force('center', d3.forceCenter(width / 2 - 200, height / 2 -100))//设置力导向布局的中心点，创建一个力中心，设置为画布长宽的一半，所以拓扑图会在画布的中心点
                     .force('charce', d3.forceManyBody().strength(-300))//节点间的作用力
                     .force('collide', d3.forceCollide().radius(() => 30))//使用30的半径创建一个碰撞作用力
 
-//        设置缩放
-//        svg下嵌套g标签，缩放都在g标签上进行
+                    //        设置缩放
+                    //        svg下嵌套g标签，缩放都在g标签上进行
                 var g = svg.append('g')
                 this.g = g
                 var _this = this
-//        d3.zoom是设置缩放，pc端是滚轮进行缩放，在移动端可以通过两指进行缩放
+                //        d3.zoom是设置缩放，pc端是滚轮进行缩放，在移动端可以通过两指进行缩放
                 var zoomObj = d3.zoom()
                     .scaleExtent([0.5, 1.2]) // 设置缩放范围
                     .on('zoom', () => {
                         //监听zoom事件，zoom发生时，调用该方法
                         const transform = d3.event.transform //获取缩放和偏移的数据，不懂得同学可以自行通过console.log(d3.event.transform)滑动滚轮查看数据变化
                         _this.tempTrans = d3.event.transform
-                        console.log(d3.event.transform.toString())
+                        console.log(d3.event.transform.toString());
                         g.attr('transform', transform)   // 设置缩放和偏移量 transform对象自带toString()方法
                     })
                     .on('end', () => {
-//            该方法在缩放时间结束后回调
+                    //            该方法在缩放时间结束后回调
                         // code
                     })
                 svg.call(zoomObj).on("dblclick.zoom", null)
-//        绘制箭头
+                //        绘制箭头
                 //箭头
                 // eslint-disable-next-line no-unused-vars
                 var marker =
@@ -228,32 +283,32 @@
                         .attr('stroke-width', 2)//箭头宽度
                         .append('path')
                         .attr('d', 'M0,-5L10,0L0,5')//箭头的路径
-                        //.attr('fill', '#ff7438')//箭头颜色
+                        .attr('fill', '#ff7438')//箭头颜色
 
-//        设置连线
+                    //        设置连线
                 var edgesLine = g.selectAll('line')
                     .data(links)
                     .enter()
                     .append('path')
                     .attr('class', 'edgelabel')//添加class样式
-                    //.style('stroke', '#ff7438')//添加颜色
+                    .style('stroke', '#ff7438')//添加颜色
                     .style('stroke-width', 1)//连接线粗细度
                     .attr('marker-end', 'url(#resolved)')//设置线的末尾为刚刚的箭头
-//        设置连接线中间关系文本
+                    //        设置连接线中间关系文本
                 var edgesText = g.selectAll('.linetext')
                     .data(links)
                     .enter()
                     .append('text')
                     .attr('class', 'linetext')
                     .text((d) => {
-//          设置关系文本
+                        //          设置关系文本
                         return d.relation
                     })
-//        设置拖拽
+                        //        设置拖拽
                 var drag = d3.drag()
                     .on('start', (d, i) => {
                         if (!d3.event.active) {
-//              拖拽开始回调
+                            //              拖拽开始回调
                             force.alphaTarget(0.1).restart() // 这个方法可以用在在交互时重新启动仿真，比如拖拽了某个节点，重新进行布局。这个必须要进行设置不然会拖动不了。
                         }
                         //d.fixed = true //偏移后固定不动
@@ -264,19 +319,19 @@
                         }
                     })
                     .on('drag', (d, i) => {
-//            拖动时，设置拖动后默认位置的x，y
+                        //            拖动时，设置拖动后默认位置的x，y
                         d.fx = d3.event.x
                         d.fy = d3.event.y
                     })
                     .on('end', (d, i) => {
-//            拖动结束后
+                        //            拖动结束后
                         if (!d3.event.active) {
                             force.alphaTarget(0)
                         }
                         d.fixed = true;
                     })
 
-//        设置节点
+                        //        设置节点
                 var node = g.selectAll('circle')
                     .data(nodes)
                     .enter()
@@ -287,11 +342,11 @@
                         return stringToColour(d.name.split(":")[0]);
                     })
                     .attr('id', (d, i) => {
-//            为每个节点设置不同的id
+                        //            为每个节点设置不同的id
                         return 'node' + i
                     })
                     .on('touchmove', (d, i) => {
-//            设置鼠标监听时间，当移动端手指移动时,设置关系文本透明度
+                        //            设置鼠标监听时间，当移动端手指移动时,设置关系文本透明度
                         edgesText.style('fill-opacity', function (edge) {
                             if (edge.source === d || edge.target === d) {
                                 return 1.0
@@ -301,7 +356,7 @@
                         })
                     })
                     .on('touchend', (d, i) => {
-//            手指移开后，所有关系文本设置透明度为1
+                        //            手指移开后，所有关系文本设置透明度为1
                         edgesText.style('fill-opacity', 1.0);
                     })
                     .on('click', (d, i) => {
@@ -328,9 +383,8 @@
                         d3.select('#nodetext' + i).classed('highlighted',true);
                     })
                     .call(drag)//监听拖动事件
-//
-//
-// 节点文字
+
+                    // 节点文字
                 var nodeText = g.selectAll('.nodetext')
                     .data(nodes)
                     .enter()
@@ -382,13 +436,13 @@
                         }
                     });
 
-//        设置node和edge
+                    //        设置node和edge
                 force.nodes(nodes)
                     .force('link', d3.forceLink(links).distance(linkDistance).strength(0.1))
                     .restart()
-//        tick 表示当运动进行中每更新一帧时
+                    //        tick 表示当运动进行中每更新一帧时
                 force.on('tick', function () {
-//          //更新连接线的位置
+                    //          //更新连接线的位置
                     edgesLine.attr('d', function (d) {
                         var path = 'M ' + d.source.x + ' ' + d.source.y + ' L ' + d.target.x + ' ' + d.target.y
                         return path
@@ -414,19 +468,12 @@
                             return d.x
                         })
                 })
-            },
-            getdemodata (){
-                getDemoData().then(response => {
-                    // console.log(response);
-                    this.relation = response;
-                    this.showd3()
-                })
             }
         },
         created () {
             this.$nextTick(() => {
-                // this.relation = JSON.parse('{"nodes":[{"name":"BetterVicky.method1","type":0},{"name":"BetterVicky.method2","type":1},{"name":"MyTestClass.method1","type":1},{"name":"MyRunner.methodhaha","type":1},{"name":"VideoCapture.methodxixi","type":2},{"name":"Render.Methodhehe","type":2}],"links":[{"source":0,"target":1,"relation":"对外投资"},{"source":0,"target":2,"relation":"对外投资"},{"source":0,"target":3,"relation":"对外投资"},{"source":4,"target":0,"relation":"投资"},{"source":5,"target":0,"relation":"投资"}],"code":200,"message":"请求成功"}')
-                // this.showd3()
+                // this.relation = JSON.parse('{"nodes":[{"name":"BetterVicky.method1","type":0},{"name":"BetterVicky.method2","type":1},{"name":"MyTestClass.method1","type":1},{"name":"MyRunner.methodhaha","type":1},{"name":"VideoCapture.methodxixi","type":2},{"name":"Render.Methodhehe","type":2}],"links":[{"source":0,"target":1,"relation":"对外投资"},{"source":0,"target":2,"relation":"对外投资"},{"source":0,"target":3,"relation":"对外投资"},{"source":4,"target":0,"relation":"投资"},{"source":5,"target":0,"relation":"投资"}],"code":200,"message":"请求成功"}');
+                this.showd3();
             })
         }
     }
@@ -446,38 +493,58 @@
 </script>
 
 <style scoped lang="less">
-   header{
-        font-family: "Arial Black";
-        font-size: 25px;
+    .myfoot{
+        position:absolute;
+        bottom: 0;
+    }
 
-    }
-    .formbody {
-        margin:25px 0px 25px 0px;
-    }
     .card {
         margin:25px 0px 25px 0px;
     }
     .upload {
         margin:25px 0px 25px 0px;
     }
+
+    #thumb {
+        width: 160px;
+        height: 160px;
+    }
+
+    #thumb-container {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        margin: 20px;
+        border: 1px solid silver;
+        background-color: white;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    }
+
+
     .container {
         height: 600px;
-    .exit {
-        position: absolute;
-        top: 20px;
-        left: 20px;
-        width: 60px;
-        height: 25px;
-        background: #0583f2;
-        border: none;
-        border-radius: 2px;
-        color: #000;
-        z-index: 200;
-    &:hover {
-         background: #1e82d9;
-     }
+        .exit {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 60px;
+            height: 25px;
+            background: #0583f2;
+            border: none;
+            border-radius: 2px;
+            color: #000;
+            z-index: 200;
+            &:hover {
+                 background: #1e82d9;
+            }
+        };
+        overflow-y: scroll;
     }
+
+    .container::-webkit-scrollbar { 
+        display: none;
     }
+
     .formlabelfont {
         font-size: 12px;
     }
@@ -496,37 +563,10 @@
         pointer-events: none;
     }
 
-//   箭头颜色
-    #resolved{
-        fill:#FFD700;
-    }
-
-//   滑动鼠标显示连线效果，移到网页外连线消失
-    .edgelabel{
-     stroke-width: 6px;
-     fill: transparent;
-     stroke:#DC143C;
-     stroke-dasharray: 85 400;
-     stroke-dashoffset: -220;
-     transition: 1s all ease
-    }
-
-    svg:hover .edgelabel {
-      stroke-dasharray: 70 0;
-      stroke-width: 3px;
-      stroke-dashoffset: 0;
-      stroke:#FFD700;
-    }
-
-//    字体火焰效果
     .highlighted {
-        font-style:italic;
-        font-weight:bold;
-        font-size: 18px;
-        font-family:sans-serif;
-        fill:#483D8B;
-        text-shadow: 0 -5px 4px #FFFF00,2px -10px 6px #FFA500,-2px -15px 11px #FF6347,2px -25px 18px #FF0000;
-        transition: 1s;
+        font-weight: bold;
+        font-size: 15px;
+        color:black;
     }
 
     .linetext {
