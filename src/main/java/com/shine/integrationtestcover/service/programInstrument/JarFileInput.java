@@ -101,7 +101,7 @@ public class JarFileInput {
                 mkDirectory(path+"\\"+md);
                 //插桩
                 ByteInstrument(i,path,name);
-                String command="cmd /c "+"jar uvf "+path+"\\"+filename+" "+name;
+                String command="cmd /c "+"jar uvf "+"\""+path+"\\"+filename+"\" "+name;
                 alist.add(command);
             }
             jar.close();
