@@ -96,9 +96,11 @@ public class JarFileInput {
                 String name=entry.getName();
                 System.out.println(name);
                 int index= name.lastIndexOf('/');
-                String sub=name.substring(index+1);
-                String md=name.substring(0,index);
-                mkDirectory(path+"\\"+md);
+                if(index!=-1){
+                    String md=name.substring(0,index);
+                    mkDirectory(path+"\\"+md);
+                }
+
                 //插桩
                 ByteInstrument(i,path,name);
                 String command="cmd /c "+"jar uvf "+"\""+path+"\\"+filename+"\" "+name;
