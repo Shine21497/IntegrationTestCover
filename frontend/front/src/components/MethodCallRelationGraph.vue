@@ -170,7 +170,7 @@
         },
         methods: {
             goToNode() {
-                var node = this.findNodeByName(this.adjustform.selectedClass + ":" + this.adjustform.selectedMethod)
+                var node = this.findNodeByName(this.adjustForm.selectedClass + ":" + this.adjustForm.selectedMethod)
                 var trans = this.tempTrans
                 
                 trans.k = 1;
