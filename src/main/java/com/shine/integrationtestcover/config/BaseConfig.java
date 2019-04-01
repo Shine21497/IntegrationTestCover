@@ -11,6 +11,7 @@ import java.io.File;
 @Component
 public class BaseConfig {
     private String uploadedFilePath = "";
+
     public String getUploadedFilePath() {
         if(this.uploadedFilePath.isEmpty()) {
             this.uploadedFilePath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile()+ "uploadedJar/";
@@ -33,5 +34,27 @@ public class BaseConfig {
             }
         }
         return this.uploadedFilePath;
+    }
+
+    public String getUploadedTestPath(String projectName) {
+        String uploadedTestPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile()+ "uploadedTestCase/" + projectName + "/";
+        try{
+            uploadedTestPath = java.net.URLDecoder.decode(uploadedTestPath, "UTF-8");
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+        };
+        File directory=new File(uploadedTestPath);
+        if(!directory.exists())
+        {
+            try{
+                directory.mkdirs();
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        return uploadedTestPath;
     }
 }

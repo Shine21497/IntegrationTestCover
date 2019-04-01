@@ -34,11 +34,11 @@
                 </el-card>
                 <el-card :body-style="{ padding: '0px' }" class="card">
                     <el-container class="formbody">
-                        <el-form ref="form" :model="adjustform" label-width="80px">
+                        <el-form ref="adjustForm" :model="adjustForm" label-width="80px">
                             <el-form-item label="类选择">
-                                <el-select filterable  v-model="adjustform.selectedClass" placeholder="请选择类" @change="getClass($event)">
+                                <el-select filterable  v-model="adjustForm.selectedClass" placeholder="请选择类" @change="getClass($event)">
                                     <el-option
-                                            v-for="item in classes"
+                                            v-for="item in adjustForm.allClasses"
                                             :key="item"
                                             :label="item"
                                             :value="item">
@@ -46,9 +46,9 @@
                                 </el-select>
                             </el-form-item>
                             <el-form-item label="方法选择">
-                                <el-select filterable  v-model="adjustform.selectedMethod" placeholder="请选择类" @visible-change="showfilelist">
+                                <el-select filterable  v-model="adjustForm.selectedMethod" placeholder="请选择方法">
                                     <el-option
-                                            v-for="item in methods"
+                                            v-for="item in adjustForm.allMethods"
                                             :key="item"
                                             :label="item"
                                             :value="item">
@@ -57,6 +57,63 @@
                             </el-form-item>
                             <el-form-item>
                                 <el-button type="primary" size="small" @click="goToNode()">立即定位</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </el-container>
+                </el-card>
+                <el-card :body-style="{ padding: '0px' }" class="card">
+                    <el-container class="formbody">
+                        <el-form ref="uploadTestData" :model="uploadTestData" label-width="80px">
+                            <el-form-item label="Test所属项目选择">
+                                <el-select v-model="uploadTestData.selectedProject" placeholder="请选择项目">
+                                    <el-option
+                                            v-for="item in uploadedFiles"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-upload class="upload" action="/apiurl/uploadTestCase" accept="application/jar" :before-upload="onBeforeUpload" ref="uploadTest" :file-list="fileList" :auto-upload="false" :data="uploadTestData">
+                                <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+                                <el-button style="margin-left: 10px;" size="small" type="success" @click="submitTestUpload">上传到服务器</el-button>
+                                <div slot="tip" class="el-upload__tip">只能上传java文件或者zip文件</div>
+                            </el-upload>
+                        </el-form>
+                    </el-container>
+                </el-card>
+                <el-card :body-style="{ padding: '0px' }" class="card">
+                    <el-container class="formbody">
+                        <el-form ref="selectTestForm" :model="selectTestForm" label-width="80px">
+                            <el-form-item label="项目选择">
+                                <el-select filterable  v-model="selectTestForm.selectedTestProject" placeholder="请选择项目" @change="getTestProject($event)" @visible-change="showTestProjectList">
+                                    <el-option
+                                            v-for="item in uploadedFiles"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="方法选择">
+                                <el-select filterable  v-model="selectTestForm.selectedTestClass" placeholder="请选择测试类" @change="getTestClass($event)">
+                                    <el-option
+                                            v-for="item in selectTestForm.allTestClasses"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="方法选择">
+                                <el-select filterable  v-model="selectTestForm.selectedTestCase" placeholder="请选择测试方法">
+                                    <el-option
+                                            v-for="item in selectTestForm.allTestCases"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
+                                    </el-option>
+                                </el-select>
                             </el-form-item>
                         </el-form>
                     </el-container>
@@ -72,7 +129,7 @@
 <script>
     import ElContainer from "element-ui/packages/container/src/main";
     import ElButton from "element-ui/packages/button/src/button";
-    import { getUploadedFileList, getRelationByFileName } from '@/api/methodcallrelationgraph.js'
+    import { getUploadedFileList, getRelationByFileName, getTestCaseList } from '@/api/methodcallrelationgraph.js'
     import * as d3 from 'd3'
     export default {
         components: {
@@ -81,6 +138,9 @@
         name: "method-call-relation-graph",
         data () {
             return {
+                uploadTestData: {
+                    selectedProject: ''
+                },
                 relation: {},
                 cname: '',
                 fileList:[],
@@ -88,18 +148,24 @@
                     selectedjar: '',
                     packages:''
                 },
-                adjustform: {
+                adjustForm: {
                     selectedClass: '',
-                    selectedMethod: ''
-
+                    selectedMethod: '',
+                    allClasses: [],
+                    allMethods: [],
+                },
+                selectTestForm: {
+                    selectedTestProject: '',
+                    selectedTestClass: '',
+                    selectedTestCase: '',
+                    allTestClasses: [],
+                    allTestCases: []
                 },
                 uploadedFiles:[],
-                classes:["a", "b"],
-                methods:[],
                 classMethodMap:{"a": ["a","b"], "b": ["a","c"]},
+                testCaseMap:{},
                 g:{},
-                tempTrans:{},
-                lastNode: {x: 510, y: 300}
+                tempTrans: d3.zoomIdentity.translate(0, 0).scale(1),
             }
         },
         methods: {
@@ -110,8 +176,9 @@
                 trans.k = 1;
                 this.g.attr('transform',trans);
                 
-                trans.x = 510 - node.x
-                trans.y = 300 - node.y
+                trans.x = (510 - node.x) * trans.k
+                trans.y = (300 - node.y) * trans.k
+                
                 console.log(trans)
                 console.log(this.relation.nodes)
                 this.g.attr('transform', trans)
@@ -125,8 +192,14 @@
                     }
                 }
             },
+            getTestClass(prov) {
+                this.methods =  this.testCaseMap[this.selectTestForm.selectedTestProject][prov]
+            },
+            getTestProject(prov) {
+                this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prov])
+            },
             getClass(prov) {
-                this.methods = this.classMethodMap[prov]
+                this.adjustForm.allMethods = this.classMethodMap[prov]
             },
             showfilelist(open){
                 if(open) {
@@ -142,7 +215,7 @@
                     getRelationByFileName(this.form.selectedjar, this.form.packages).then(response => {
                         _this.relation.nodes = response.nodes
                         _this.relation.links = response.links
-                        _this.classes = response.classes
+                        _this.adjustForm.allClasses = response.classes
                         _this.classMethodMap = response.classMethodMap
                         console.log(response.classMethodMap)
                         _this.showd3()
@@ -150,8 +223,23 @@
                 })
 
             },
+            showTestProjectList(open) {
+                if(open) {
+                    let _this = this
+                    getUploadedFileList().then(response => {
+                        _this.uploadedFiles = response.result
+                    })
+                    getTestCaseList().then(response => {
+                        _this.testCaseMap = response.result
+                    })
+                }
+
+            },
             submitUpload() {
                 this.$refs.upload.submit();
+            },
+            submitTestUpload() {
+                this.$refs.uploadTest.submit();
             },
             onBeforeUpload(file) {
 
@@ -228,7 +316,7 @@
                         .attr('stroke-width', 2)//箭头宽度
                         .append('path')
                         .attr('d', 'M0,-5L10,0L0,5')//箭头的路径
-                        .attr('fill', '#ff7438')//箭头颜色
+                        //.attr('fill', '#ff7438')//箭头颜色
 
 //        设置连线
                 var edgesLine = g.selectAll('line')
@@ -236,7 +324,7 @@
                     .enter()
                     .append('path')
                     .attr('class', 'edgelabel')//添加class样式
-                    .style('stroke', '#ff7438')//添加颜色
+                    //.style('stroke', '#ff7438')//添加颜色
                     .style('stroke-width', 1)//连接线粗细度
                     .attr('marker-end', 'url(#resolved)')//设置线的末尾为刚刚的箭头
 //        设置连接线中间关系文本
@@ -446,6 +534,11 @@
 </script>
 
 <style scoped lang="less">
+   header{
+        font-family: "Arial Black";
+        font-size: 25px;
+
+    }
     .formbody {
         margin:25px 0px 25px 0px;
     }
@@ -491,10 +584,37 @@
         pointer-events: none;
     }
 
+//   箭头颜色
+    #resolved{
+        fill:#FFD700;
+    }
+
+//   滑动鼠标显示连线效果，移到网页外连线消失
+    .edgelabel{
+     stroke-width: 6px;
+     fill: transparent;
+     stroke:#DC143C;
+     stroke-dasharray: 85 400;
+     stroke-dashoffset: -220;
+     transition: 1s all ease
+    }
+
+    svg:hover .edgelabel {
+      stroke-dasharray: 70 0;
+      stroke-width: 3px;
+      stroke-dashoffset: 0;
+      stroke:#FFD700;
+    }
+
+//    字体火焰效果
     .highlighted {
-        font-weight: bold;
-        font-size: 15px;
-        color:black;
+        font-style:italic;
+        font-weight:bold;
+        font-size: 18px;
+        font-family:sans-serif;
+        fill:#483D8B;
+        text-shadow: 0 -5px 4px #FFFF00,2px -10px 6px #FFA500,-2px -15px 11px #FF6347,2px -25px 18px #FF0000;
+        transition: 1s;
     }
 
     .linetext {
