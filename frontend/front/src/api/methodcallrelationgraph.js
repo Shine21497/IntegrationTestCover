@@ -22,3 +22,10 @@ export function getRelationByFileName (name, packages) {
         }
     })
 }
+
+export function getTestCaseList () {
+    return fetch({
+        url: '/apiurl/testCaseList',
+        method: 'get'
+    })
+}

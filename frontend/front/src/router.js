@@ -30,6 +30,6 @@ export default new Router({
             path: '/method',
             name: 'MethodCallRelationGraph',
             component: MethodCallRelationGraph
-        },
+        }
     ]
 })
