@@ -257,21 +257,21 @@
 
             },
             showd3 () {
-//        获取body高度和宽度
+                //获取body高度和宽度
                 let height = document.body.clientHeight
                 let width = document.body.clientWidth
 
                 //移动端设备横竖屏重新加载页面
                 function change () {
-                    window.location.reload()
+                    // window.location.reload()
                 }
 
                 window.addEventListener('onorientationchange' in window ? 'orientationchange' : 'resize', change, false)
-//        节点大小（圆圈大小）
+                //节点大小（圆圈大小）
                 const nodeSize = 35
-//        初始化时连接线的距离长度
+                //初始化时连接线的距离长度
                 const linkDistance = 130
-//        赋值数据集
+                //赋值数据集
                 var nodes = this.relation.nodes
                 var links = this.relation.links
 
@@ -281,44 +281,43 @@
                 if(d3.select('#container').selectAll("svg").size() > 0){
                     d3.select('#container').selectAll("svg").remove();
                 }
-//      设置画布，获取id为app的对象，添加svg，这里的图像用了svg，意为可缩放矢量图形，它与其他图片格式相比较，svg更加小，因为是矢量图，放大不会失帧。具体可以自行百度svg相关知识
+                //  设置画布，获取id为app的对象，添加svg，这里的图像用了svg，意为可缩放矢量图形，它与其他图片格式相比较，svg更加小，因为是矢量图，放大不会失帧。具体可以自行百度svg相关知识
                 var svg = d3.select('#container').append('svg')
                     .attr('xmlns', 'http://www.w3.org/2000/svg')
                     .attr('version', '2.0')
                     .attr('class', 'svg')//给svg设置了一个class样式，主要作用是长宽设置为100%
-//        设置力布局，使用d3 v4版本的力导向布局
+                //设置力布局，使用d3 v4版本的力导向布局
                 var force = d3.forceSimulation()
                     .force('center', d3.forceCenter(width / 2 - 200, height / 2 -100))//设置力导向布局的中心点，创建一个力中心，设置为画布长宽的一半，所以拓扑图会在画布的中心点
                     .force('charce', d3.forceManyBody().strength(-300))//节点间的作用力
-                    .force('collide', d3.forceCollide().radius(() => 30))//使用30的半径创建一个碰撞作用力
+                    .force('collide', d3.forceCollide().radius(() => 60))//使用30的半径创建一个碰撞作用力
 
-//        设置缩放
-//        svg下嵌套g标签，缩放都在g标签上进行
+                //设置缩放
+                //svg下嵌套g标签，缩放都在g标签上进行
                 var g = svg.append('g')
                 this.g = g
                 var _this = this
-//        d3.zoom是设置缩放，pc端是滚轮进行缩放，在移动端可以通过两指进行缩放
+                //d3.zoom是设置缩放，pc端是滚轮进行缩放，在移动端可以通过两指进行缩放
                 var zoomObj = d3.zoom()
                     .scaleExtent([0.5, 1.2]) // 设置缩放范围
                     .on('zoom', () => {
                         //监听zoom事件，zoom发生时，调用该方法
                         const transform = d3.event.transform //获取缩放和偏移的数据，不懂得同学可以自行通过console.log(d3.event.transform)滑动滚轮查看数据变化
                         _this.tempTrans = d3.event.transform
-                        console.log(d3.event.transform.toString())
+                        // console.log(d3.event.transform.toString())
                         g.attr('transform', transform)   // 设置缩放和偏移量 transform对象自带toString()方法
                     })
                     .on('end', () => {
-//            该方法在缩放时间结束后回调
+                        //该方法在缩放时间结束后回调
                         // code
                     })
                 svg.call(zoomObj).on("dblclick.zoom", null)
-//        绘制箭头
                 //箭头
                 // eslint-disable-next-line no-unused-vars
                 var marker =
                     g.append('marker')
                         .attr('id', 'resolved')
-                        //.attr("markerUnits","strokeWidth")//设置为strokeWidth箭头会随着线的粗细发生变化
+                        //.attr("markerUnits","strokeWidth")  //设置为strokeWidth箭头会随着线的粗细发生变化
                         .attr('markerUnits', 'userSpaceOnUse')//用于确定marker是否进行缩放。取值strokeWidth和userSpaceOnUse，
                         .attr('viewBox', '0 -5 10 10')//坐标系的区域
                         .attr('refX', 39)//箭头坐标
@@ -331,7 +330,7 @@
                         .attr('d', 'M0,-5L10,0L0,5')//箭头的路径
                         //.attr('fill', '#ff7438')//箭头颜色
 
-//        设置连线
+                //设置连线
                 var edgesLine = g.selectAll('line')
                     .data(links)
                     .enter()
@@ -340,22 +339,22 @@
                     //.style('stroke', '#ff7438')//添加颜色
                     .style('stroke-width', 1)//连接线粗细度
                     .attr('marker-end', 'url(#resolved)')//设置线的末尾为刚刚的箭头
-                console.log(edgesLine)
-//        设置连接线中间关系文本
+
+                //设置连接线中间关系文本
                 var edgesText = g.selectAll('.linetext')
                     .data(links)
                     .enter()
                     .append('text')
                     .attr('class', 'linetext')
                     .text((d) => {
-//          设置关系文本
+                        //设置关系文本
                         return d.relation
                     })
-//        设置拖拽
+                    //设置拖拽
                 var drag = d3.drag()
                     .on('start', (d, i) => {
                         if (!d3.event.active) {
-//              拖拽开始回调
+                            //拖拽开始回调
                             force.alphaTarget(0.1).restart() // 这个方法可以用在在交互时重新启动仿真，比如拖拽了某个节点，重新进行布局。这个必须要进行设置不然会拖动不了。
                         }
                         //d.fixed = true //偏移后固定不动
@@ -366,19 +365,19 @@
                         }
                     })
                     .on('drag', (d, i) => {
-//            拖动时，设置拖动后默认位置的x，y
+                        //拖动时，设置拖动后默认位置的x，y
                         d.fx = d3.event.x
                         d.fy = d3.event.y
                     })
                     .on('end', (d, i) => {
-//            拖动结束后
+                        //拖动结束后
                         if (!d3.event.active) {
                             force.alphaTarget(0)
                         }
                         d.fixed = true;
                     })
 
-//        设置节点
+                //设置节点
                 var node = g.selectAll('circle')
                     .data(nodes)
                     .enter()
@@ -389,11 +388,11 @@
                         return stringToColour(d.name.split(":")[0]);
                     })
                     .attr('id', (d, i) => {
-//            为每个节点设置不同的id
+                        //为每个节点设置不同的id
                         return 'node' + i
                     })
                     .on('touchmove', (d, i) => {
-//            设置鼠标监听时间，当移动端手指移动时,设置关系文本透明度
+                        //设置鼠标监听时间，当移动端手指移动时,设置关系文本透明度
                         edgesText.style('fill-opacity', function (edge) {
                             if (edge.source === d || edge.target === d) {
                                 return 1.0
@@ -403,7 +402,7 @@
                         })
                     })
                     .on('touchend', (d, i) => {
-//            手指移开后，所有关系文本设置透明度为1
+                    //手指移开后，所有关系文本设置透明度为1
                         edgesText.style('fill-opacity', 1.0);
                     })
                     .on('click', (d, i) => {
@@ -416,23 +415,30 @@
                         })
                         d3.select('#node' + i).raise()
                         d3.select('#nodetext' + i).raise()
-                        console.log(d)
                     })
                     .on('mouseout', (d, i) => {
                         edgesText.style('fill-opacity',1.0);
-                        d3.select('#nodetext' + i).classed('highlighted',false);
+                        d3.select('#nodetext' + i)
+                        .classed('highlighted',false)
+                        .text(function () {
+                            var subs = d.name.split(":");
+                            return subs[subs.length - 1];
+                        });
                     })
                     .on('dblclick', (d, i) => {
                         d.fx = null
                         d.fy = null
                     })
                     .on('mouseover',(d,i) => {
-                        d3.select('#nodetext' + i).classed('highlighted',true);
+                        d3.select('#nodetext' + i)
+                        .classed('highlighted',true)
+                        .text(function () {
+                            return d.name;
+                        });
                     })
                     .call(drag)//监听拖动事件
-//
-//
-// 节点文字
+
+                // 节点文字
                 var nodeText = g.selectAll('.nodetext')
                     .data(nodes)
                     .enter()
@@ -443,54 +449,58 @@
                         return 'nodetext' + i
                     })
                     .attr('x', function (d, i) {
-                        /**
-                         * 由于svg的text不能进行换行，所以下面文字使用了tspan进行换行操作
-                         */
-                            //正则表达式
-                        var reEn = /[a-zA-Z]+/g
-                        //如果全英文则不换行
-                        if (d.name.match(reEn)) {
-                            d3.select(this).append('tspan')
-                                .attr('class', 'nodetext')
-                                .attr('fill', '#ff7438')
-                                .text(function () { return d.name })
-                        } else if (d.name.length <= 4) {
-                            //文中小于4个字不换行
-                            d3.select(this).append('tspan')
-                                .attr('class', 'nodetext')
-                                .attr('fill', '#ff7438')
-                                .text(function () { return d.name })
-                        } else {
-                            if (d.name.length <= 8) {
-                                //中文小于八个字，则分段进行换行
-                                let top = d.name.substring(0, 4)
-                                let bot = d.name.substring(4, 8)
-                                //这里的this指代text dom，不懂的可以自行打印this查看
-                                d3.select(this).append('tspan')
-                                    .text(function () { return top })
-                                d3.select(this).append('tspan')
-                                    .attr('dy', '1.2em')//设置偏移
-                                    .text(function () { return bot })
-                            } else {
-                                //中文大于8个字，分段并用...代替后面的字符
-                                let top = d.name.substring(0, 4)
-                                let bot = d.name.substring(4, 7) + '...'
-                                d3.select(this).append('tspan')
-                                    .text(function () { return top })
-                                d3.select(this).append('tspan')
-                                    .attr('dy', '1.2em')
-                                    .text(function () { return bot })
-                            }
-                        }
+                        d3.select(this).append('tspan')
+                        .attr('class', 'nodetext')
+                        .attr('fill', '#ff7438')
+                        .text(function () {
+                            var subs = d.name.split(":");
+                            return subs[subs.length - 1];
+                        })
+                        //正则表达式
+                        // var reEn = /[a-zA-Z]+/g
+                        // //如果全英文则不换行
+                        // if (d.name.match(reEn)) {
+                        //     d3.select(this).append('tspan')
+                        //         .attr('class', 'nodetext')
+                        //         .attr('fill', '#ff7438')
+                        //         .text(function () { return d.name })
+                        // } else if (d.name.length <= 4) {
+                        //     //文中小于4个字不换行
+                        //     d3.select(this).append('tspan')
+                        //         .attr('class', 'nodetext')
+                        //         .attr('fill', '#ff7438')
+                        //         .text(function () { return d.name })
+                        // } else {
+                        //     if (d.name.length <= 8) {
+                        //         //中文小于八个字，则分段进行换行
+                        //         let top = d.name.substring(0, 4)
+                        //         let bot = d.name.substring(4, 8)
+                        //         //这里的this指代text dom，不懂的可以自行打印this查看
+                        //         d3.select(this).append('tspan')
+                        //             .text(function () { return top })
+                        //         d3.select(this).append('tspan')
+                        //             .attr('dy', '1.2em')//设置偏移
+                        //             .text(function () { return bot })
+                        //     } else {
+                        //         //中文大于8个字，分段并用...代替后面的字符
+                        //         let top = d.name.substring(0, 4)
+                        //         let bot = d.name.substring(4, 7) + '...'
+                        //         d3.select(this).append('tspan')
+                        //             .text(function () { return top })
+                        //         d3.select(this).append('tspan')
+                        //             .attr('dy', '1.2em')
+                        //             .text(function () { return bot })
+                        //     }
+                        // }
                     });
 
-//        设置node和edge
+                //设置node和edge
                 force.nodes(nodes)
                     .force('link', d3.forceLink(links).distance(linkDistance).strength(0.1))
                     .restart()
-//        tick 表示当运动进行中每更新一帧时
+                //tick 表示当运动进行中每更新一帧时
                 force.on('tick', function () {
-//          //更新连接线的位置
+                    //更新连接线的位置
                     edgesLine.attr('d', function (d) {
                         var path = 'M ' + d.source.x + ' ' + d.source.y + ' L ' + d.target.x + ' ' + d.target.y
                         return path
@@ -515,13 +525,6 @@
                         .attr('x', function (d) {
                             return d.x
                         })
-                })
-            },
-            getdemodata (){
-                getDemoData().then(response => {
-                    // console.log(response);
-                    this.relation = response;
-                    this.showd3()
                 })
             }
         },
@@ -598,7 +601,7 @@
         pointer-events: none;
     }
 
-//   箭头颜色
+    //   箭头颜色
     #resolved{
         fill:#FFD700;
     }
@@ -614,13 +617,13 @@
     /*}*/
 
     svg:hover .edgelabel {
-      stroke-dasharray: 70 0;
-      stroke-width: 3px;
-      stroke-dashoffset: 0;
-      stroke:#FFD700;
+        stroke-dasharray: 70 0;
+        stroke-width: 3px;
+        stroke-dashoffset: 0;
+        stroke:#FFD700;
     }
 
-//    字体火焰效果
+    //    字体火焰效果
     .highlighted {
         font-style:italic;
         font-weight:bold;
@@ -646,10 +649,6 @@
         height: 100%;
     }
 
-    .edgepath {
-        pointer-events: none;
-        stroke-width: 0.5px;
-    }
 
     .node{
         position: relative;
@@ -657,17 +656,5 @@
 
     .node:hover{
         cursor: pointer;
-    }
-
-    .nodeOrange {
-        fill: #ff7438 !important;
-    }
-
-    .nodeRed {
-        fill: #ff4238 !important;
-    }
-
-    .nodeBlue {
-        fill: #029ed9 !important;
     }
 </style>
