@@ -221,7 +221,7 @@
 
                 //移动端设备横竖屏重新加载页面
                 function change () {
-                    window.location.reload()
+                    // window.location.reload()
                 }
 
                 window.addEventListener('onorientationchange' in window ? 'orientationchange' : 'resize', change, false)
@@ -595,17 +595,5 @@
 
     .node:hover{
         cursor: pointer;
-    }
-
-    .nodeOrange {
-        fill: #ff7438 !important;
-    }
-
-    .nodeRed {
-        fill: #ff4238 !important;
-    }
-
-    .nodeBlue {
-        fill: #029ed9 !important;
     }
 </style>
