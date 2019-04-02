@@ -1,4 +1,5 @@
 package com.shine.integrationtestcover.service.programInstrument;
+
 import com.sun.xml.internal.ws.org.objectweb.asm.Opcodes;
 import jdk.internal.org.objectweb.asm.ClassReader;
 import jdk.internal.org.objectweb.asm.ClassVisitor;
@@ -10,7 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class ProgramInstrument {
-    public static void ByteInstrument(InputStream i,String path,String name) throws IOException {
+    public static void BytechaZhuang(InputStream i,String path,String name) throws IOException {
         //将输入流转为二进制数组
         ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
         byte[] buff = new byte[100];
@@ -20,20 +21,23 @@ public class ProgramInstrument {
         }
         byte[] in2b = swapStream.toByteArray();
         //读入byte[]
-
     ClassReader cr = new ClassReader(in2b);
     ClassNode cn = new ClassNode();
     cr.accept((ClassVisitor) cn, 0);
     //asm对二进制数组进行操作
     transform(cn);
+    System.out.println("success");
     ClassWriter cw = new ClassWriter(0);
     cn.accept(cw);
     byte[] toByte = cw.toByteArray();
     File file2 = new File(path+"\\"+name);
+
     FileOutputStream fout = new FileOutputStream(file2);
     try {
         fout.write(cw.toByteArray());
+
         fout.close();
+
     } catch (IOException e) {
         e.printStackTrace();
     }
@@ -77,6 +81,7 @@ public class ProgramInstrument {
                     String temp=cn.name+ ":" + mn.name+" CALL "+methodInsnNode.owner+ ":" +methodInsnNode.name;
                     i2.add(new LdcInsnNode(temp));
                     i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL,"java/io/PrintStream","println", "(Ljava/lang/String;)V", false));
+                    if(in.getPrevious()!=null)
                     insns.insert(in.getPrevious(), i2);
                 }
             }

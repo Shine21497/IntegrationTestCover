@@ -8,7 +8,6 @@ import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import static com.shine.integrationtestcover.service.programInstrument.ProgramInstrument.ByteInstrument;
 
 public class JarFileInput {
 
@@ -68,6 +67,7 @@ public class JarFileInput {
                 }
             }
         }
+
         System.out.println(sb.toString());
         System.out.println(sb2.toString());
 
@@ -91,20 +91,29 @@ public class JarFileInput {
                     continue;
                 if (!entry.getName().endsWith(".class"))
                     continue;
-                System.out.println(entry);
+
                 InputStream i=jar.getInputStream(entry);
                 String name=entry.getName();
                 System.out.println(name);
                 int index= name.lastIndexOf('/');
+                int index1=name.indexOf('/');
                 if(index!=-1){
                     String md=name.substring(0,index);
                     mkDirectory(path+"\\"+md);
                 }
-
+                String sub=name.substring(index+1);
+                if(index1!=-1){
+                    String s=name.substring(0,index1);
+                    System.out.println(s);
+                    if(s.equals("META-INF"))
+                        continue;
+                }
                 //插桩
-                ByteInstrument(i,path,name);
+                ProgramInstrument.BytechaZhuang(i,path,name);
+                System.out.println("success!");
                 String command="cmd /c "+"jar uvf "+"\""+path+"\\"+filename+"\" "+name;
                 alist.add(command);
+
             }
             jar.close();
             System.out.println("success!");
@@ -113,7 +122,7 @@ public class JarFileInput {
             e.printStackTrace();
         }
         jar.clearCache();
-        execCommand(alist,path);
+        //execCommand(alist,path);
 
     }
 }
