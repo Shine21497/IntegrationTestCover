@@ -7,7 +7,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * @Author: Shine
@@ -33,6 +36,56 @@ public class TestUploadController {
             } catch (IOException e) {
                 e.printStackTrace();
                 return "上传失败," + e.getMessage();
+            }
+            if(testCase.getName().contains(".zip")){
+                File srcFile=new File(baseConfig.getUploadedTestPath(selectedProject) + testCase.getOriginalFilename());
+                if(!srcFile.exists()){
+                    throw new RuntimeException(srcFile.getPath()+"所指文件不存在");
+                }
+                ZipFile zipFile=null;
+                try{
+                    zipFile =new ZipFile(srcFile);
+                    Enumeration<?> entries= zipFile.entries();
+                    while(entries.hasMoreElements()){
+                        ZipEntry entry=(ZipEntry)entries.nextElement();
+                        if(entry.isDirectory()){
+                            String dirPath=baseConfig.getUploadedTestPath(selectedProject)+"/"+entry.getName();
+                            File dir =new File(dirPath);
+                            dir.mkdirs();
+                        }
+                        else
+                        {
+                            File targetFile=new File(baseConfig.getUploadedTestPath(selectedProject)+"/"+entry.getName());
+                            if(!targetFile.getParentFile().exists()){
+                                targetFile.getParentFile().mkdirs();
+                            }
+                            targetFile.createNewFile();
+                            InputStream inputStream=zipFile.getInputStream(entry);
+                            FileOutputStream fileOutputStream=new FileOutputStream(targetFile);
+                            int len;
+                            byte[] buf=new byte[4096];
+
+                            while((len= inputStream.read(buf))!=-1){
+                                fileOutputStream.write(buf,0,len);
+                            }
+                            fileOutputStream.close();
+                            inputStream.close();
+                        }
+                    }
+
+                } catch (Exception e) {
+                    throw new RuntimeException("unzip error from ZipUtils", e);
+                }
+                finally {
+                    if(zipFile!=null){
+                        try{
+                            zipFile.close();
+                        }
+                        catch (IOException e){
+                            e.printStackTrace();
+                        }
+                    }
+                }
             }
             return "上传成功";
         } else {
