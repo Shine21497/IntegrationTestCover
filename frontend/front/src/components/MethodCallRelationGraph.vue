@@ -150,6 +150,7 @@
         name: "method-call-relation-graph",
         data () {
             return {
+                TestResult:[],
                 uploadTestData: {
                     selectedProject: ''
                 },
@@ -184,7 +185,7 @@
             goToNode() {
                 var node = this.findNodeByName(this.adjustForm.selectedClass + ":" + this.adjustForm.selectedMethod)
                 var trans = this.tempTrans
-                
+
                 trans.k = 1;
                 this.g.attr('transform',trans);
                 
@@ -194,8 +195,34 @@
                 console.log(trans)
                 console.log(this.relation.nodes)
                 this.g.attr('transform', trans)
-
             },
+            //显示用例测试结果
+            ShowTestResult(TestResult){
+            /*var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea",
+            "frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]*/
+
+            for(let index in TestResult){
+                  var result=TestResult[index].split(" ");
+                  console.log(result[0])
+                  console.log(result[2])
+                  this.ChangeLine(result[0],result[2]);
+            }
+            },
+
+            //改变用例测试经过的直线
+            ChangeLine(SourceName,TargetName){
+            var line_id;
+            for(let index in this.relation.links) {
+                                            if(this.relation.links[index].source.name==SourceName&&
+                                            this.relation.links[index].target.name==TargetName) {
+                                                console.log(this.relation.links[index].index)
+                                                line_id=this.relation.links[index].index
+                                            }
+                                        };
+            d3.select('#eachline' + line_id).classed('edgelabel',false)
+            d3.select('#eachline' + line_id).classed('test',true)
+            },
+
             findNodeByName(name) {
                 for(let index in this.relation.nodes) {
                     if(this.relation.nodes[index].name == name) {
@@ -204,6 +231,7 @@
                     }
                 }
             },
+
             getTestClass(prov) {
                 this.methods =  this.testCaseMap[this.selectTestForm.selectedTestProject][prov]
             },
@@ -337,7 +365,11 @@
                     .append('path')
                     .attr('class', 'edgelabel')//添加class样式
                     //.style('stroke', '#ff7438')//添加颜色
-                    .style('stroke-width', 1)//连接线粗细度
+                    .attr('id', (d, i) => {
+                                            //为每条直线设置不同的id
+                                            return 'eachline' + i
+                                        })
+                    .style('stroke-width', 2)//连接线粗细度
                     .attr('marker-end', 'url(#resolved)')//设置线的末尾为刚刚的箭头
 
                 //设置连接线中间关系文本
@@ -498,6 +530,7 @@
                 force.nodes(nodes)
                     .force('link', d3.forceLink(links).distance(linkDistance).strength(0.1))
                     .restart()
+                                                    //console.log();
                 //tick 表示当运动进行中每更新一帧时
                 force.on('tick', function () {
                     //更新连接线的位置
@@ -505,7 +538,6 @@
                         var path = 'M ' + d.source.x + ' ' + d.source.y + ' L ' + d.target.x + ' ' + d.target.y
                         return path
                     })
-
                     //更新连接线上文字的位置
                     edgesText.attr('x', function (d) {
                         return (d.source.x + d.target.x) / 2
@@ -607,14 +639,14 @@
     }
 
 //   滑动鼠标显示连线效果，移到网页外连线消失
-    /*.edgelabel{*/
-     /*stroke-width: 6px;*/
-     /*fill: transparent;*/
-     /*stroke:#DC143C;*/
-     /*stroke-dasharray: 85 400;*/
-     /*stroke-dashoffset: -220;*/
-     /*transition: 1s all ease*/
-    /*}*/
+    .edgelabel{
+     stroke-width: 6px;
+     fill: transparent;
+     stroke:#DC143C;
+     stroke-dasharray: 85 400;
+     stroke-dashoffset: -220;
+     transition: 1s all ease
+    }
 
     svg:hover .edgelabel {
         stroke-dasharray: 70 0;
@@ -633,7 +665,9 @@
         text-shadow: 0 -5px 4px #FFFF00,2px -10px 6px #FFA500,-2px -15px 11px #FF6347,2px -25px 18px #FF0000;
         transition: 1s;
     }
-
+    .test{
+    stroke:#483D8B;
+    }
     .linetext {
         font-size: 12px;
         font-weight: bold;
