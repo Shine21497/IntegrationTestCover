@@ -125,6 +125,8 @@
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
+                                    <el-progress :text-inside="true" :stroke-width="18" :percentage="runTestPercentange"></el-progress>
+                                    <el-button @click="onTestRunning()" size="small" type="primary">运行测试用例</el-button>
                                 </el-form>
                             </el-container>
                         </el-card>
@@ -141,8 +143,9 @@
 <script>
     import ElContainer from "element-ui/packages/container/src/main";
     import ElButton from "element-ui/packages/button/src/button";
-    import { getUploadedFileList, getRelationByFileName, getTestCaseList } from '@/api/methodcallrelationgraph.js'
+    import { getUploadedFileList, getRelationByFileName, getTestCaseList, getTestRunningStatus } from '@/api/methodcallrelationgraph.js'
     import * as d3 from 'd3'
+import { setInterval } from 'timers';
     export default {
         components: {
             ElButton,
@@ -178,6 +181,7 @@
                 testCaseMap:{},
                 g:{},
                 tempTrans: d3.zoomIdentity.translate(0, 0).scale(1),
+                runTestPercentange:0,
             }
         },
         methods: {
@@ -255,6 +259,15 @@
             },
             onBeforeUpload(file) {
 
+            },
+            onTestRunning(){
+                let _this = this;
+                getTestRunningStatus().then(response => {  // 这里的response[0] 和 [1]可能要改，看后端数据结构
+                    _this.runTestPercentange = Math.ceil((response[0] / response[1])*100);
+                    if (_this.runTestPercentange != 100) {
+                        setTimeout(this.onTestRunning, 500);
+                    }
+                });
             },
             showd3 () {
                 //获取body高度和宽度

@@ -29,3 +29,10 @@ export function getTestCaseList () {
         method: 'get'
     })
 }
+
+export function getTestRunningStatus () {
+    return fetch({
+        url: '/apiurl/getInvokingMethods',
+        method: 'get'
+    })
+}
