@@ -3,7 +3,7 @@
         <el-header>Method Call Relation Graph</el-header>
         <el-container>
             <el-aside width="350px">
-                <el-collapse v-model="activeNames" >
+                <el-collapse v-model="activeNames" accordion>
                     <el-collapse-item title="上传项目" name="1">
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-upload class="upload" action="/apiurl/uploadJar" accept="application/jar" :before-upload="onBeforeUpload" ref="upload" :file-list="fileList" :auto-upload="false">
@@ -13,7 +13,11 @@
                             </el-upload>
                         </el-card>
                     </el-collapse-item>
-                    <el-collapse-item title="调用关系图生成" name="2">
+                    <el-collapse-item name="2">
+                        <template slot="title">
+                            <p class="itemname">调用关系图生成</P>
+                            <p class="require-info">（请先上传项目）</P>
+                        </template>
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                 <el-form ref="form" :model="form" label-width="80px">
@@ -31,13 +35,17 @@
                                         <el-input type="textarea" v-model="form.packages" placeholder="请输入包范围"></el-input>
                                     </el-form-item>
                                     <el-form-item>
-                                        <el-button type="primary" size="small" @click="generateGraph()">立即创建</el-button>
+                                        <el-button type="primary" :disabled="form.selectedjar.length == 0" size="small" @click="generateGraph()">立即创建</el-button>
                                     </el-form-item>
                                 </el-form>
                             </el-container>
                         </el-card>
                     </el-collapse-item>
-                    <el-collapse-item title="辅助定位" name="3">
+                    <el-collapse-item name="3" :class="JSON.stringify(relation)=='{}'?'disabled': ''">
+                        <template slot="title">
+                            <p class="itemname">辅助定位</P>
+                            <p class="require-info">（请先生成调用关系图）</P>
+                        </template>
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                 <el-form ref="adjustForm" :model="adjustForm" label-width="80px">
@@ -62,7 +70,7 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item>
-                                        <el-button type="primary" size="small" @click="goToNode()">立即定位</el-button>
+                                        <el-button :disabled="adjustForm.selectedMethod.length == 0" type="primary" size="small" @click="goToNode()">立即定位</el-button>
                                     </el-form-item>
                                 </el-form>
                             </el-container>
@@ -126,7 +134,6 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-progress :text-inside="true" :stroke-width="18" :percentage="runTestPercentange"></el-progress>
-                                    <el-button @click="onTestRunning()" size="small" type="primary">运行测试用例</el-button>
                                 </el-form>
                             </el-container>
                         </el-card>
@@ -183,6 +190,7 @@ import { setInterval } from 'timers';
                 g:{},
                 tempTrans: d3.zoomIdentity.translate(0, 0).scale(1),
                 runTestPercentange:0,
+                activeNames: ['1'] //加上这个不然控制台老报错
             }
         },
         methods: {
@@ -244,6 +252,7 @@ import { setInterval } from 'timers';
             },
             getClass(prov) {
                 this.adjustForm.allMethods = this.classMethodMap[prov]
+                this.adjustForm.selectedMethod = '';
             },
             showfilelist(open){
                 if(open) {
@@ -288,6 +297,7 @@ import { setInterval } from 'timers';
             onBeforeUpload(file) {
 
             },
+            // 获取测试进度的时候要调用的
             onTestRunning(){
                 let _this = this;
                 getTestRunningStatus().then(response => {  // 这里的response[0] 和 [1]可能要改，看后端数据结构
@@ -295,6 +305,13 @@ import { setInterval } from 'timers';
                     if (_this.runTestPercentange != 100) {
                         setTimeout(this.onTestRunning, 500);
                     }
+                });
+            },
+            // 显示消息
+            showMsg(content){
+                this.$message({
+                    showClose: true,
+                    message: content
                 });
             },
             showd3 () {
@@ -316,7 +333,6 @@ import { setInterval } from 'timers';
                 var nodes = this.relation.nodes
                 var links = this.relation.links
 
-                console.log(this.relation.links)
 
                 // 移除上一个画布（如果有的话）
                 if(d3.select('#container').selectAll("svg").size() > 0){
@@ -499,6 +515,7 @@ import { setInterval } from 'timers';
                         .attr('fill', '#ff7438')
                         .text(function () {
                             var subs = d.name.split(":");
+                            console.log(subs);
                             return subs[subs.length - 1];
                         })
                         //正则表达式
@@ -543,7 +560,7 @@ import { setInterval } from 'timers';
                 force.nodes(nodes)
                     .force('link', d3.forceLink(links).distance(linkDistance).strength(0.1))
                     .restart()
-                                                    //console.log();
+
                 //tick 表示当运动进行中每更新一帧时
                 force.on('tick', function () {
                     //更新连接线的位置
@@ -696,12 +713,28 @@ import { setInterval } from 'timers';
         height: 100%;
     }
 
-
     .node{
         position: relative;
     }
 
     .node:hover{
         cursor: pointer;
+    }
+
+    .disabled{
+        pointer-events: none;
+    }
+
+    .disabled .itemname{
+        color: gray;
+    }
+
+    .disabled .require-info{
+        color: #FF0000;
+        opacity: 1;
+    }
+
+    .require-info{
+        opacity: 0;
     }
 </style>
