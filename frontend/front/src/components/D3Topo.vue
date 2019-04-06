@@ -289,7 +289,7 @@
     }
 </script>
 
-<style lang="less">
+<style  scoped lang="less">
     .container {
         height: 800px;
         .exit {
