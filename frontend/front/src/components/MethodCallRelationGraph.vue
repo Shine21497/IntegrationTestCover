@@ -113,7 +113,7 @@
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
-                                    <el-form-item label="方法选择">
+                                    <el-form-item label="类选择">
                                         <el-select filterable  v-model="selectTestForm.selectedTestClass" placeholder="请选择测试类" @change="getTestClass($event)">
                                             <el-option
                                                     v-for="item in selectTestForm.allTestClasses"
@@ -134,6 +134,8 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-progress :text-inside="true" :stroke-width="18" :percentage="runTestPercentange"></el-progress>
+                                    <el-button size="small" @click="startRunTestCase">开始执行</el-button>
+                                    <el-button size="small" @click="showTestResult" :disabled="runTestPercentange!=100">展示结果</el-button>
                                 </el-form>
                             </el-container>
                         </el-card>
@@ -150,7 +152,14 @@
 <script>
     import ElContainer from "element-ui/packages/container/src/main";
     import ElButton from "element-ui/packages/button/src/button";
-    import { getUploadedFileList, getRelationByFileName, getTestCaseList, getTestRunningStatus } from '@/api/methodcallrelationgraph.js'
+    import { 
+        getUploadedFileList, 
+        getRelationByFileName, 
+        getTestCaseList, 
+        runTestCase,          // 执行测试用例，需要三个参数 (projectname, testcasename, method)，返回值为任务 id
+        getTestRunningStatus, // 获取指定任务的执行进度，需要一个参数 (task_id_Key）
+        getInvokingResults,   // 获取测试用例执行结果，需要一个参数 (task_id_Key）
+    } from '@/api/methodcallrelationgraph.js'
     import * as d3 from 'd3'
 import { setInterval } from 'timers';
     export default {
@@ -189,8 +198,9 @@ import { setInterval } from 'timers';
                 testCaseMap:{},
                 g:{},
                 tempTrans: d3.zoomIdentity.translate(0, 0).scale(1),
+                activeNames: ['1'],  //加上这个不然控制台老报错
                 runTestPercentange:0,
-                activeNames: ['1'] //加上这个不然控制台老报错
+                taskid:''
             }
         },
         methods: {
@@ -210,29 +220,29 @@ import { setInterval } from 'timers';
             },
             //显示用例测试结果
             ShowTestResult(TestResult){
-            /*var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea",
-            "frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]*/
+                /*var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea",
+                "frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]*/
 
-            for(let index in TestResult){
-                  var result=TestResult[index].split(" ");
-                  console.log(result[0])
-                  console.log(result[2])
-                  this.ChangeLine(result[0],result[2]);
-            }
+                for(let index in TestResult){
+                    var result=TestResult[index].split(" ");
+                    console.log(result[0])
+                    console.log(result[2])
+                    this.ChangeLine(result[0],result[2]);
+                }
             },
 
             //改变用例测试经过的直线
             ChangeLine(SourceName,TargetName){
-            var line_id;
-            for(let index in this.relation.links) {
-                                            if(this.relation.links[index].source.name==SourceName&&
-                                            this.relation.links[index].target.name==TargetName) {
-                                                console.log(this.relation.links[index].index)
-                                                line_id=this.relation.links[index].index
-                                            }
-                                        };
-            d3.select('#eachline' + line_id).classed('edgelabel',false)
-            d3.select('#eachline' + line_id).classed('test',true)
+                var line_id;
+                for(let index in this.relation.links) {
+                    if(this.relation.links[index].source.name==SourceName&&
+                    this.relation.links[index].target.name==TargetName) {
+                        console.log(this.relation.links[index].index)
+                        line_id=this.relation.links[index].index
+                    }
+                };
+                d3.select('#eachline' + line_id).classed('edgelabel',false)
+                d3.select('#eachline' + line_id).classed('test',true)
             },
 
             findNodeByName(name) {
@@ -274,7 +284,6 @@ import { setInterval } from 'timers';
                         _this.showd3()
                     })
                 })
-
             },
             showTestProjectList(open) {
                 if(open) {
@@ -297,14 +306,36 @@ import { setInterval } from 'timers';
             onBeforeUpload(file) {
 
             },
-            // 获取测试进度的时候要调用的
-            onTestRunning(){
+            startRunTestCase(file) {
+                var projectname  = this.selectTestForm.selectedTestProject;
+                var testcasename = this.selectTestForm.selectedTestClass;
+                var method       = this.selectTestForm.selectedTestCase;
+                if(!projectname || !testcasename || !method){
+                    this.showMsg('请选择完整的项目，测试类以及测试方法')
+                    return
+                }
                 let _this = this;
-                getTestRunningStatus().then(response => {  // 这里的response[0] 和 [1]可能要改，看后端数据结构
+                // 传参数给后端跑测试用例
+                runTestCase(projectname, testcasename, method).then(response => {
+                    _this.taskid = response;
+                    // 开始监听运行进度
+                    _this._onTestRunning();
+                })
+            },
+            // 获取测试进度的时候要调用的
+            _onTestRunning(){
+                let _this = this;
+                getTestRunningStatus(_this.taskid).then(response => {  // 这里的response[0] 和 [1]可能要改，看后端数据结构
                     _this.runTestPercentange = Math.ceil((response[0] / response[1])*100);
                     if (_this.runTestPercentange != 100) {
-                        setTimeout(this.onTestRunning, 500);
+                        setTimeout(_this._onTestRunning, 500);
                     }
+                });
+            },
+            showTestResult(){
+                let _this = this;
+                getInvokingResults(_this.taskid).then(response => {  // 这里的 response 为测试用例的结果，一个 list
+                    // 展示测试用例的结果
                 });
             },
             // 显示消息
