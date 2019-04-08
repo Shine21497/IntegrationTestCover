@@ -3,7 +3,7 @@
         <el-header>Method Call Relation Graph</el-header>
         <el-container>
             <el-aside width="350px">
-                <el-collapse>
+                <el-collapse v-model="activeNames">
                     <el-collapse-item title="上传项目" name="1">
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-upload class="upload" action="/apiurl/uploadJar" accept="application/jar" :before-upload="onBeforeUpload" ref="upload" :file-list="fileList" :auto-upload="false">
@@ -13,7 +13,11 @@
                             </el-upload>
                         </el-card>
                     </el-collapse-item>
-                    <el-collapse-item title="调用关系图生成" name="2">
+                    <el-collapse-item name="2">
+                        <template slot="title">
+                            <p class="itemname">调用关系图生成</P>
+                            <p class="require-info">（请先上传项目）</P>
+                        </template>
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                 <el-form ref="form" :model="form" label-width="80px">
@@ -31,13 +35,17 @@
                                         <el-input type="textarea" v-model="form.packages" placeholder="请输入包范围"></el-input>
                                     </el-form-item>
                                     <el-form-item>
-                                        <el-button type="primary" size="small" @click="generateGraph()">立即创建</el-button>
+                                        <el-button type="primary" :disabled="form.selectedjar.length == 0" size="small" @click="generateGraph()">立即创建</el-button>
                                     </el-form-item>
                                 </el-form>
                             </el-container>
                         </el-card>
                     </el-collapse-item>
-                    <el-collapse-item title="辅助定位" name="3">
+                    <el-collapse-item name="3" :class="JSON.stringify(relation)=='{}'?'disabled': ''">
+                        <template slot="title">
+                            <p class="itemname">辅助定位</P>
+                            <p class="require-info">（请先生成调用关系图）</P>
+                        </template>
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                 <el-form ref="adjustForm" :model="adjustForm" label-width="80px">
@@ -62,7 +70,7 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item>
-                                        <el-button type="primary" size="small" @click="goToNode()">立即定位</el-button>
+                                        <el-button :disabled="adjustForm.selectedMethod.length == 0" type="primary" size="small" @click="goToNode()">立即定位</el-button>
                                     </el-form-item>
                                 </el-form>
                             </el-container>
@@ -105,7 +113,7 @@
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
-                                    <el-form-item label="方法选择">
+                                    <el-form-item label="类选择">
                                         <el-select filterable  v-model="selectTestForm.selectedTestClass" placeholder="请选择测试类" @change="getTestClass($event)">
                                             <el-option
                                                     v-for="item in selectTestForm.allTestClasses"
@@ -125,6 +133,9 @@
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
+                                    <el-progress :text-inside="true" :stroke-width="18" :percentage="runTestPercentange"></el-progress>
+                                    <el-button size="small" @click="startRunTestCase">开始执行</el-button>
+                                    <el-button size="small" @click="getTestResult" :disabled="runTestPercentange!=100">展示结果</el-button>
                                 </el-form>
                             </el-container>
                         </el-card>
@@ -141,12 +152,21 @@
 <script>
     import ElContainer from "element-ui/packages/container/src/main";
     import ElButton from "element-ui/packages/button/src/button";
-    import { getUploadedFileList, getRelationByFileName, getTestCaseList } from '@/api/methodcallrelationgraph.js'
+    import { 
+        getUploadedFileList, 
+        getRelationByFileName, 
+        getTestCaseList, 
+        runTestCase,          // 执行测试用例，需要三个参数 (projectname, testcasename, method)，返回值为任务 [id<str>,type<str>]
+        getTestRunningStatus, // 获取指定任务的执行进度，需要一个参数 (task_id_Key）
+        getInvokingResults,   // 获取测试用例执行结果，需要一个参数 (task_id_Key）
+    } from '@/api/methodcallrelationgraph.js'
     import * as d3 from 'd3'
+import { setInterval } from 'timers';
     export default {
         components: {
             ElButton,
-            ElContainer},
+            ElContainer
+        },
         name: "method-call-relation-graph",
         data () {
             return {
@@ -179,6 +199,10 @@
                 testCaseMap:{},
                 g:{},
                 tempTrans: d3.zoomIdentity.translate(0, 0).scale(1),
+                activeNames: ['1'],  //加上这个不然控制台老报错
+                runTestPercentange:0,
+                taskId:'',
+                taskType:''  // "many" 和 "one" 
             }
         },
         methods: {
@@ -198,29 +222,29 @@
             },
             //显示用例测试结果
             ShowTestResult(TestResult){
-            /*var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea",
-            "frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]*/
+                /*var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea",
+                "frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]*/
 
-            for(let index in TestResult){
-                  var result=TestResult[index].split(" ");
-                  console.log(result[0])
-                  console.log(result[2])
-                  this.ChangeLine(result[0],result[2]);
-            }
+                for(let index in TestResult){
+                    var result=TestResult[index].split(" ");
+                    console.log(result[0])
+                    console.log(result[2])
+                    this.ChangeLine(result[0],result[2]);
+                }
             },
 
             //改变用例测试经过的直线
             ChangeLine(SourceName,TargetName){
-            var line_id;
-            for(let index in this.relation.links) {
-                                            if(this.relation.links[index].source.name==SourceName&&
-                                            this.relation.links[index].target.name==TargetName) {
-                                                console.log(this.relation.links[index].index)
-                                                line_id=this.relation.links[index].index
-                                            }
-                                        };
-            d3.select('#eachline' + line_id).classed('edgelabel',false)
-            d3.select('#eachline' + line_id).classed('test',true)
+                var line_id;
+                for(let index in this.relation.links) {
+                    if(this.relation.links[index].source.name==SourceName&&
+                    this.relation.links[index].target.name==TargetName) {
+                        console.log(this.relation.links[index].index)
+                        line_id=this.relation.links[index].index
+                    }
+                };
+                d3.select('#eachline' + line_id).classed('edgelabel',false)
+                d3.select('#eachline' + line_id).classed('test',true)
             },
 
             findNodeByName(name) {
@@ -240,6 +264,7 @@
             },
             getClass(prov) {
                 this.adjustForm.allMethods = this.classMethodMap[prov]
+                this.adjustForm.selectedMethod = '';
             },
             showfilelist(open){
                 if(open) {
@@ -261,7 +286,6 @@
                         _this.showd3()
                     })
                 })
-
             },
             showTestProjectList(open) {
                 if(open) {
@@ -284,6 +308,48 @@
             onBeforeUpload(file) {
 
             },
+            startRunTestCase(file) {
+                var projectname  = this.selectTestForm.selectedTestProject;
+                var testcasename = this.selectTestForm.selectedTestClass;
+                var method       = this.selectTestForm.selectedTestCase;
+                if(!projectname || !testcasename || !method){
+                    this.showMsg('请选择完整的项目，测试类以及测试方法')
+                    return
+                }
+                let _this = this;
+                // 传参数给后端跑测试用例
+                runTestCase(projectname, testcasename, method).then(response => {
+                    // response 为 ["12123123","many"]
+                    _this.taskId = response[0];
+                    _this.taskType = response[1];
+                    // 开始监听运行进度
+                    _this._onTestRunning();
+                })
+            },
+            // 获取测试进度的时候要调用的
+            _onTestRunning(){
+                let _this = this;
+                getTestRunningStatus(_this.taskid).then(response => {  // 这里的response[0] 和 [1]可能要改，看后端数据结构
+                    _this.runTestPercentange = Math.ceil((response[0] / response[1])*100);
+                    if (_this.runTestPercentange != 100) {
+                        setTimeout(_this._onTestRunning, 500);
+                    }
+                });
+            },
+            getTestResult(){
+                let _this = this;
+                getInvokingResults(_this.taskid).then(response => {  // 这里的 response 为测试用例的结果，一个 list
+                    // 展示测试用例的结果
+                    ShowTestResult(response)
+                });
+            },
+            // 显示消息
+            showMsg(content){
+                this.$message({
+                    showClose: true,
+                    message: content
+                });
+            },
             showd3 () {
                 //获取body高度和宽度
                 let height = document.body.clientHeight
@@ -303,7 +369,6 @@
                 var nodes = this.relation.nodes
                 var links = this.relation.links
 
-                console.log(this.relation.links)
 
                 // 移除上一个画布（如果有的话）
                 if(d3.select('#container').selectAll("svg").size() > 0){
@@ -486,6 +551,7 @@
                         .attr('fill', '#ff7438')
                         .text(function () {
                             var subs = d.name.split(":");
+                            console.log(subs);
                             return subs[subs.length - 1];
                         })
                         //正则表达式
@@ -530,7 +596,7 @@
                 force.nodes(nodes)
                     .force('link', d3.forceLink(links).distance(linkDistance).strength(0.1))
                     .restart()
-                                                    //console.log();
+
                 //tick 表示当运动进行中每更新一帧时
                 force.on('tick', function () {
                     //更新连接线的位置
@@ -683,12 +749,28 @@
         height: 100%;
     }
 
-
     .node{
         position: relative;
     }
 
     .node:hover{
         cursor: pointer;
+    }
+
+    .disabled{
+        pointer-events: none;
+    }
+
+    .disabled .itemname{
+        color: gray;
+    }
+
+    .disabled .require-info{
+        color: #FF0000;
+        opacity: 1;
+    }
+
+    .require-info{
+        opacity: 0;
     }
 </style>
