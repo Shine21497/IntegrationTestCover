@@ -7,8 +7,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
 
 /**
  * @Author: WHQ
@@ -20,21 +23,81 @@ public class TestCaseController {
     @Autowired
     RunTestService runTestService;
 
-    private static int finishtestcase=0;
+    private String projectname;
 
-    private final static int sumtestcase=0;//测试用例的总数
+    private String testcasename;
+
+    private String methodname;
+
+
+    private String key;
 
     //获得一个java测试文件的所有测试用例的名称
     @RequestMapping(value = "/getmethods", method = RequestMethod.GET)
     public List<String> getMethods(String projectname, String testcasename) {
         List<String> methods = new LinkedList<>();
-        runTestService.initate(projectname, testcasename);
+        runTestService.initate(projectname);
         methods = runTestService.getMethods(testcasename);
         return methods;
     }
 
+    @RequestMapping(value = "/runTestCase", method = RequestMethod.GET)
+    public String runTestCase(String projectname, String testcasename, String method)throws Exception {
+        runTestService.initate(projectname);
+        SimpleDateFormat sdf = new SimpleDateFormat();
+        sdf.applyPattern("MMddHHmmss");
+        Date date = new Date();
+        String par = sdf.format(date);//获取当前时间
+        Random random = new Random();
+        int a = random.nextInt(100);
+        String key = par + String.valueOf(a);//生成key
+        this.key = key;
+        this.projectname=projectname;
+        this.testcasename=testcasename;
+        this.methodname=method;
+        if (method.equals("all") == false)
+            runTestService.invokeMethod(testcasename, method);
+        else if (method.equals("all") && testcasename.equals("all") == false)//指定跑某个java文件里面的所有测试用例
+            runTestService.runTest(testcasename);
+        else if (testcasename.equals("all") && method.equals("all"))//跑此项目下的所有
+            runTestService.runAll();
+        return key;
+    }
 
-    @RequestMapping(value = "/runtestcase", method = RequestMethod.GET)
+
+    @RequestMapping(value = "/getInvokingProcess", method = RequestMethod.GET)
+    public List getInvokingProcess(String key) {
+        List result = new LinkedList();
+        System.out.println(this.key + "key");
+        if (key != this.key) {
+            result.add("sorry,no this task~");
+            return result;
+        } else {
+            result = runTestService.getRunprocess();
+            return result;
+        }
+
+    }
+
+    @RequestMapping(value = "/getInvokingResults", method = RequestMethod.GET)
+    public List getInvokingResults(String key) {
+        List result = new LinkedList();
+        if (key.equals(this.key)) {
+            System.out.println("zibi");
+            result = runTestService.getRunresults();
+            return result;
+        } else {
+            System.out.println("kule");
+            result.add("sorry,no this task~");
+            return result;
+        }
+
+    }
+
+
+}
+
+ /*  @RequestMapping(value = "/runtestcase", method = RequestMethod.GET)
     public List<String> runTestCase(String projectname, String testcasename) {
 
         List<String> invoking = new LinkedList<>();
@@ -52,13 +115,13 @@ public class TestCaseController {
         return invoking;
     }
 
-    /*
+    *//*
     接收项目名，返回已经完成数和总数 n/m,执行所有测试用例
-     */
+     *//*
     @RequestMapping(value = "/finish", method = RequestMethod.GET)
     @Async
-    public List getFinish(String projectname) {
-        runTestService.runall();
+    public List getFinish(String projectname,String javafilename) {
+        runTestService.runall(javafilename);
         System.out.println(Thread.currentThread().getName());
         List<String> finish=new LinkedList<>();
 
@@ -70,13 +133,10 @@ public class TestCaseController {
 
     @RequestMapping(value = "/finishedtask", method = RequestMethod.GET)
     @Async
-    public List getFinishedTest(String projectname) {
-        runTestService.runall();
+    public List getFinishedTest(String projectname,String javafilename) {
+        runTestService.runall(javafilename);
         System.out.println(Thread.currentThread().getName());
-
         List<String> finish=runTestService.getAllmethods();
         return finish;
     }
-
-}
-
+    */
