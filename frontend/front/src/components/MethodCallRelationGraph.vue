@@ -135,7 +135,7 @@
                                     </el-form-item>
                                     <el-progress :text-inside="true" :stroke-width="18" :percentage="runTestPercentange"></el-progress>
                                     <el-button size="small" @click="startRunTestCase">开始执行</el-button>
-                                    <el-button size="small" @click="showTestResult" :disabled="runTestPercentange!=100">展示结果</el-button>
+                                    <el-button size="small" @click="getTestResult" :disabled="runTestPercentange!=100">展示结果</el-button>
                                 </el-form>
                             </el-container>
                         </el-card>
@@ -332,10 +332,11 @@ import { setInterval } from 'timers';
                     }
                 });
             },
-            showTestResult(){
+            getTestResult(){
                 let _this = this;
                 getInvokingResults(_this.taskid).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
+                    ShowTestResult(response)
                 });
             },
             // 显示消息
