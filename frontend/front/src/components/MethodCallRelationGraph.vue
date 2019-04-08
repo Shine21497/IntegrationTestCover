@@ -156,7 +156,7 @@
         getUploadedFileList, 
         getRelationByFileName, 
         getTestCaseList, 
-        runTestCase,          // 执行测试用例，需要三个参数 (projectname, testcasename, method)，返回值为任务 id
+        runTestCase,          // 执行测试用例，需要三个参数 (projectname, testcasename, method)，返回值为任务 [id<str>,type<str>]
         getTestRunningStatus, // 获取指定任务的执行进度，需要一个参数 (task_id_Key）
         getInvokingResults,   // 获取测试用例执行结果，需要一个参数 (task_id_Key）
     } from '@/api/methodcallrelationgraph.js'
@@ -201,7 +201,8 @@ import { setInterval } from 'timers';
                 tempTrans: d3.zoomIdentity.translate(0, 0).scale(1),
                 activeNames: ['1'],  //加上这个不然控制台老报错
                 runTestPercentange:0,
-                taskid:''
+                taskId:'',
+                taskType:''  // "many" 和 "one" 
             }
         },
         methods: {
@@ -318,7 +319,9 @@ import { setInterval } from 'timers';
                 let _this = this;
                 // 传参数给后端跑测试用例
                 runTestCase(projectname, testcasename, method).then(response => {
-                    _this.taskid = response;
+                    // response 为 ["12123123","many"]
+                    _this.taskId = response[0];
+                    _this.taskType = response[1];
                     // 开始监听运行进度
                     _this._onTestRunning();
                 })
