@@ -3,7 +3,7 @@
         <el-header>Method Call Relation Graph</el-header>
         <el-container>
             <el-aside width="350px">
-                <el-collapse v-model="activeNames" >
+                <el-collapse>
                     <el-collapse-item title="上传项目" name="1">
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-upload class="upload" action="/apiurl/uploadJar" accept="application/jar" :before-upload="onBeforeUpload" ref="upload" :file-list="fileList" :auto-upload="false">
