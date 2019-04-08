@@ -165,7 +165,8 @@ import { setInterval } from 'timers';
     export default {
         components: {
             ElButton,
-            ElContainer},
+            ElContainer
+        },
         name: "method-call-relation-graph",
         data () {
             return {
