@@ -35,8 +35,10 @@ public class TestCaseController {
     //获得一个java测试文件的所有测试用例的名称
     @RequestMapping(value = "/getMethods", method = RequestMethod.GET)
     public List<String> getMethods(String projectname, String testcasename) {
-        List<String> methods = new LinkedList<>();
         runTestService.initate(projectname);
+        runTestService.compileJava(testcasename);
+        List<String> methods = new LinkedList<>();
+
         methods = runTestService.getMethods(testcasename);
         return methods;
     }
