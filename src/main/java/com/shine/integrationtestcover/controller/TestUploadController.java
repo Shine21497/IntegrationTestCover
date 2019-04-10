@@ -1,14 +1,13 @@
 package com.shine.integrationtestcover.controller;
 
 import com.shine.integrationtestcover.config.BaseConfig;
+import com.shine.integrationtestcover.service.RunTestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -20,6 +19,9 @@ import java.util.zip.ZipFile;
 public class TestUploadController {
     @Autowired
     private BaseConfig baseConfig;
+
+    @Autowired
+    RunTestService runTestService;
 
     @RequestMapping(value = "/uploadTestCase")
     @ResponseBody
@@ -96,7 +98,7 @@ public class TestUploadController {
     @RequestMapping(value = "/testCaseList", method = RequestMethod.GET)
     @ResponseBody
     public HashMap<String, Object> getTestCaseList(){
-        HashMap<String, HashMap<String, ArrayList<String>>> projectToTestFiles = new HashMap<>();
+        HashMap<String, HashMap<String, List<String>>> projectToTestFiles = new HashMap<>();
         File uploadedProjectDirectory = new File(baseConfig.getUploadedTestPath(""));
         if(uploadedProjectDirectory.isDirectory()) {
             File[] projectDirectorys = uploadedProjectDirectory.listFiles();
@@ -105,11 +107,12 @@ public class TestUploadController {
                     projectToTestFiles.put(projectDirectory.getName(), new HashMap<>());
                     File[] testFiles = projectDirectory.listFiles();
                     for(File testFile : testFiles) {
-                        ArrayList<String> methods = new ArrayList<>();
+                        List<String> methods = new ArrayList<>();
                         //wait for compile file and get test methods
-                        methods.add("allMehtods");
+                        runTestService.initate(projectDirectory.getName());
+                        methods = runTestService.getMethods(testFile.getName());
+                        methods.add("allMethods");
                         projectToTestFiles.get(projectDirectory.getName()).put(testFile.getName(), methods);
-
                     }
                     projectToTestFiles.get(projectDirectory.getName()).put("allTestFiles", new ArrayList<>());
                 }
