@@ -4,16 +4,16 @@
         <el-container>
             <el-aside width="350px">
                 <el-collapse v-model="activeNames" >
-                    <el-collapse-item title="上传项目" name="1">
+                    <el-collapse-item class="titlestyle" title="上传项目" name="1">
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-upload class="upload" action="/apiurl/uploadJar" accept="application/jar" :before-upload="onBeforeUpload" ref="upload" :file-list="fileList" :auto-upload="false">
-                                <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-                                <el-button style="margin-left: 10px;" size="small" type="success" @click="submitUpload">上传到服务器</el-button>
+                                <el-button slot="trigger" type="primary">选取文件</el-button>
+                                <el-button style="margin-left: 10px;" type="success" @click="submitUpload">上传到服务器</el-button>
                                 <div slot="tip" class="el-upload__tip">只能上传jar文件</div>
                             </el-upload>
                         </el-card>
                     </el-collapse-item>
-                    <el-collapse-item title="调用关系图生成" name="2">
+                    <el-collapse-item class="titlestyle" title="调用关系图生成" name="2">
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                 <el-form ref="form" :model="form" label-width="80px">
@@ -37,7 +37,7 @@
                             </el-container>
                         </el-card>
                     </el-collapse-item>
-                    <el-collapse-item title="辅助定位" name="3">
+                    <el-collapse-item class="titlestyle" title="辅助定位" name="3">
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                 <el-form ref="adjustForm" :model="adjustForm" label-width="80px">
@@ -68,7 +68,7 @@
                             </el-container>
                         </el-card>
                     </el-collapse-item>
-                    <el-collapse-item title="上传测试用例" name="4">
+                    <el-collapse-item class="titlestyle" title="上传测试用例" name="4">
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                 <el-form ref="uploadTestData" :model="uploadTestData" label-width="80px">
@@ -91,7 +91,7 @@
                             </el-container>
                         </el-card>
                     </el-collapse-item>
-                    <el-collapse-item title="运行测试用例" name="5">
+                    <el-collapse-item class="titlestyle" title="运行测试用例" name="5">
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                 <el-form ref="selectTestForm" :model="selectTestForm" label-width="80px">
@@ -125,6 +125,11 @@
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
+                                   <el-form-item>
+                                        <el-button type="primary" size="small" @click="">执行用例</el-button>
+                                        <el-button type="primary" size="small" @click="ShowTestResult()">显示效果</el-button>
+                                        <el-button type="primary" size="small" @click="CancelShow()">取消效果</el-button>
+                                   </el-form-item>
                                 </el-form>
                             </el-container>
                         </el-card>
@@ -133,6 +138,22 @@
             </el-aside>
             <el-main>
                 <div id="container" class="container"></div>
+                 <!--节点滤波器-->
+                <svg id="svgCanvas">
+                     <defs>
+                     <filter id="f1">
+                     <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
+                     </filter>
+                     </defs>
+                 <!--直线滤波器-->
+                </svg>
+                    <svg id="svgCanvas">
+                       <defs>
+                       <filter id="f2">
+                       <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
+                       </filter>
+                       </defs>
+                </svg>
             </el-main>
         </el-container>
     </el-container>
@@ -196,31 +217,125 @@
                 console.log(this.relation.nodes)
                 this.g.attr('transform', trans)
             },
-            //显示用例测试结果
-            ShowTestResult(TestResult){
-            /*var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea",
-            "frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]*/
 
+            //显示用例测试结果
+            ShowTestResult(TestResult,num){
+            /*var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea",
+            "frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]
+            num=1;*/
             for(let index in TestResult){
                   var result=TestResult[index].split(" ");
                   console.log(result[0])
                   console.log(result[2])
-                  this.ChangeLine(result[0],result[2]);
+
+                  //如果是单个结果
+                  if(num==1){
+                  //把第一个节点移到中心
+                  if(index==0){
+                  var node = this.findNodeByName(result[0])
+                  var trans = this.tempTrans
+                  trans.k = 1;
+                  this.g.attr('transform',trans);
+                  trans.x = (510 - node.x) * trans.k
+                  trans.y = (300 - node.y) * trans.k
+                  console.log(trans)
+                  console.log(this.relation.nodes)
+                  this.g.attr('transform', trans)
+                  }
+
+                 //线的流动效果和节点效果
+                  this.ChangeSingleLine(result[0],result[2]);
+                  }
+
+                  //如果多个结果
+                  else{
+                  this.ChangeMultipleLine(result[0],result[2]);
+                  }
+
+                  //更改结点样式
+                  this.ChangeNode(result[0]);
+                  this.ChangeNode(result[2]);
             }
             },
 
             //改变用例测试经过的直线
-            ChangeLine(SourceName,TargetName){
-            var line_id;
+            ChangeSingleLine(SourceName,TargetName){
+
             for(let index in this.relation.links) {
-                                            if(this.relation.links[index].source.name==SourceName&&
-                                            this.relation.links[index].target.name==TargetName) {
-                                                console.log(this.relation.links[index].index)
-                                                line_id=this.relation.links[index].index
-                                            }
-                                        };
-            d3.select('#eachline' + line_id).classed('edgelabel',false)
-            d3.select('#eachline' + line_id).classed('test',true)
+               if(this.relation.links[index].source.name==SourceName&&
+                  this.relation.links[index].target.name==TargetName) {
+                   console.log(this.relation.links[index].index)
+                   var line_id=this.relation.links[index].index
+                   d3.select('#eachline' + line_id).classed('edgelabel',false)
+                   d3.select('#eachline' + line_id).style('stroke-width',3.5)
+                   d3.select('#eachline' + line_id).classed('showsinglepath',true)
+                   }
+                   };
+               },
+            //多个用例测试结果
+            ChangeMultipleLine(SourceName,TargetName){
+            for(let index in this.relation.links) {
+                if(this.relation.links[index].source.name==SourceName&&
+                  this.relation.links[index].target.name==TargetName) {
+                  console.log(this.relation.links[index].index)
+                  var line_id=this.relation.links[index].index
+                  d3.select('#eachline' + line_id).classed('edgelabel',false)
+                  d3.select('#eachline' + line_id).style('stroke-width',3.5).attr('stroke','#ff7438').attr('filter','url(#f2)')
+                  }
+               };
+            },
+
+            //给节点加上边界效果
+            ChangeNode(Name)
+            {
+            for(let index in this.relation.nodes) {
+                 if(this.relation.nodes[index].name==Name){
+                   var node_id=this.relation.nodes[index].index
+                    console.log(node_id)
+                  d3.select('#node' + node_id).classed('bling',true)
+                    d3.select('#node' + node_id).attr('stroke-width',3).attr('stroke','#FA8072').attr('filter','url(#f1)')
+                     }
+                 };
+            },
+
+            //取消结果显示
+            CancelShow(){
+            var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea",
+                        "frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]
+
+                        for(let index in TestResult){
+                              var result=TestResult[index].split(" ");
+                              console.log(result[0])
+                              console.log(result[2])
+                              this.CancelLine(result[0],result[2]);
+                              this.CancelNode(result[0]);
+                              this.CancelNode(result[2]);
+                        }
+            },
+
+            //取消连线效果
+            CancelLine(SourceName,TargetName){
+                        for(let index in this.relation.links) {
+                            if(this.relation.links[index].source.name==SourceName&&
+                               this.relation.links[index].target.name==TargetName) {
+                               console.log(this.relation.links[index].index)
+                               var line_id=this.relation.links[index].index
+                               }
+                              };
+                        d3.select('#eachline' + line_id).classed('showsinglepath',false).attr('filter','')
+                        d3.select('#eachline' + line_id).style('stroke-width',2)
+                        d3.select('#eachline' + line_id).classed('edgelabel',true)
+            },
+
+            //取消节点边界显示
+            CancelNode(Name){
+            for(let index in this.relation.nodes) {
+                if(this.relation.nodes[index].name==Name) {
+                   console.log(this.relation.nodes[index].index)
+                   var node_id=this.relation.nodes[index].index
+                   }
+                   };
+                d3.select('#node' + node_id).attr('stroke-width',0).attr('stroke','').attr('filter','')
             },
 
             findNodeByName(name) {
@@ -340,6 +455,7 @@
                         // code
                     })
                 svg.call(zoomObj).on("dblclick.zoom", null)
+
                 //箭头
                 // eslint-disable-next-line no-unused-vars
                 var marker =
@@ -586,13 +702,16 @@
    header{
         font-family: "Arial Black";
         font-size: 25px;
-
+    }
+    .titlestyle{
+    font-family: "Microsoft YaHei";
+    font-weight:bold;
     }
     .formbody {
-        margin:25px 0px 25px 0px;
+        margin:20px 0px 0px 0px;
     }
     .card {
-        margin:25px 0px 25px 0px;
+        margin:5px 0px 5px 0px;
     }
     .upload {
         margin:25px 0px 25px 0px;
@@ -638,7 +757,7 @@
         fill:#FFD700;
     }
 
-//   滑动鼠标显示连线效果，移到网页外连线消失
+    //滑动鼠标显示连线效果，移到网页外连线消失
     .edgelabel{
      stroke-width: 6px;
      fill: transparent;
@@ -646,8 +765,7 @@
      stroke-dasharray: 85 400;
      stroke-dashoffset: -220;
      transition: 1s all ease
-    }
-
+     }
     svg:hover .edgelabel {
         stroke-dasharray: 70 0;
         stroke-width: 3px;
@@ -665,9 +783,23 @@
         text-shadow: 0 -5px 4px #FFFF00,2px -10px 6px #FFA500,-2px -15px 11px #FF6347,2px -25px 18px #FF0000;
         transition: 1s;
     }
-    .test{
-    stroke:#483D8B;
-    }
+
+   .showsinglepath{
+       stroke:#FA8072;
+       stroke-dasharray: 1000;
+       stroke-dashoffset: 1000;
+       animation: draw 10s;
+       animation-fill-mode:forwards;
+   }
+   @keyframes draw{
+       0%{
+           stroke-dashoffset: 1000;
+       }
+       100%{
+           stroke-dashoffset: 0;
+       }
+   }
+
     .linetext {
         font-size: 12px;
         font-weight: bold;
@@ -682,7 +814,12 @@
         width: 100%;
         height: 100%;
     }
-
+/*.bling{ animation: alarm 0.4s  ease-in  infinite ; fill:yellow; font-weight: bold;}
+  @keyframes alarm {
+      0%{ fill:#FF9966;}
+      50%{ fill:#FF3333;}
+      100%{ fill:#FF9966;}
+  }*/
 
     .node{
         position: relative;
