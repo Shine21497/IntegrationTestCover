@@ -110,7 +110,8 @@ public class TestUploadController {
                         List<String> methods = new ArrayList<>();
                         //wait for compile file and get test methods
                         runTestService.initate(projectDirectory.getName());
-                        methods = runTestService.getMethods(testFile.getName());
+                        methods = runTestService.getMethods(testFile.getName().replace(".java", ""));
+                        System.out.println(methods);
                         methods.add("allMethods");
                         projectToTestFiles.get(projectDirectory.getName()).put(testFile.getName(), methods);
                     }
