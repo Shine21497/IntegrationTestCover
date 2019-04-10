@@ -107,15 +107,18 @@ public class TestUploadController {
                     projectToTestFiles.put(projectDirectory.getName(), new HashMap<>());
                     File[] testFiles = projectDirectory.listFiles();
                     for(File testFile : testFiles) {
-                        List<String> methods = new ArrayList<>();
-                        //wait for compile file and get test methods
-                        runTestService.initate(projectDirectory.getName());
-                        methods = runTestService.getMethods(testFile.getName().replace(".java", ""));
-                        System.out.println(methods);
-                        methods.add("allMethods");
-                        projectToTestFiles.get(projectDirectory.getName()).put(testFile.getName(), methods);
+                        if (!testFile.isDirectory()) {
+                            List<String> methods = new ArrayList<>();
+                            //wait for compile file and get test methods
+                            runTestService.initate(projectDirectory.getName());
+                            System.out.println(testFile.getName());
+                            runTestService.compileJava(testFile.getName().replace(".java", ""));
+                            methods = runTestService.getMethods(testFile.getName().replace(".java", ""));
+                            methods.add("allMethods");
+                            projectToTestFiles.get(projectDirectory.getName()).put(testFile.getName(), methods);
+                        }
+                        projectToTestFiles.get(projectDirectory.getName()).put("allTestFiles", new ArrayList<>());
                     }
-                    projectToTestFiles.get(projectDirectory.getName()).put("allTestFiles", new ArrayList<>());
                 }
             }
         }
