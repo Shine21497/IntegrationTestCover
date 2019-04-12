@@ -137,7 +137,7 @@
                                     <el-form-item>
                                             <el-button type="primary" size="small" @click="startRunTestCase()">执行用例</el-button>
                                             <el-button type="primary" size="small" @click="getTestResult()" :disabled="runTestPercentange!=100">显示效果</el-button>
-                                            <el-button type="primary" size="small" @click="CancelShow()" :disabled="runTestPercentange!=100">取消效果</el-button>
+                                            <el-button type="primary" size="small" @click="cancelShow()" :disabled="runTestPercentange!=100">取消效果</el-button>
                                     </el-form-item>
                                 </el-form>
                             </el-container>
@@ -237,40 +237,45 @@ import { setInterval } from 'timers';
                 this.g.attr('transform', trans)
             },
             //显示用例测试结果
-            ShowTestResult(TestResult,type){
-                /*var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea",
-                "frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]
-                num=1;*/
+            showTestResult(TestResult,type){
+             //把第一个节点移到中心
+                var node = this.findNodeByName(TestResult[0].split(" ")[0])
+                                            var trans = this.tempTrans
+                                            trans.k = 1;
+                                            this.g.attr('transform',trans);
+                                            trans.x = (510 - node.x) * trans.k
+                                            trans.y = (300 - node.y) * trans.k
+                                             this.g.attr('transform', trans)
                 for(let index in TestResult){
                     var result=TestResult[index].split(" ");
                     //如果是单个结果
                     if(type === 'one'){
-                        //把第一个节点移到中心
-                        if(index==0){
-                            var node = this.findNodeByName(result[0])
+                       //逐个定位节点
+                            var node = this.findNodeByName(result[2])
                             var trans = this.tempTrans
                             trans.k = 1;
                             this.g.attr('transform',trans);
                             trans.x = (510 - node.x) * trans.k
                             trans.y = (300 - node.y) * trans.k
-                            
-                            this.g.attr('transform', trans)
-                        }
+                            var temp=this.g;
+                            setTimeout(function timer(){
+                            temp.attr('transform', trans);
+                            }, (index+1)*2000);
                         //线的流动效果和节点效果
-                        this.ChangeSingleLine(result[0],result[2]);
+                        this.changeSingleLine(result[0],result[2]);
                     }
                     //如果多个结果
                     else{
-                        this.ChangeMultipleLine(result[0],result[2]);
+                        this.changeMultipleLine(result[0],result[2]);
                     }
                     //更改结点样式
-                    this.ChangeNode(result[0]);
-                    this.ChangeNode(result[2]);
+                    this.changeNode(result[0]);
+                    this.changeNode(result[2]);
                 }
             },
 
            //改变用例测试经过的直线
-            ChangeSingleLine(SourceName,TargetName){
+            changeSingleLine(SourceName,TargetName){
                 for(let index in this.relation.links) {
                     if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
                         var line_id=this.relation.links[index].index
@@ -282,7 +287,7 @@ import { setInterval } from 'timers';
             },
 
             //多个用例测试结果
-            ChangeMultipleLine(SourceName,TargetName) {
+            changeMultipleLine(SourceName,TargetName) {
                 for(let index in this.relation.links) {
                     if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
                         var line_id=this.relation.links[index].index
@@ -292,7 +297,7 @@ import { setInterval } from 'timers';
                };
             },
             //给节点加上边界效果
-            ChangeNode(Name) {
+            changeNode(Name) {
                 for(let index in this.relation.nodes) {
                     if(this.relation.nodes[index].name==Name) {
                         var node_id=this.relation.nodes[index].index
@@ -302,17 +307,16 @@ import { setInterval } from 'timers';
                 };
             },
             //取消结果显示
-            CancelShow(){
-                var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea","frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]
+            cancelShow(TestResult){
                 for(let index in TestResult){
                     var result=TestResult[index].split(" ");
-                    this.CancelLine(result[0],result[2]);
-                    this.CancelNode(result[0]);
-                    this.CancelNode(result[2]);
+                    this.cancelLine(result[0],result[2]);
+                    this.cancelNode(result[0]);
+                    this.cancelNode(result[2]);
                 }
             },
             //取消连线效果
-            CancelLine(SourceName,TargetName){
+            cancelLine(SourceName,TargetName){
                 for(let index in this.relation.links) {
                     if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
                        var line_id=this.relation.links[index].index
@@ -324,7 +328,7 @@ import { setInterval } from 'timers';
             },
 
             //取消节点边界显示
-            CancelNode(Name){
+            cancelNode(Name){
                 for(let index in this.relation.nodes) {
                     if(this.relation.nodes[index].name==Name) {
                         var node_id=this.relation.nodes[index].index
@@ -433,7 +437,7 @@ import { setInterval } from 'timers';
                 let _this = this;
                 getInvokingResults(_this.taskid).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
-                    _this.ShowTestResult(response,_this.taskType)
+                    _this.showTestResult(response,_this.taskType)
                 });
             },
             // 显示消息
@@ -764,7 +768,7 @@ import { setInterval } from 'timers';
     }
 
     //滑动鼠标显示连线效果，移到网页外连线消失
-    .edgelabel{
+    /*.edgelabel{
         stroke-width: 6px;
         fill: transparent;
         stroke:#DC143C;
@@ -778,6 +782,9 @@ import { setInterval } from 'timers';
         stroke-width: 3px;
         stroke-dashoffset: 0;
         stroke:#FFD700;
+    }*/
+    .edgelabel{
+    stroke:#FFD700;
     }
 
     //    字体火焰效果
