@@ -33,16 +33,18 @@ public class TestCaseController {
     private String key;
 
     //获得一个java测试文件的所有测试用例的名称
-    @RequestMapping(value = "/getmethods", method = RequestMethod.GET)
+    @RequestMapping(value = "/getMethods", method = RequestMethod.GET)
     public List<String> getMethods(String projectname, String testcasename) {
-        List<String> methods = new LinkedList<>();
         runTestService.initate(projectname);
+        runTestService.compileJava(testcasename);
+        List<String> methods = new LinkedList<>();
+
         methods = runTestService.getMethods(testcasename);
         return methods;
     }
 
     @RequestMapping(value = "/runTestCase", method = RequestMethod.GET)
-    public String runTestCase(String projectname, String testcasename, String method)throws Exception {
+    public List runTestCase(String projectname, String testcasename, String method)throws Exception {
         runTestService.initate(projectname);
         SimpleDateFormat sdf = new SimpleDateFormat();
         sdf.applyPattern("MMddHHmmss");
@@ -52,16 +54,25 @@ public class TestCaseController {
         int a = random.nextInt(100);
         String key = par + String.valueOf(a);//生成key
         this.key = key;
-        this.projectname=projectname;
-        this.testcasename=testcasename;
-        this.methodname=method;
-        if (method.equals("all") == false)
+        String type="";
+        List result=new LinkedList();
+        if (method.equals("all") == false) {
             runTestService.invokeMethod(testcasename, method);
+            type="one";
+        }
         else if (method.equals("all") && testcasename.equals("all") == false)//指定跑某个java文件里面的所有测试用例
+        {
             runTestService.runTest(testcasename);
+            type="many";
+        }
         else if (testcasename.equals("all") && method.equals("all"))//跑此项目下的所有
+        {
             runTestService.runAll();
-        return key;
+            type="many";
+        }
+        result.add(key);
+        result.add(type);
+        return result;
     }
 
 

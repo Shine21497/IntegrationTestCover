@@ -55,12 +55,17 @@ public class RunTestService {
 
     //初始化，接收项目名称
     public void initate(String projectname) {
-        this.setTestwaypath(baseConfig.getUploadedFilePath());
-        this.setJarpath(baseConfig.getUploadedTestPath(projectname));//插桩后的位置
+        this.setTestwaypath(baseConfig.getUploadedFilePath().replaceFirst("/",""));
+        this.setJarpath(baseConfig.getUploadedFilePath().replaceFirst("/",""));//插桩后的位置
         this.setJarname(projectname);
-        this.setJavafilepath(baseConfig.getUploadedTestPath(projectname));//测试文件位置
+        this.setJavafilepath(baseConfig.getUploadedTestPath(projectname).replaceFirst("/",""));//测试文件位置
         // this.setJarpath("C://Users//22831//Desktop//target//demo");//测试：插桩后的位置
         // this.setJavafilepath("C://Users//22831//Desktop//target//demo");//测试：测试文件位置
+       /* javafilepath="C:/Users/22831/Desktop/IntegrationTestCover/target/classes/uploadedTestCase/demo";
+        jarpath="C:/Users/22831/Desktop/IntegrationTestCover/target/classes/uploadedJar";
+        testwaypath="C:/Users/22831/Desktop/IntegrationTestCover/target/classes/uploadedJar";*/
+        System.out.println(javafilepath);
+        System.out.println(jarpath);
     }
 
     /*
@@ -151,8 +156,8 @@ public class RunTestService {
             // System.out.println(javafilepath + "//" + packagename);
             //String command=
             // "javac -cp C:\Users\22831\Desktop\lib\IntegrationTestCover.jar;C:\Users\22831\Desktop\lib\junit-4.10.jar com\shine\integrationtestcover\service\GraphServiceTest.java";
-            String command = "javac -cp " + jarpath + "//" + jarname + ".jar" + ";" + testwaypath + "//" + testwayname + ".jar" + " " + javafilepath + "//" + packagename + "//" + javafilename + ".java";
-            // System.out.println(command);
+            String command = "javac -cp " + jarpath  + jarname + ".jar" + ";" + testwaypath + testwayname + ".jar" + " " + javafilepath + packagename + "//" + javafilename + ".java";
+            System.out.println(command);
             Process process = Runtime.getRuntime().exec(command);
             process.waitFor();
         } catch (Exception e) {
@@ -164,6 +169,7 @@ public class RunTestService {
     获得一个java文件里面的测试用例的方法名字
      */
     public List<String> getMethods(String javafilename) {
+        compileJava(javafilename);
         String packagename = getPackagename(javafilename);
         List<String> methods = new LinkedList<>();
         try {
