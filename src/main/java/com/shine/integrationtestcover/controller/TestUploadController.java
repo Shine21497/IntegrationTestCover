@@ -118,9 +118,9 @@ public class TestUploadController {
                                 methods.add("allMethods");
                                 projectToTestFiles.get(projectDirectory.getName()).put(testFile.getName(), methods);
                             }
-                            projectToTestFiles.get(projectDirectory.getName()).put("allTestFiles", new ArrayList<>());
                         }
                     }
+                    projectToTestFiles.get(projectDirectory.getName()).put("allTestFiles", new ArrayList<>());
                 }
             }
         }
