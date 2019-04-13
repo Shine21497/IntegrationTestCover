@@ -37,8 +37,8 @@ public class BaseConfig {
     }
 
     public String getUploadedTestPath(String projectName) {
-        projectName.replace(".jar","");
-        String uploadedTestPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile()+ "uploadedTestCase/" + projectName+"/" ;
+        String newname=projectName.replace(".jar","");
+        String uploadedTestPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile()+ "uploadedTestCase/" + newname+"/" ;
         try{
             uploadedTestPath = java.net.URLDecoder.decode(uploadedTestPath, "UTF-8");
         }catch(Exception e)

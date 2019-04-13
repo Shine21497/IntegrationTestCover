@@ -56,30 +56,49 @@ public class TestCaseController {
         this.key = key;
         String type="";
         List result=new LinkedList();
+        System.out.println("获取key:"+Thread.currentThread().getName());
         if (method.equals("all") == false) {
-            runTestService.invokeMethod(testcasename, method);
             type="one";
+            runTestService.invokeMethod(testcasename, method);
         }
         else if (method.equals("all") && testcasename.equals("all") == false)//指定跑某个java文件里面的所有测试用例
         {
-            runTestService.runTest(testcasename);
             type="many";
+            runTestService.runTest(testcasename);
         }
         else if (testcasename.equals("all") && method.equals("all"))//跑此项目下的所有
         {
-            runTestService.runAll();
             type="many";
+            runTestService.runAll();
         }
+
         result.add(key);
         result.add(type);
         return result;
     }
 
+  /*  @Async
+    public void run(String projectname, String testcasename, String method) throws Exception{
+
+        System.out.println("运行:"+Thread.currentThread().getName());
+        if (method.equals("all") == false) {
+            runTestService.invokeMethod(testcasename, method);
+        }
+        else if (method.equals("all") && testcasename.equals("all") == false)//指定跑某个java文件里面的所有测试用例
+        {
+            runTestService.runTest(testcasename);
+        }
+        else if (testcasename.equals("all") && method.equals("all"))//跑此项目下的所有
+        {
+            runTestService.runAll();
+        }
+
+    }
+*/
 
     @RequestMapping(value = "/getInvokingProcess", method = RequestMethod.GET)
     public List getInvokingProcess(String key) {
         List result = new LinkedList();
-        System.out.println(this.key + "key");
         if (key != this.key) {
             result.add("sorry,no this task~");
             return result;
@@ -94,11 +113,9 @@ public class TestCaseController {
     public List getInvokingResults(String key) {
         List result = new LinkedList();
         if (key.equals(this.key)) {
-            System.out.println("zibi");
             result = runTestService.getRunresults();
             return result;
         } else {
-            System.out.println("kule");
             result.add("sorry,no this task~");
             return result;
         }
