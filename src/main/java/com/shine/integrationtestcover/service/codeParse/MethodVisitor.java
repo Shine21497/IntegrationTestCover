@@ -1,6 +1,7 @@
 package com.shine.integrationtestcover.service.codeParse;
 
 import org.apache.bcel.classfile.JavaClass;
+import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
 import org.apache.bcel.generic.ConstantPushInstruction;
 import org.apache.bcel.generic.EmptyVisitor;
@@ -16,11 +17,12 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 
-/** parse method in class and output call info
+/**
+ * parse method in class and output call info
  * Created by shikun on 2017/2/24.
  */
 
-public class MethodVisitor extends EmptyVisitor  {
+public class MethodVisitor extends EmptyVisitor {
     JavaClass visitedClass;
     private MethodGen mg;
     private ConstantPoolGen cp;
@@ -37,13 +39,18 @@ public class MethodVisitor extends EmptyVisitor  {
     public MethodVisitor(MethodGen m, JavaClass jc) {
         visitedClass = jc;
         mg = m;
+        String classoutput;
         cp = mg.getConstantPool();
         classes.add(jc.getClassName());
-        if(methods.containsKey(jc.getClassName())) {
+        if (methods.containsKey(jc.getClassName())) {
             methods.get(jc.getClassName()).add(mg.getName());
+            classoutput = jc.getClassName() + " CALL " + jc.getClassName() + ":" + mg.getName();
+            callRelationship.add(classoutput);
         } else {
             methods.put(jc.getClassName(), new ArrayList<>());
             methods.get(jc.getClassName()).add(mg.getName());
+            classoutput = jc.getClassName() + " CALL " + jc.getClassName() + ":" + mg.getName();
+            callRelationship.add(classoutput);
         }
 
     }
@@ -60,6 +67,7 @@ public class MethodVisitor extends EmptyVisitor  {
                 i.accept(this);
         }
     }
+
     //？？？what?
     private boolean visitInstruction(Instruction i) {
         short opcode = i.getOpcode();
@@ -70,16 +78,15 @@ public class MethodVisitor extends EmptyVisitor  {
 
     @Override
     public void visitINVOKEVIRTUAL(INVOKEVIRTUAL i) {
-
         String formatInternal = "%s";
-        this.DegreeClass = String.format(formatInternal,i.getReferenceType(cp));
+        this.DegreeClass = String.format(formatInternal, i.getReferenceType(cp));
         this.DegreeMethod = i.getMethodName(cp);
-        if(!this.DegreeClass.startsWith("java")) {
-            for(String packageName: packageNames) {
-                if(this.DegreeClass.startsWith(packageName)) {
+        if (!this.DegreeClass.startsWith("java")) {
+            for (String packageName : packageNames) {
+                if (this.DegreeClass.startsWith(packageName)) {
                     String output = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
                     callRelationship.add(output);
-                    System.out.println(output);
+                    // System.out.println(output);
                 }
             }
 
@@ -90,8 +97,5 @@ public class MethodVisitor extends EmptyVisitor  {
         return callRelationship;
     }
 
-    public static void setCallRelationshipEmpty() {
-        callRelationship = new LinkedList<>();
-    }
 
 }
