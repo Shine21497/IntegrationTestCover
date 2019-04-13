@@ -4,6 +4,7 @@ import com.shine.integrationtestcover.config.BaseConfig;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
@@ -12,6 +13,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * @Author: WHQ
@@ -41,7 +43,7 @@ public class RunTestService {
     private String javafilepath = "";
 
     //test way(JUnit)
-   // private String testwaypath = "C://Users//22831//Desktop//target";
+    // private String testwaypath = "C://Users//22831//Desktop//target";
     private String testwaypath = "";
     private String testwayname = "junit-4.10";
 
@@ -55,17 +57,10 @@ public class RunTestService {
 
     //初始化，接收项目名称
     public void initate(String projectname) {
-        this.setTestwaypath(baseConfig.getUploadedFilePath().replaceFirst("/",""));
-        this.setJarpath(baseConfig.getUploadedFilePath().replaceFirst("/",""));//插桩后的位置
+        this.setTestwaypath(baseConfig.getUploadedFilePath().replaceFirst("/", ""));
+        this.setJarpath(baseConfig.getUploadedFilePath().replaceFirst("/", ""));//插桩后的位置
         this.setJarname(projectname);
-        this.setJavafilepath(baseConfig.getUploadedTestPath(projectname).replaceFirst("/",""));//测试文件位置
-        // this.setJarpath("C://Users//22831//Desktop//target//demo");//测试：插桩后的位置
-        // this.setJavafilepath("C://Users//22831//Desktop//target//demo");//测试：测试文件位置
-       /* javafilepath="C:/Users/22831/Desktop/IntegrationTestCover/target/classes/uploadedTestCase/demo";
-        jarpath="C:/Users/22831/Desktop/IntegrationTestCover/target/classes/uploadedJar";
-        testwaypath="C:/Users/22831/Desktop/IntegrationTestCover/target/classes/uploadedJar";*/
-        System.out.println(javafilepath);
-        System.out.println(jarpath);
+        this.setJavafilepath(baseConfig.getUploadedTestPath(projectname).replaceFirst("/", ""));//测试文件位置
     }
 
     /*
@@ -75,11 +70,7 @@ public class RunTestService {
         String packagename = "";
         try {
             File file = new File(javafilepath + "//" + javafilename + ".java");
-            //System.out.println(file.getAbsolutePath());
-            if (file.exists())
-                System.out.println("exist file in" + file.getPath());
-            else
-                System.out.println("not exist");
+            if (!file.exists()) System.out.println("javafile:" + javafilename + "read package name failed");
             BufferedReader br = new BufferedReader(new FileReader(file.getAbsolutePath()));
             packagename = br.readLine();
             br.close();
@@ -104,7 +95,6 @@ public class RunTestService {
                 int length;
                 while ((byteread = inStream.read(buffer)) != -1) {
                     bytesum += byteread; //字节数 文件大小
-                    System.out.println(bytesum);
                     fs.write(buffer, 0, byteread);
                 }
                 inStream.close();
@@ -137,10 +127,6 @@ public class RunTestService {
             e.printStackTrace();
         }
         File javaFile = new File(this.getJavafilepath() + "//" + javafilename + ".java");
-        // System.out.println(this.getJavafilepath() + "//" + this.getJavafilename() + ".java");
-        //if (javaFile.exists()) System.out.println("find success");
-        //else System.out.println("find failure");
-        //javaFile.renameTo(new File(path + "//" + javafilename + ".java"));
         copyFile(this.javafilepath + "//" + javafilename + ".java", path + "//" + javafilename + ".java");
         return path;
     }
@@ -153,11 +139,10 @@ public class RunTestService {
         String packagename = getPackagename(javafilename).replace(".", "//");
         handlePackageName(javafilename);
         try {
-            // System.out.println(javafilepath + "//" + packagename);
             //String command=
             // "javac -cp C:\Users\22831\Desktop\lib\IntegrationTestCover.jar;C:\Users\22831\Desktop\lib\junit-4.10.jar com\shine\integrationtestcover\service\GraphServiceTest.java";
-            String command = "javac -cp " + jarpath  + jarname + ".jar" + ";" + testwaypath + testwayname + ".jar" + " " + javafilepath + packagename + "//" + javafilename + ".java";
-            System.out.println(command);
+            String command = "javac -cp " + jarpath + jarname + ".jar" + ";" + testwaypath + testwayname + ".jar" + " " + javafilepath + packagename + "//" + javafilename + ".java";
+            //System.out.println(command);
             Process process = Runtime.getRuntime().exec(command);
             process.waitFor();
         } catch (Exception e) {
@@ -176,7 +161,7 @@ public class RunTestService {
             File file = new File(this.getJarpath() + "//" + this.getJarname() + ".jar");//加载外部jar包
             URL url = file.toURI().toURL();
             File xFile = new File(this.getJavafilepath());
-            if (xFile != null) System.out.println("success");
+            if (xFile == null) System.out.println("not find" + javafilename);
             URL url2 = xFile.toURL();
             URLClassLoader ClassLoader = new URLClassLoader(new URL[]{url2, url});
             Class xClass = ClassLoader.loadClass(packagename + "." + javafilename);//一个java文件
@@ -187,6 +172,8 @@ public class RunTestService {
                 //System.out.println(m.getName());
                 methods.add(m.getName());
             }
+        } catch (ClassNotFoundException e) {
+            System.out.println(javafilename + "编译失败！！！");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -199,7 +186,6 @@ public class RunTestService {
      */
     public List<String> invokeMethod(String javafilename, String methodname) {
         String packagename = getPackagename(javafilename);
-        System.out.println(packagename);
         compileJava(javafilename);
         //String packagename="com.example.demo.controller";
         PrintStream old = System.out;
@@ -224,7 +210,9 @@ public class RunTestService {
             xMethod.setAccessible(true);
             xMethod.invoke(xClass.newInstance());
 
-        } catch (Exception e) {
+        } catch (ClassNotFoundException e) {
+            System.out.println(javafilename + "编译失败！！！");
+        }catch (Exception e) {
             e.printStackTrace();
         }
         //重定向到控制台
@@ -236,7 +224,7 @@ public class RunTestService {
         try {
             String filepath = this.javafilepath + "//output-" + javafilename + ".txt";
             File file = new File(filepath);
-            if (file != null) System.out.println("find la");
+            if (file == null) System.out.println("txt生成失败!!!");
             InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
             BufferedReader br = new BufferedReader(reader);
             String line;
@@ -259,7 +247,8 @@ public class RunTestService {
     跑一个java文件下的所有的测试用例，java文件名字,异步,返回两个数值
      */
     @Async
-    public List runTest(String javafilename) {
+    public void runTest(String javafilename) {
+        System.out.println("运行:"+Thread.currentThread().getName());
         // compileJava(javafilename);
         allmethods = new LinkedList<>();
         task = 0;
@@ -290,39 +279,33 @@ public class RunTestService {
         finishtask.add(task);
         finishtask.add(sumtask.size());
         this.runprocess = finishtask;
-        return finishtask;
 
     }
+
+
 
     /*
     跑项目下面的所有test文件,返回n和m两个数
     */
     @Async
-    public List runAll() throws Exception {
+    public void runAll() throws Exception {
+        System.out.println("运行:"+Thread.currentThread().getName());
         task = 0;
         int sumtask = 0;
         List results = new LinkedList<>();
         String path = this.javafilepath;
-        //    System.out.println("pppp"+path);
         File file = new File(path);
         File[] tempList = file.listFiles();
-        // System.out.println(tempList.length);
         for (File f : tempList) {
             if (f.getName().contains(".java")) {
-                //  System.out.println("pppp" + f.getName());
                 int m = getMethods(f.getName().replace(".java", "")).size();
                 sumtask += m;
             }
         }
-        //  System.out.println("all" + sumtask);
         for (File f : tempList) {
             if (f.getName().contains(".java")) {
                 String filename = f.getName().replace(".java", "");
-                // System.out.println("zibi1" + filename);
                 List<String> m = getMethods(filename);
-                for (int i = 0; i < m.size(); i++) {
-                    System.out.println("zibi2" + m.get(i));
-                }
                 for (int i = 0; i < m.size(); i++) {
                     results.addAll(invokeMethod(filename, m.get(i)));
                     Thread.sleep(5000);
@@ -332,13 +315,11 @@ public class RunTestService {
         }
         logger.info("=============" + Thread.currentThread().getName() + "异步");
         this.runresults = results;
-        //System.out.println(results.size() + "zibiiiiiiii");
         List finishtask = new LinkedList();
 
         finishtask.add(task);
         finishtask.add(sumtask);
         this.runprocess = finishtask;
-        return finishtask;
     }
 
     public String getJarpath() {
