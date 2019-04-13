@@ -41,10 +41,11 @@ public class GraphAlo {
         return this.vertexList.size();
     }
     //输入节点顺序数组
-    public void getVertexList(){
+    public List<String> getVertexList(){
         for(int i=0;i<this.vertexList.size();i++) {
-            System.out.println(this.vertexList.get(i));
+            //System.out.println(this.vertexList.get(i));
         }
+        return vertexList;
     }
 
     //获取边的个数
