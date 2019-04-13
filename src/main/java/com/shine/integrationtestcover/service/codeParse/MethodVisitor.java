@@ -97,5 +97,9 @@ public class MethodVisitor extends EmptyVisitor {
         return callRelationship;
     }
 
+    public static void setCallRelationshipEmpty() {
+        callRelationship = new LinkedList<>();
+    }
+
 
 }
