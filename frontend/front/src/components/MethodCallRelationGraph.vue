@@ -303,9 +303,9 @@ import { setInterval } from 'timers';
             },
             //取消结果显示
             CancelShow(){
-                var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea","frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]
-                for(let index in TestResult){
-                    var result=TestResult[index].split(" ");
+                // var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea","frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]
+                for(let index in _this.TestResult){
+                    var result=this.TestResult[index].split(" ");
                     this.CancelLine(result[0],result[2]);
                     this.CancelNode(result[0]);
                     this.CancelNode(result[2]);
@@ -433,6 +433,7 @@ import { setInterval } from 'timers';
                 let _this = this;
                 getInvokingResults(_this.taskid).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
+                    _this.TestResult = response;
                     _this.ShowTestResult(response,_this.taskType)
                 });
             },
