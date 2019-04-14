@@ -263,10 +263,9 @@ public class RunTestService {
 
             for (int i = 0; i < sumtask.size(); i++) {
                 List<String> now = invokeMethod(javafilename, sumtask.get(i));
-                if (now.size() > 0 && now != null) {
+                if (now != null && now.size() > 0) {
                     allmethods.addAll(now);
                 }
-
                 task++;
                 logger.info("=============" + Thread.currentThread().getName() + "异步");
             }
