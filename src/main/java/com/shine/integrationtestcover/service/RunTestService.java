@@ -57,6 +57,7 @@ public class RunTestService {
 
     //初始化，接收项目名称
     public void initate(String projectname) {
+        this.runprocess=new LinkedList();
         this.setTestwaypath(baseConfig.getUploadedFilePath().replaceFirst("/", ""));
         this.setJarpath(baseConfig.getUploadedFilePath().replaceFirst("/", ""));//插桩后的位置
         this.setJarname(projectname);
@@ -248,11 +249,17 @@ public class RunTestService {
      */
     @Async
     public void runTest(String javafilename) {
-        System.out.println("运行:"+Thread.currentThread().getName());
+        List finishtask = new LinkedList();
+        System.out.println("运行one java task:"+Thread.currentThread().getName());
         // compileJava(javafilename);
         allmethods = new LinkedList<>();
         task = 0;
         List<String> sumtask = getMethods(javafilename);//java文件里面所有的方法
+
+        finishtask.add(0);
+        finishtask.add(sumtask);
+        this.runprocess = finishtask;
+
         try {
             File file = new File(this.jarpath + "//" + this.jarname + ".jar");//加载外部jar包
             URL url = file.toURI().toURL();
@@ -262,34 +269,36 @@ public class RunTestService {
             URLClassLoader ClassLoader = new URLClassLoader(new URL[]{url2, url});
 
             for (int i = 0; i < sumtask.size(); i++) {
+                finishtask.clear();
                 List<String> now = invokeMethod(javafilename, sumtask.get(i));
                 if (now.size() > 0 && now != null) {
                     allmethods.addAll(now);
+                    this.runresults = allmethods;
                 }
-
                 task++;
+                finishtask.clear();
+                finishtask.add(task);
+                finishtask.add(sumtask.size());
+                this.runprocess = finishtask;
                 logger.info("=============" + Thread.currentThread().getName() + "异步");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
         }
-        this.runresults = allmethods;
-        List finishtask = new LinkedList();
-        finishtask.add(task);
-        finishtask.add(sumtask.size());
-        this.runprocess = finishtask;
+
+
+
 
     }
-
-
 
     /*
     跑项目下面的所有test文件,返回n和m两个数
     */
     @Async
     public void runAll() throws Exception {
-        System.out.println("运行:"+Thread.currentThread().getName());
+        List finishtask = new LinkedList();
+        System.out.println("运行one project:"+Thread.currentThread().getName());
         task = 0;
         int sumtask = 0;
         List results = new LinkedList<>();
@@ -302,6 +311,10 @@ public class RunTestService {
                 sumtask += m;
             }
         }
+        finishtask.add(0);
+        finishtask.add(sumtask);
+        this.runprocess = finishtask;
+
         for (File f : tempList) {
             if (f.getName().contains(".java")) {
                 String filename = f.getName().replace(".java", "");
@@ -310,16 +323,16 @@ public class RunTestService {
                     results.addAll(invokeMethod(filename, m.get(i)));
                     Thread.sleep(5000);
                     task++;
+                    finishtask.clear();
+                    finishtask.add(task);
+                    finishtask.add(sumtask);
+                    this.runprocess = finishtask;
+                    this.runresults = results;
                 }
             }
         }
-        logger.info("=============" + Thread.currentThread().getName() + "异步");
-        this.runresults = results;
-        List finishtask = new LinkedList();
+        logger.info("==***===========" +Thread.currentThread().getName() + "异步");
 
-        finishtask.add(task);
-        finishtask.add(sumtask);
-        this.runprocess = finishtask;
     }
 
     public String getJarpath() {
