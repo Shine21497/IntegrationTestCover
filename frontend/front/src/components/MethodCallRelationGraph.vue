@@ -402,7 +402,12 @@ import { setInterval } from 'timers';
                 this.$refs.uploadTest.submit();
             },
             onBeforeUpload(file) {
-
+                const isJAR = file.name.endsWith('.jar')
+                if (!isJAR) {
+                    this.$message.error('只能上传Jar文件!');
+                    return false;
+                }
+                return isJAR
             },
             startRunTestCase(file) {
                 var projectname  = this.selectTestForm.selectedTestProject;
