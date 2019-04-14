@@ -1,16 +1,20 @@
 package com.shine.integrationtestcover.service.programInstrument;
 
+import com.shine.integrationtestcover.config.BaseConfig;
 import com.sun.xml.internal.ws.org.objectweb.asm.Opcodes;
 import jdk.internal.org.objectweb.asm.ClassReader;
 import jdk.internal.org.objectweb.asm.ClassVisitor;
 import jdk.internal.org.objectweb.asm.ClassWriter;
 import jdk.internal.org.objectweb.asm.tree.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.io.*;
 import java.util.Iterator;
 import java.util.List;
 
 public class ProgramInstrument {
+
     public static void BytechaZhuang(InputStream i,String path,String name) throws IOException {
         //将输入流转为二进制数组
         ByteArrayOutputStream swapStream = new ByteArrayOutputStream();

@@ -38,7 +38,7 @@ public class BaseConfig {
 
     public String getUploadedTestPath(String projectName) {
         String newname=projectName.replace(".jar","");
-        String uploadedTestPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile()+ "uploadedTestCase/" + newname+"/" ;
+        String uploadedTestPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile()+ "uploadedTestCase/" + newname + "/" ;
         try{
             uploadedTestPath = java.net.URLDecoder.decode(uploadedTestPath, "UTF-8");
         }catch(Exception e)
@@ -57,5 +57,28 @@ public class BaseConfig {
             }
         }
         return uploadedTestPath;
+    }
+
+    public String getRunTestProjectPath(String projectName) {
+        String newname = projectName.replace(".jar","");
+        String runTestPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile()+ "runTestCase/" + newname + "/" ;
+        try{
+            runTestPath = java.net.URLDecoder.decode(runTestPath, "UTF-8");
+        }catch(Exception e)
+        {
+            e.printStackTrace();
+        };
+        File directory=new File(runTestPath);
+        if(!directory.exists())
+        {
+            try{
+                directory.mkdirs();
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+        return runTestPath;
     }
 }

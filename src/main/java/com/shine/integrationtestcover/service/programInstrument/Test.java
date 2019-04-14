@@ -58,42 +58,7 @@ public class Test {
         }
         System.out.println(sb);
         System.out.println(sb2);
-//        String command="cmd /c "+"unzip  "+filename+" -d "+path+"\\temp111";
-//        System.out.println(command);
-//        BufferedReader br = null;
-//        StringBuilder sb = new StringBuilder();
-//        StringBuilder sb2 = new StringBuilder();
-//        BufferedReader br2 = null;
-//        mkDirectory(path+"\\temp111");
-//        File dir=new File(path);
-//        try {
-//                    Process p = Runtime.getRuntime().exec(command,null,dir);
-//                    br = new BufferedReader(new InputStreamReader(p.getInputStream(),"GBK"));
-//                    String line = null;
-//                    while ((line = br.readLine()) != null) {
-//                        sb.append(line + "\n");
-//                    }
-//                    br2 = new BufferedReader(new InputStreamReader(p.getErrorStream(),"GBK"));
-//                    String line2 = null;
-//                    while ((line2 = br2.readLine()) != null) {
-//                        sb2.append(line2 + "\n");
-//                    }
-//                    p.waitFor();
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//                finally
-//                {
-//                    if (br != null)
-//                    {
-//                        try {
-//                            br.close();
-//                        } catch (Exception e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-      JarFileInput.jarFileInput(path+"\\"+sub,filename);
+        JarFileInput.jarFileInput(path+"\\"+sub,filename);
         try {
             String command="cmd /c "+"del  \""+path+"\\"+sub+"\\"+filename+"\"";
             System.out.println(command);

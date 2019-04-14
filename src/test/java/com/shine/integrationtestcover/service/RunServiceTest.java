@@ -68,12 +68,7 @@ public class RunServiceTest {
     public void InvokeJavaFile(){//跑一个java文件
         runTestService.initate("demo");
         String Javafilename="Test2";
-        List a=runTestService.runTest(Javafilename);
-        for(int i=0;i<a.size();i++){
-            System.out.println("aa"+a.get(i));
-        }
-        System.out.println(runTestService.getRunresults().size());
-
+        runTestService.runTest(Javafilename);
     }
 
     @Test
