@@ -90,7 +90,7 @@
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
-                                    <el-upload class="upload" action="/apiurl/uploadTestCase" accept="application/jar" :before-upload="onBeforeUpload" ref="uploadTest" :file-list="fileList" :auto-upload="false" :data="uploadTestData">
+                                    <el-upload class="upload" action="/apiurl/uploadTestCase" accept="application/jar" :before-upload="onBeforeUploadTestCase" ref="uploadTest" :file-list="fileList" :auto-upload="false" :data="uploadTestData">
                                         <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
                                         <el-button style="margin-left: 10px;" size="small" type="success" @click="submitTestUpload">上传到服务器</el-button>
                                         <div slot="tip" class="el-upload__tip">只能上传java文件或者zip文件</div>
@@ -408,6 +408,16 @@ import { setInterval } from 'timers';
                     return false;
                 }
                 return isJAR
+            },
+            onBeforeUploadTestCase(file) {
+                const isJava = file.name.endsWith('.java')
+                const isZip = file.name.endsWith('.zip')
+                if (!isJava && !isZip) {
+                    this.$message.error('只能上传Java文件或者Zip文件!');
+                    return false;
+                } else {
+                    return true
+                }
             },
             startRunTestCase(file) {
                 var projectname  = this.selectTestForm.selectedTestProject;
