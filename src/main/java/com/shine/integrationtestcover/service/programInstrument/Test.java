@@ -26,7 +26,7 @@ public class Test {
         StringBuilder sb = new StringBuilder();
         StringBuilder sb2 = new StringBuilder();
         //输入jar包所在位置
-        String path="C:\\Users\\acer\\Documents\\WeChat Files\\czczcz971220\\FileStorage\\File\\2019-04";
+        String path="C:\\Users\\acer\\Documents\\GitHub\\IntegrationTestCover\\target\\classes\\uploadedJar";
         String filename="demo.jar";
         int index=filename.lastIndexOf('.');
         String sub=filename.substring(0,index);
