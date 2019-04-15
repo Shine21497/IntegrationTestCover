@@ -11,6 +11,7 @@ import java.io.File;
 @Component
 public class BaseConfig {
     private String uploadedFilePath = "";
+    private String instrumentationPath = "";
 
     public String getUploadedFilePath() {
         if(this.uploadedFilePath.isEmpty()) {
@@ -34,6 +35,30 @@ public class BaseConfig {
             }
         }
         return this.uploadedFilePath;
+    }
+
+    public String getInstrumentationPath() {
+        if(this.instrumentationPath.isEmpty()) {
+            this.instrumentationPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile()+ "instrumentation/";
+            try{
+                this.instrumentationPath = java.net.URLDecoder.decode(this.instrumentationPath, "UTF-8");
+            }catch(Exception e)
+            {
+                e.printStackTrace();
+            };
+            File directory=new File(this.instrumentationPath);
+            if(!directory.exists())
+            {
+                try{
+                    directory.mkdirs();
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return this.instrumentationPath;
     }
 
     public String getUploadedTestPath(String projectName) {

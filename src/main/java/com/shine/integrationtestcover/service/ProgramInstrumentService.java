@@ -23,7 +23,7 @@ public class ProgramInstrumentService {
     public void doInstrumentation(String fileName) throws IOException {
         //fileName 是类似 “demo.jar”的文件名
         baseConfig.getUploadedFilePath();//这个是待插桩Jar文件的目录 最后带有斜杠 类似“xx/xx/xx/”
-        baseConfig.getRunTestProjectPath(fileName.replace("jar", "")); //这个是插桩后结果所在的目录，插桩结束后jar包在这个路径
+        baseConfig.getInstrumentationPath(); //这个是插桩后结果所在的目录，插桩结束后jar包在这个路径
         //取得包名，建立文件夹
         int index=fileName.lastIndexOf('.');
         String sub=fileName.substring(0,index);
@@ -64,7 +64,7 @@ public class ProgramInstrumentService {
         }
         //将同名文件夹下的jar包复制到指定位置
         try{
-            String command="cmd /c "+"copy  "+"\""+ baseConfig.getUploadedFilePath()+sub+"\\"+fileName+"\"  \""+ baseConfig.getRunTestProjectPath(fileName.replace("jar", ""))+"\"";
+            String command="cmd /c "+"copy  "+"\""+ baseConfig.getUploadedFilePath()+sub+"\\"+fileName+"\"  \""+ baseConfig.getInstrumentationPath()+"\"";
             Process p = Runtime.getRuntime().exec(command,null,dir);
             p.waitFor();
         }
