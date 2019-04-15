@@ -62,7 +62,9 @@ public class FileUploadController {
         if(uploadedDirectory.isDirectory()) {
             File[] files = uploadedDirectory.listFiles();
             for (File file : files) {
-                filenames.add(file.getName());
+                if(!file.isDirectory()) {
+                    filenames.add(file.getName());
+                }
             }
         }
         HashMap<String, Object> result = new HashMap<>();
