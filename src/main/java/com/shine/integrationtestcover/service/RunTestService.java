@@ -293,6 +293,7 @@ public class RunTestService {
             e.printStackTrace();
         }
 
+    }
 
     public List<File> getAllTestFileFromDic(File dic) {
         List<File> result = new ArrayList<>();
@@ -318,9 +319,6 @@ public class RunTestService {
                 result.add(file);
             }
         }
-    }
-
-
     }
 
     /*
