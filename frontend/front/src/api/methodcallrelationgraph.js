@@ -42,12 +42,12 @@ export function runTestCase (projectname, testcasename, method) {
     })
 }
 
-export function getTestRunningStatus (task_id_Key) {
+export function getTestRunningStatus (taskId) {
     return fetch({
         url: '/apiurl/getInvokingProcess',
         method: 'get',
         params: {
-            key: task_id_Key
+            key: taskId
         }
     })
 }

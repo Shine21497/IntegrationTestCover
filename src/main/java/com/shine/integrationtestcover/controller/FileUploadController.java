@@ -1,6 +1,7 @@
 package com.shine.integrationtestcover.controller;
 
 import com.shine.integrationtestcover.config.BaseConfig;
+import com.shine.integrationtestcover.service.ProgramInstrumentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.system.ApplicationHome;
 import org.springframework.web.bind.annotation.*;
@@ -19,9 +20,13 @@ public class FileUploadController {
     @Autowired
     private BaseConfig baseConfig;
 
+    @Autowired
+    private ProgramInstrumentService programInstrumentService;
+
     @RequestMapping(value = "/uploadJar")
     @ResponseBody
     public String uploadJar(@RequestParam("file") MultipartFile file){
+        String result = "";
         if (!file.isEmpty()) {
             try {
                 BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(baseConfig.getUploadedFilePath() + file.getOriginalFilename())));
@@ -31,16 +36,22 @@ public class FileUploadController {
                 out.close();
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
-                return "上传失败," + e.getMessage();
+                result =  "上传失败," + e.getMessage();
             } catch (IOException e) {
                 e.printStackTrace();
-                return "上传失败," + e.getMessage();
+                result =  "上传失败," + e.getMessage();
             }
-            return "上传成功";
+            result = "上传成功";
         } else {
-            return "上传失败，因为文件是空的.";
+            result =  "上传失败，因为文件是空的.";
         }
-
+        try {
+            programInstrumentService.doInstrumentation(file.getOriginalFilename());
+        } catch (IOException e) {
+            e.printStackTrace();
+            result = result + "插桩出现异常";
+        }
+        return result;
     }
 
     @RequestMapping(value = "/fileList", method = RequestMethod.GET)
