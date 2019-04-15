@@ -22,58 +22,64 @@ public class ProgramInstrumentService {
 
     public void doInstrumentation(String fileName) throws IOException {
         //fileName 是类似 “demo.jar”的文件名
-        baseConfig.getUploadedFilePath();//这个是待插桩Jar文件的目录 最后带有斜杠 类似“xx/xx/xx/”
-        baseConfig.getRunTestProjectPath(fileName.replace("jar", "")); //这个是插桩后结果所在的目录，插桩结束后jar包在这个路径
+        String getUploadedFilePath=baseConfig.getUploadedFilePath().substring(1).replace('/','\\');
+        String getRunTestProjectPath=baseConfig.getRunTestProjectPath(fileName.replace("jar", "")).substring(1).replace('/','\\');
         //取得包名，建立文件夹
         int index=fileName.lastIndexOf('.');
         String sub=fileName.substring(0,index);
-        mkDirectory(baseConfig.getUploadedFilePath()+sub);
+        mkDirectory(getUploadedFilePath+sub);
         //复制jar包到同名文件夹下，并且解压jar包
-        File dir=new File(baseConfig.getUploadedFilePath()+"\\"+sub);
-        try{
-            String command="cmd /c "+"copy  "+"\""+ baseConfig.getUploadedFilePath()+fileName+"\"  \""+ baseConfig.getUploadedFilePath()+sub+"\"";
-            String command1="jar -xvf "+fileName;
-            Process p = Runtime.getRuntime().exec(command);
-            Process p2=Runtime.getRuntime().exec(command1,null,dir);
-            p.waitFor();
-            p2.waitFor();
-
-        }catch (InterruptedException e){
-            e.printStackTrace();
-        }
+        File dir=new File(getUploadedFilePath+"\\"+sub);
+        System.out.println("dir"+dir);
+        String command="cmd /c "+"copy  "+"\""+ getUploadedFilePath+fileName+"\"  \""+ getUploadedFilePath+sub+"\"";
+        System.out.println(command);
+        doCmd(command,dir);
+        command="jar -xvf "+fileName;
+        doCmd(command,dir);
         //执行插桩函数
-        JarFileInput.jarFileInput(baseConfig.getUploadedFilePath()+sub,fileName);
+        JarFileInput.jarFileInput(getUploadedFilePath+sub,fileName);
         //删除同名文件夹下的jar包
-        try {
-            String command="cmd /c "+"del  \""+baseConfig.getUploadedFilePath()+sub+"\\"+fileName+"\"";
-            System.out.println(command);
-            Process p = Runtime.getRuntime().exec(command);
-            p.waitFor();
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        command="cmd /c "+"del  \""+getUploadedFilePath+sub+"\\"+fileName+"\"";
+        System.out.println(command);
+        doCmd(command,dir);
         //打包同名文件夹
-        try{
-            String command="cmd /c "+"jar cvfm "+fileName+" META-INF\\MANIFEST.MF ./";
-            Process p = Runtime.getRuntime().exec(command,null,dir);
-            p.waitFor();
-        }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        command="cmd /c "+"jar cvfm "+fileName+" META-INF\\MANIFEST.MF ./";
+        System.out.println(command);
+        doCmd(command,dir);
         //将同名文件夹下的jar包复制到指定位置
+        command="cmd /c "+"copy  "+"\""+ getUploadedFilePath+sub+"\\"+fileName+"\"  \""+ getRunTestProjectPath+"\"";
+        System.out.println(command);
+        doCmd(command,dir);
+        //删除创建的文件夹
+        command="cmd /c "+"rmdir /s/q   "+"\""+ getUploadedFilePath+sub+"\"";
+        System.out.println(command);
+        doCmd(command,dir);
+
+    }
+
+    public static void doCmd(String command,File dir) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        StringBuilder sb2 = new StringBuilder();
         try{
-            String command="cmd /c "+"copy  "+"\""+ baseConfig.getUploadedFilePath()+sub+"\\"+fileName+"\"  \""+ baseConfig.getRunTestProjectPath(fileName.replace("jar", ""))+"\"";
-            Process p = Runtime.getRuntime().exec(command,null,dir);
+        Process p = Runtime.getRuntime().exec(command,null,dir);
+            BufferedReader br = new BufferedReader(new InputStreamReader(p.getInputStream(), "GBK"));
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+            BufferedReader br2 = new BufferedReader(new InputStreamReader(p.getErrorStream(), "GBK"));
+            String line2 = null;
+            while ((line2 = br2.readLine()) != null) {
+                sb2.append(line2 + "\n");
+            }
+            br.close();
+            br2.close();
             p.waitFor();
         }
         catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
-
-
     public static  boolean mkDirectory(String path){
         File file = null;
         try {
