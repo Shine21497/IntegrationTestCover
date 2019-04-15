@@ -149,7 +149,7 @@ public class RunTestService {
             //String command=
             // "javac -cp C:\Users\22831\Desktop\lib\IntegrationTestCover.jar;C:\Users\22831\Desktop\lib\junit-4.10.jar com\shine\integrationtestcover\service\GraphServiceTest.java";
             String command = "javac -cp " + jarpath + jarname + ".jar" + ";" + testwaypath + testwayname + ".jar" + " " + javafilepath + packagename + "//" + javafilename + ".java";
-            //System.out.println(command);
+           // System.out.println(command);
             Process process = Runtime.getRuntime().exec(command);
             process.waitFor();
         } catch (Exception e) {
@@ -191,7 +191,15 @@ public class RunTestService {
     /*
     invoke methods:filename是java文件的名字,invoke 一个java文件的某个方法,返回调用关系
      */
+    @Async
     public List<String> invokeMethod(String javafilename, String methodname) {
+        System.out.println("运行one method:"+Thread.currentThread().getName());
+        List finishtask = new LinkedList();
+        int sumtask=1;
+
+        finishtask.add(0);
+        finishtask.add(sumtask);
+        this.runprocess = finishtask;
         String packagename = getPackagename(javafilename);
         compileJava(javafilename);
         //String packagename="com.example.demo.controller";
@@ -222,6 +230,11 @@ public class RunTestService {
         }catch (Exception e) {
             e.printStackTrace();
         }
+
+        finishtask.clear();
+        finishtask.add(1);
+        finishtask.add(sumtask);
+        this.runprocess=finishtask;
         //重定向到控制台
         System.setOut(old);
 
