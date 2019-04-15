@@ -439,7 +439,7 @@ import { setInterval } from 'timers';
             // 获取测试进度的时候要调用的
             _onTestRunning(){
                 let _this = this;
-                getTestRunningStatus(_this.taskid).then(response => {  // 这里的response[0] 和 [1]可能要改，看后端数据结构
+                getTestRunningStatus(_this.taskId).then(response => {  // 这里的response[0] 和 [1]可能要改，看后端数据结构
                     if(response[0] === "sorry,no this task~")
                         return _this.showMsg("sorry,no this task~");
                     _this.runTestPercentange = Math.ceil((response[0] / response[1])*100);
@@ -450,7 +450,7 @@ import { setInterval } from 'timers';
             },
             getTestResult(){
                 let _this = this;
-                getInvokingResults(_this.taskid).then(response => {  // 这里的 response 为测试用例的结果，一个 list
+                getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
                     _this.showTestResult(response,_this.taskType)
                 });
