@@ -64,6 +64,7 @@ public class RunTestService {
     public void initate(String projectname) {
         commonUtils.deleteDir(new File(baseConfig.getRunTestProjectPath(projectname)));
         commonUtils.copyDic(baseConfig.getUploadedTestPath(projectname), baseConfig.getRunTestProjectPath(projectname));
+        commonUtils.copyFile(projectname + ".jar", baseConfig.getInstrumentationPath(), baseConfig.getRunTestProjectPath(projectname));
         this.runprocess=new LinkedList();
         this.setTestwaypath(baseConfig.getUploadedFilePath().replaceFirst("/", ""));
         this.setJarpath(baseConfig.getRunTestProjectPath(projectname).replaceFirst("/", ""));//插桩后的位置
