@@ -90,7 +90,7 @@
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
-                                    <el-upload class="upload" action="/apiurl/uploadTestCase" accept="application/jar" :before-upload="onBeforeUpload" ref="uploadTest" :file-list="fileList" :auto-upload="false" :data="uploadTestData">
+                                    <el-upload class="upload" action="/apiurl/uploadTestCase" accept="application/jar" :before-upload="onBeforeUploadTestCase" ref="uploadTest" :file-list="fileList" :auto-upload="false" :data="uploadTestData">
                                         <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
                                         <el-button style="margin-left: 10px;" size="small" type="success" @click="submitTestUpload">上传到服务器</el-button>
                                         <div slot="tip" class="el-upload__tip">只能上传java文件或者zip文件</div>
@@ -137,7 +137,7 @@
                                     <el-form-item>
                                             <el-button type="primary" size="small" @click="startRunTestCase()">执行用例</el-button>
                                             <el-button type="primary" size="small" @click="getTestResult()" :disabled="runTestPercentange!=100">显示效果</el-button>
-                                            <el-button type="primary" size="small" @click="CancelShow()" :disabled="runTestPercentange!=100">取消效果</el-button>
+                                            <el-button type="primary" size="small" @click="cancelShow()" :disabled="runTestPercentange!=100">取消效果</el-button>
                                     </el-form-item>
                                 </el-form>
                             </el-container>
@@ -237,40 +237,45 @@ import { setInterval } from 'timers';
                 this.g.attr('transform', trans)
             },
             //显示用例测试结果
-            ShowTestResult(TestResult,type){
-                /*var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea",
-                "frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]
-                num=1;*/
+            showTestResult(TestResult,type){
+             //把第一个节点移到中心
+                var node = this.findNodeByName(TestResult[0].split(" ")[0])
+                                            var trans = this.tempTrans
+                                            trans.k = 1;
+                                            this.g.attr('transform',trans);
+                                            trans.x = (510 - node.x) * trans.k
+                                            trans.y = (300 - node.y) * trans.k
+                                             this.g.attr('transform', trans)
                 for(let index in TestResult){
                     var result=TestResult[index].split(" ");
                     //如果是单个结果
                     if(type === 'one'){
-                        //把第一个节点移到中心
-                        if(index==0){
-                            var node = this.findNodeByName(result[0])
+                       //逐个定位节点
+                            var node = this.findNodeByName(result[2])
                             var trans = this.tempTrans
                             trans.k = 1;
                             this.g.attr('transform',trans);
                             trans.x = (510 - node.x) * trans.k
                             trans.y = (300 - node.y) * trans.k
-                            
-                            this.g.attr('transform', trans)
-                        }
+                            var temp=this.g;
+                            setTimeout(function timer(){
+                            temp.attr('transform', trans);
+                            }, (index+1)*2000);
                         //线的流动效果和节点效果
-                        this.ChangeSingleLine(result[0],result[2]);
+                        this.changeSingleLine(result[0],result[2]);
                     }
                     //如果多个结果
                     else{
-                        this.ChangeMultipleLine(result[0],result[2]);
+                        this.changeMultipleLine(result[0],result[2]);
                     }
                     //更改结点样式
-                    this.ChangeNode(result[0]);
-                    this.ChangeNode(result[2]);
+                    this.changeNode(result[0]);
+                    this.changeNode(result[2]);
                 }
             },
 
            //改变用例测试经过的直线
-            ChangeSingleLine(SourceName,TargetName){
+            changeSingleLine(SourceName,TargetName){
                 for(let index in this.relation.links) {
                     if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
                         var line_id=this.relation.links[index].index
@@ -282,7 +287,7 @@ import { setInterval } from 'timers';
             },
 
             //多个用例测试结果
-            ChangeMultipleLine(SourceName,TargetName) {
+            changeMultipleLine(SourceName,TargetName) {
                 for(let index in this.relation.links) {
                     if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
                         var line_id=this.relation.links[index].index
@@ -292,7 +297,7 @@ import { setInterval } from 'timers';
                };
             },
             //给节点加上边界效果
-            ChangeNode(Name) {
+            changeNode(Name) {
                 for(let index in this.relation.nodes) {
                     if(this.relation.nodes[index].name==Name) {
                         var node_id=this.relation.nodes[index].index
@@ -302,17 +307,17 @@ import { setInterval } from 'timers';
                 };
             },
             //取消结果显示
-            CancelShow(){
-                // var TestResult=["frame.ShowTextFrame:initTextArea call frame.ShowTextPanel:getTextArea","frame.ShowTextFrame$1:actionPerformed call frame.ShowTextPanel:getTextArea"]
-                for(let index in _this.TestResult){
-                    var result=this.TestResult[index].split(" ");
-                    this.CancelLine(result[0],result[2]);
-                    this.CancelNode(result[0]);
-                    this.CancelNode(result[2]);
+            cancelShow(TestResult){
+                for(let index in TestResult){
+                    var result=TestResult[index].split(" ");
+                    this.cancelLine(result[0],result[2]);
+                    this.cancelNode(result[0]);
+                    this.cancelNode(result[2]);
+
                 }
             },
             //取消连线效果
-            CancelLine(SourceName,TargetName){
+            cancelLine(SourceName,TargetName){
                 for(let index in this.relation.links) {
                     if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
                        var line_id=this.relation.links[index].index
@@ -324,7 +329,7 @@ import { setInterval } from 'timers';
             },
 
             //取消节点边界显示
-            CancelNode(Name){
+            cancelNode(Name){
                 for(let index in this.relation.nodes) {
                     if(this.relation.nodes[index].name==Name) {
                         var node_id=this.relation.nodes[index].index
@@ -342,17 +347,17 @@ import { setInterval } from 'timers';
             },
 
             getTestClass(prov) {
-                console.log(this.selectTestForm.selectedTestProject)
+                console.log(this.testCaseMap)
                 console.log(prov)
                 this.selectTestForm.allTestCases =  this.testCaseMap[this.selectTestForm.selectedTestProject.split('.')[0]][prov]
                 // this.methods =  this.testCaseMap[this.selectTestForm.selectedTestProject][prov]
             },
             getTestProject(prov) {
-                // console.log(this.testCaseMap)
-                // console.log(prov.split('.'))
+                 console.log(this.testCaseMap)
+                 console.log(prov.split('.'))
                 // prov is "demo.jar" but testCaseMap is {"demo":{...}}
                 this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prov.split('.')[0]])
-                // this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prov])
+                //this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prov])
             },
             getClass(prov) {
                 this.adjustForm.allMethods = this.classMethodMap[prov]
@@ -398,7 +403,22 @@ import { setInterval } from 'timers';
                 this.$refs.uploadTest.submit();
             },
             onBeforeUpload(file) {
-
+                const isJAR = file.name.endsWith('.jar')
+                if (!isJAR) {
+                    this.$message.error('只能上传Jar文件!');
+                    return false;
+                }
+                return isJAR
+            },
+            onBeforeUploadTestCase(file) {
+                const isJava = file.name.endsWith('.java')
+                const isZip = file.name.endsWith('.zip')
+                if (!isJava && !isZip) {
+                    this.$message.error('只能上传Java文件或者Zip文件!');
+                    return false;
+                } else {
+                    return true
+                }
             },
             startRunTestCase(file) {
                 var projectname  = this.selectTestForm.selectedTestProject;
@@ -420,7 +440,7 @@ import { setInterval } from 'timers';
             // 获取测试进度的时候要调用的
             _onTestRunning(){
                 let _this = this;
-                getTestRunningStatus(_this.taskid).then(response => {  // 这里的response[0] 和 [1]可能要改，看后端数据结构
+                getTestRunningStatus(_this.taskId).then(response => {  // 这里的response[0] 和 [1]可能要改，看后端数据结构
                     if(response[0] === "sorry,no this task~")
                         return _this.showMsg("sorry,no this task~");
                     _this.runTestPercentange = Math.ceil((response[0] / response[1])*100);
@@ -431,10 +451,10 @@ import { setInterval } from 'timers';
             },
             getTestResult(){
                 let _this = this;
-                getInvokingResults(_this.taskid).then(response => {  // 这里的 response 为测试用例的结果，一个 list
+                getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
-                    _this.TestResult = response;
-                    _this.ShowTestResult(response,_this.taskType)
+                    _this.showTestResult(response,_this.taskType)
+
                 });
             },
             // 显示消息
@@ -765,7 +785,7 @@ import { setInterval } from 'timers';
     }
 
     //滑动鼠标显示连线效果，移到网页外连线消失
-    .edgelabel{
+    /*.edgelabel{
         stroke-width: 6px;
         fill: transparent;
         stroke:#DC143C;
@@ -779,6 +799,9 @@ import { setInterval } from 'timers';
         stroke-width: 3px;
         stroke-dashoffset: 0;
         stroke:#FFD700;
+    }*/
+    .edgelabel{
+    stroke:#FFD700;
     }
 
     //    字体火焰效果

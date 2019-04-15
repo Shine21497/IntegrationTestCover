@@ -26,7 +26,6 @@ public class Test {
                 line = br.readLine();
             }
 
-//            System.out.println(result);
             for(String temp:result){
                 String[] tempList=temp.split(" ");
 
