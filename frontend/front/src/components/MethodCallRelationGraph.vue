@@ -346,17 +346,17 @@ import { setInterval } from 'timers';
             },
 
             getTestClass(prov) {
-                console.log(this.selectTestForm.selectedTestProject)
+                console.log(this.testCaseMap)
                 console.log(prov)
                 this.selectTestForm.allTestCases =  this.testCaseMap[this.selectTestForm.selectedTestProject.split('.')[0]][prov]
                 // this.methods =  this.testCaseMap[this.selectTestForm.selectedTestProject][prov]
             },
             getTestProject(prov) {
-                // console.log(this.testCaseMap)
-                // console.log(prov.split('.'))
+                 console.log(this.testCaseMap)
+                 console.log(prov.split('.'))
                 // prov is "demo.jar" but testCaseMap is {"demo":{...}}
                 this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prov.split('.')[0]])
-                // this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prov])
+                //this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prov])
             },
             getClass(prov) {
                 this.adjustForm.allMethods = this.classMethodMap[prov]

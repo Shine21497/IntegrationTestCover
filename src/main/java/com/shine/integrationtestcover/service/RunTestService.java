@@ -1,6 +1,7 @@
 package com.shine.integrationtestcover.service;
 
 import com.shine.integrationtestcover.config.BaseConfig;
+import com.shine.integrationtestcover.utils.CommonUtils;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
@@ -11,6 +12,7 @@ import java.io.*;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -24,6 +26,9 @@ public class RunTestService {
 
     @Autowired
     BaseConfig baseConfig;
+
+    @Autowired
+    CommonUtils commonUtils;
 
     private static int task = 0;//完成的方法数
 
@@ -57,10 +62,13 @@ public class RunTestService {
 
     //初始化，接收项目名称
     public void initate(String projectname) {
+        commonUtils.deleteDir(new File(baseConfig.getRunTestProjectPath(projectname)));
+        commonUtils.copyDic(baseConfig.getUploadedTestPath(projectname), baseConfig.getRunTestProjectPath(projectname));
+        //拷贝插桩后的包
         this.setTestwaypath(baseConfig.getUploadedFilePath().replaceFirst("/", ""));
-        this.setJarpath(baseConfig.getUploadedFilePath().replaceFirst("/", ""));//插桩后的位置
+        this.setJarpath(baseConfig.getRunTestProjectPath(projectname).replaceFirst("/", ""));//插桩后的位置
         this.setJarname(projectname);
-        this.setJavafilepath(baseConfig.getUploadedTestPath(projectname).replaceFirst("/", ""));//测试文件位置
+        this.setJavafilepath(baseConfig.getRunTestProjectPath(projectname).replaceFirst("/", ""));//测试文件位置
     }
 
     /*
@@ -114,20 +122,19 @@ public class RunTestService {
         String[] names = packagename.split("\\.");
         String path = this.javafilepath + "//";//指定父目录(改),测试文件的位置
         for (int i = 0; i < names.length; i++) {
-            if (i < names.length)
-                path = path + names[i] + "/";
-            else {
-                path += names[i];
+            path = path + names[i] + "/";
+        }
+        File javaFile = new File(path + "//" + javafilename + ".java");
+        if(!javaFile.exists()) {
+            File file = new File(path);
+            if(!file.exists())
+            try {
+                file.mkdirs();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
+            copyFile(this.javafilepath + "//" + javafilename + ".java", path + "//" + javafilename + ".java");
         }
-        File file = new File(path);
-        try {
-            file.mkdirs();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        File javaFile = new File(this.getJavafilepath() + "//" + javafilename + ".java");
-        copyFile(this.javafilepath + "//" + javafilename + ".java", path + "//" + javafilename + ".java");
         return path;
     }
 
@@ -281,6 +288,31 @@ public class RunTestService {
 
     }
 
+    public List<File> getAllTestFileFromDic(File dic) {
+        List<File> result = new ArrayList<>();
+        if(!dic.exists()) {
+            System.out.println("项目目录不存在");
+            return new ArrayList<>();
+        } else {
+            for(File f : dic.listFiles()) {
+                visitFile(result, f);
+            }
+            return result;
+        }
+
+    }
+
+    public void visitFile(List<File> result, File file) {
+        if(file.isDirectory()) {
+            for(File f : file.listFiles()) {
+                visitFile(result, f);
+            }
+        } else {
+            if(file.getName().contains(".java")) {
+                result.add(file);
+            }
+        }
+    }
 
 
     /*
@@ -294,7 +326,8 @@ public class RunTestService {
         List results = new LinkedList<>();
         String path = this.javafilepath;
         File file = new File(path);
-        File[] tempList = file.listFiles();
+        List<File> tempList = getAllTestFileFromDic(file);
+        //深度优先遍历 并存下来给下次使用
         for (File f : tempList) {
             if (f.getName().contains(".java")) {
                 int m = getMethods(f.getName().replace(".java", "")).size();
@@ -307,7 +340,6 @@ public class RunTestService {
                 List<String> m = getMethods(filename);
                 for (int i = 0; i < m.size(); i++) {
                     results.addAll(invokeMethod(filename, m.get(i)));
-                    Thread.sleep(5000);
                     task++;
                 }
             }
