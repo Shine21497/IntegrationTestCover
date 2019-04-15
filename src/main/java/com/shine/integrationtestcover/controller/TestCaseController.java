@@ -45,6 +45,8 @@ public class TestCaseController {
 
     @RequestMapping(value = "/runTestCase", method = RequestMethod.GET)
     public List runTestCase(String projectname, String testcasename, String method)throws Exception {
+        testcasename = testcasename.replace(".java", "");
+        projectname = projectname.replace(".jar", "");
         runTestService.initate(projectname);
         SimpleDateFormat sdf = new SimpleDateFormat();
         sdf.applyPattern("MMddHHmmss");
@@ -99,7 +101,7 @@ public class TestCaseController {
     @RequestMapping(value = "/getInvokingProcess", method = RequestMethod.GET)
     public List getInvokingProcess(String key) {
         List result = new LinkedList();
-        if (key != this.key) {
+        if (!key.equals(this.key)) {
             result.add("sorry,no this task~");
             return result;
         } else {
@@ -125,46 +127,3 @@ public class TestCaseController {
 
 }
 
- /*  @RequestMapping(value = "/runtestcase", method = RequestMethod.GET)
-    public List<String> runTestCase(String projectname, String testcasename) {
-
-        List<String> invoking = new LinkedList<>();
-
-        runTestService.initate(projectname, testcasename);//初始化，包括建文件夹以及编译java文件
-
-        String packagename = runTestService.getPackagename(testcasename);//获得包名 "."分隔
-
-        List<String> methods = runTestService.getMethods(testcasename);//获得所有方法名
-        for (int i = 0; i < methods.size(); i++) {
-            List<String> onetestcaseinvoking = runTestService.invokeMethod(testcasename,methods.get(i));
-         //   finishtestcase++;
-            invoking.addAll(onetestcaseinvoking);
-        }
-        return invoking;
-    }
-
-    *//*
-    接收项目名，返回已经完成数和总数 n/m,执行所有测试用例
-     *//*
-    @RequestMapping(value = "/finish", method = RequestMethod.GET)
-    @Async
-    public List getFinish(String projectname,String javafilename) {
-        runTestService.runall(javafilename);
-        System.out.println(Thread.currentThread().getName());
-        List<String> finish=new LinkedList<>();
-
-        finish.add(String.valueOf(runTestService.getTask()));
-        finish.add(String.valueOf(sumtestcase));
-
-        return finish;
-    }
-
-    @RequestMapping(value = "/finishedtask", method = RequestMethod.GET)
-    @Async
-    public List getFinishedTest(String projectname,String javafilename) {
-        runTestService.runall(javafilename);
-        System.out.println(Thread.currentThread().getName());
-        List<String> finish=runTestService.getAllmethods();
-        return finish;
-    }
-    */

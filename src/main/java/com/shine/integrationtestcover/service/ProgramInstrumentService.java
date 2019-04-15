@@ -23,7 +23,7 @@ public class ProgramInstrumentService {
     public void doInstrumentation(String fileName) throws IOException {
         //fileName 是类似 “demo.jar”的文件名
         String getUploadedFilePath=baseConfig.getUploadedFilePath().substring(1).replace('/','\\');
-        String getRunTestProjectPath=baseConfig.getRunTestProjectPath(fileName.replace("jar", "")).substring(1).replace('/','\\');
+        String getRunTestProjectPath=baseConfig.getInstrumentationPath().substring(1).replace('/','\\');
         //取得包名，建立文件夹
         int index=fileName.lastIndexOf('.');
         String sub=fileName.substring(0,index);
