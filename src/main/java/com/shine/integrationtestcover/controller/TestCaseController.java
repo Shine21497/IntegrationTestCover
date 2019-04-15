@@ -46,6 +46,7 @@ public class TestCaseController {
     @RequestMapping(value = "/runTestCase", method = RequestMethod.GET)
     public List runTestCase(String projectname, String testcasename, String method)throws Exception {
         testcasename = testcasename.replace(".java", "");
+        projectname = projectname.replace(".jar", "");
         runTestService.initate(projectname);
         SimpleDateFormat sdf = new SimpleDateFormat();
         sdf.applyPattern("MMddHHmmss");
