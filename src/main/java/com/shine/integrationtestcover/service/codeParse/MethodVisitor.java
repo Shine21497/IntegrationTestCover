@@ -34,6 +34,7 @@ public class MethodVisitor extends EmptyVisitor {
     public static HashMap<String, ArrayList<String>> methods = new HashMap<>();
     public static boolean ifOnlySelfPackage = false;
     public static String[] packageNames = {};
+    public static HashSet<String> allMethods=new HashSet<>();
 
 
     public MethodVisitor(MethodGen m, JavaClass jc) {
@@ -44,14 +45,13 @@ public class MethodVisitor extends EmptyVisitor {
         classes.add(jc.getClassName());
         if (methods.containsKey(jc.getClassName())) {
             methods.get(jc.getClassName()).add(mg.getName());
-            classoutput = jc.getClassName() + " CALL " + jc.getClassName() + ":" + mg.getName();
-            callRelationship.add(classoutput);
+
         } else {
             methods.put(jc.getClassName(), new ArrayList<>());
             methods.get(jc.getClassName()).add(mg.getName());
-            classoutput = jc.getClassName() + " CALL " + jc.getClassName() + ":" + mg.getName();
-            callRelationship.add(classoutput);
+
         }
+        allMethods.add(jc.getClassName()+":"+mg.getName());
 
     }
 
