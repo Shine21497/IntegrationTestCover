@@ -1,5 +1,6 @@
 package com.shine.integrationtestcover.service;
 
+import com.shine.integrationtestcover.service.codeParse.MethodVisitor;
 import com.shine.integrationtestcover.service.graphCustom.GraphAlo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,6 +77,7 @@ public class GraphService {
             vertex.add(tempList[0]);
             vertex.add(tempList[2]);
         }
+        vertex.addAll(MethodVisitor.allMethods);
         vertexResult = new ArrayList<String>(new HashSet<String>(vertex));//
         System.out.println("vertexResult:"+vertexResult.size());
 
