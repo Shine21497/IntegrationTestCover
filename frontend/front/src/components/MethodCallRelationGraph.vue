@@ -313,6 +313,7 @@ import { setInterval } from 'timers';
                     this.cancelLine(result[0],result[2]);
                     this.cancelNode(result[0]);
                     this.cancelNode(result[2]);
+
                 }
             },
             //取消连线效果
@@ -453,6 +454,7 @@ import { setInterval } from 'timers';
                 getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
                     _this.showTestResult(response,_this.taskType)
+
                 });
             },
             // 显示消息
