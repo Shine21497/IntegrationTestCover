@@ -33,7 +33,6 @@ public class MethodVisitor extends EmptyVisitor {
     public static HashSet<String> classes = new HashSet<>();
     public static HashMap<String, ArrayList<String>> methods = new HashMap<>();
     public static boolean ifOnlySelfPackage = false;
-    public static String[] packageNames = {};
     public static HashSet<String> allMethods=new HashSet<>();
 
 
@@ -81,16 +80,9 @@ public class MethodVisitor extends EmptyVisitor {
         String formatInternal = "%s";
         this.DegreeClass = String.format(formatInternal, i.getReferenceType(cp));
         this.DegreeMethod = i.getMethodName(cp);
-        if (!this.DegreeClass.startsWith("java")) {
-            for (String packageName : packageNames) {
-                if (this.DegreeClass.startsWith(packageName)) {
-                    String output = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
-                    callRelationship.add(output);
-                    // System.out.println(output);
-                }
-            }
+        String output = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
+        callRelationship.add(output);
 
-        }
     }
 
     public static List<String> getCallRelationship() {

@@ -3,6 +3,7 @@ package com.shine.integrationtestcover.controller;
 
 import com.shine.integrationtestcover.config.BaseConfig;
 import com.shine.integrationtestcover.service.GraphService;
+import com.shine.integrationtestcover.service.ParseJarService;
 import com.shine.integrationtestcover.service.codeParse.MethodVisitor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,7 +24,7 @@ public class FileParserController {
 
     @RequestMapping(value = "/relation",method = RequestMethod.GET)
     public HashMap<String, Object> getInvokeRelationship(@RequestParam String name, @RequestParam String packages){
-        MethodVisitor.packageNames = packages.isEmpty()? new String[]{""}: packages.split("\n");
+        ParseJarService.packageNames = packages.isEmpty()? new String[]{""}: packages.split("\n");
         graphService.setFilename(name);
         graphService.setPath(baseConfig.getUploadedFilePath());
         graphService.initiate();
