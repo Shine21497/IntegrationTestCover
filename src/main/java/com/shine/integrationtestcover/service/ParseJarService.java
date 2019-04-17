@@ -17,6 +17,7 @@ public class ParseJarService {
 
     private String filename;
     private String path;
+    public static String[] packageNames = {};
 
     private ClassVisitor visitor;
 
@@ -49,15 +50,18 @@ public class ParseJarService {
             Enumeration<JarEntry> entries = jar.entries();
             while (entries.hasMoreElements()) {
                 JarEntry entry = entries.nextElement();
-                if (entry.isDirectory())
+                if (entry.isDirectory() || !entry.getName().endsWith(".class")) {
                     continue;
-
-                if (!entry.getName().endsWith(".class"))
-                    continue;
-
-                cp = new ClassParser(path+"//"+filename, entry.getName());
-                visitor = new ClassVisitor(cp.parse());
-                visitor.start();
+                }
+                if(!entry.getName().startsWith("java")) {
+                    for (String packageName : packageNames) {
+                        if (entry.getName().startsWith(packageName.replace(".", "/"))) {
+                            cp = new ClassParser(path+"//"+filename, entry.getName());
+                            visitor = new ClassVisitor(cp.parse());
+                            visitor.start();
+                        }
+                    }
+                }
 
             }
         } catch (IOException e) {

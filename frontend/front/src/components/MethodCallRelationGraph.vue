@@ -32,7 +32,7 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item label="包范围">
-                                        <el-input type="textarea" v-model="form.packages" placeholder="请输入包范围"></el-input>
+                                        <el-input type="textarea" v-model="form.packages" placeholder="请输入包范围，如果打包时把lib一同打入，一定要输入包的范围"></el-input>
                                     </el-form-item>
                                     <el-form-item>
                                         <el-button type="primary" :disabled="form.selectedjar.length == 0" size="small" @click="generateGraph()">立即创建</el-button>
