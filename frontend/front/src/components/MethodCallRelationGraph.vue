@@ -251,7 +251,7 @@ import { setInterval } from 'timers';
                     //如果是单个结果
                     if(type === 'one'){
                        //逐个定位节点
-                            var node = this.findNodeByName(result[2])
+                            /*var node = this.findNodeByName(result[2])
                             var trans = this.tempTrans
                             trans.k = 1;
                             this.g.attr('transform',trans);
@@ -260,7 +260,7 @@ import { setInterval } from 'timers';
                             var temp=this.g;
                             setTimeout(function timer(){
                             temp.attr('transform', trans);
-                            }, (index+1)*2000);
+                            }, (index+1)*2000);*/
                         //线的流动效果和节点效果
                         this.changeSingleLine(result[0],result[2]);
                     }
@@ -452,6 +452,7 @@ import { setInterval } from 'timers';
                 let _this = this;
                 getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
+                    console.log(response)
                     _this.showTestResult(response,_this.taskType)
                 });
             },
@@ -816,8 +817,7 @@ import { setInterval } from 'timers';
             stroke:#FA8072;
             stroke-dasharray: 1000;
             stroke-dashoffset: 1000;
-            animation: draw 10s;
-            animation-fill-mode:forwards;
+            -webkit-animation: draw 3s infinite ease-in-out;
     }
    @keyframes draw{
         0%{
