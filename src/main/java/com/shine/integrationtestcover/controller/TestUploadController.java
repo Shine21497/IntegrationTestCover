@@ -119,7 +119,7 @@ public class TestUploadController {
                             }
                         }
                     }
-                    projectToTestFiles.get(projectDirectory.getName()).put("allTestFiles", new ArrayList<>());
+                    projectToTestFiles.get(projectDirectory.getName()).put("allTestFiles", Arrays.asList("allMethods"));
                 }
             }
         }
