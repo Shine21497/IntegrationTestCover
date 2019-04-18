@@ -63,12 +63,12 @@ public class TestCaseController {
             type="one";
             runTestService.invokeMethod(testcasename, method);
         }
-        else if (method.equals("allMethods") && testcasename.equals("allMethods") == false)//指定跑某个java文件里面的所有测试用例
+        else if (method.equals("allMethods") && testcasename.equals("allTestFiles") == false)//指定跑某个java文件里面的所有测试用例
         {
             type="many";
             runTestService.runTest(testcasename);
         }
-        else if (testcasename.equals("allMethods") && method.equals("allMethods"))//跑此项目下的所有
+        else if (testcasename.equals("allTestFiles") && method.equals("allMethods"))//跑此项目下的所有
         {
             type="many";
             runTestService.runAll();
