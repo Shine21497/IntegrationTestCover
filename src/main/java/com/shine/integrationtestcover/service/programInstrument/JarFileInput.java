@@ -10,8 +10,7 @@ import java.util.jar.JarFile;
 
 
 public class JarFileInput {
-
-
+    public static String[] packageNames = {};
     //按照jar包内路径生成文件夹
     public static  boolean mkDirectory(String path){
         File file = null;
@@ -91,28 +90,33 @@ public class JarFileInput {
                     continue;
                 if (!entry.getName().endsWith(".class"))
                     continue;
-
-                InputStream i=jar.getInputStream(entry);
-                String name=entry.getName();
-                System.out.println(name);
-                int index= name.lastIndexOf('/');
-                int index1=name.indexOf('/');
-                if(index!=-1){
-                    String md=name.substring(0,index);
-                    mkDirectory(path+"\\"+md);
+                if(!entry.getName().startsWith("java")) {
+                    for (String packageName : packageNames) {
+                        if (entry.getName().startsWith(packageName.replace(".", "/"))) {
+                            InputStream i = jar.getInputStream(entry);
+                            String name = entry.getName();
+                            System.out.println(name);
+                            int index = name.lastIndexOf('/');
+                            int index1 = name.indexOf('/');
+                            if (index != -1) {
+                                String md = name.substring(0, index);
+                                mkDirectory(path + "\\" + md);
+                            }
+                            String sub = name.substring(index + 1);
+                            if (index1 != -1) {
+                                String s = name.substring(0, index1);
+                                System.out.println(s);
+                                if (s.equals("META-INF"))
+                                    continue;
+                            }
+                            //插桩
+                            ProgramInstrument.BytechaZhuang(i, path, name);
+                            System.out.println("success!");
+                            String command = "cmd /c " + "jar uvf " + "\"" + path + "\\" + filename + "\" " + name;
+                            alist.add(command);
+                        }
+                    }
                 }
-                String sub=name.substring(index+1);
-                if(index1!=-1){
-                    String s=name.substring(0,index1);
-                    System.out.println(s);
-                    if(s.equals("META-INF"))
-                        continue;
-                }
-                //插桩
-                ProgramInstrument.BytechaZhuang(i,path,name);
-                System.out.println("success!");
-                String command="cmd /c "+"jar uvf "+"\""+path+"\\"+filename+"\" "+name;
-                alist.add(command);
 
             }
             jar.close();

@@ -20,8 +20,6 @@ public class FileUploadController {
     @Autowired
     private BaseConfig baseConfig;
 
-    @Autowired
-    private ProgramInstrumentService programInstrumentService;
 
     @RequestMapping(value = "/uploadJar")
     @ResponseBody
@@ -44,12 +42,6 @@ public class FileUploadController {
             result = "上传成功";
         } else {
             result =  "上传失败，因为文件是空的.";
-        }
-        try {
-            programInstrumentService.doInstrumentation(file.getOriginalFilename());
-        } catch (IOException e) {
-            e.printStackTrace();
-            result = result + "插桩出现异常";
         }
         return result;
     }

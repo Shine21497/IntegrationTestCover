@@ -1,5 +1,6 @@
 package com.shine.integrationtestcover.service.codeParse;
 
+import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -34,6 +35,7 @@ public class MethodVisitor extends EmptyVisitor {
     public static HashMap<String, ArrayList<String>> methods = new HashMap<>();
     public static boolean ifOnlySelfPackage = false;
     public static HashSet<String> allMethods=new HashSet<>();
+    public static String[] packageToCallNames = {};
 
 
     public MethodVisitor(MethodGen m, JavaClass jc) {
@@ -80,8 +82,14 @@ public class MethodVisitor extends EmptyVisitor {
         String formatInternal = "%s";
         this.DegreeClass = String.format(formatInternal, i.getReferenceType(cp));
         this.DegreeMethod = i.getMethodName(cp);
-        String output = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
-        callRelationship.add(output);
+        if(!this.DegreeClass.startsWith("java")) {
+            for (String packageName : packageToCallNames) {
+                if (this.DegreeClass.startsWith(packageName)) {
+                    String output = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
+                    callRelationship.add(output);
+                }
+            }
+        }
 
     }
 
