@@ -4,6 +4,7 @@ import D3Demo from './components/D3Demo.vue'
 import HelloWorld from './components/HelloWorld.vue'
 import D3Topo from './components/D3Topo.vue'
 import MethodCallRelationGraph from './components/MethodCallRelationGraph.vue'
+import TryMethodCallRelationGraph from './components/TryMethodCallRelationGraph.vue'
 
 Vue.use(Router)
 
@@ -30,6 +31,11 @@ export default new Router({
             path: '/method',
             name: 'MethodCallRelationGraph',
             component: MethodCallRelationGraph
+        },
+        {
+            path: '/new',
+            name: 'TryMethodCallRelationGraph',
+            component: TryMethodCallRelationGraph
         }
     ]
 })
