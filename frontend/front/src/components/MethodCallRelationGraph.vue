@@ -1,177 +1,169 @@
 <template>
     <el-container>
-        <el-main style="padding:0;">
-            <div id="container" class="container">
-                <svg id="svgCanvas">
-                    <defs>
-                        <!--节点滤波器-->
-                        <filter id="f1">
-                            <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
-                        </filter>
-                    </defs>
-                    <defs>
-                        <!--直线滤波器-->
-                        <filter id="f2">
-                            <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
-                        </filter>
-                    </defs>
-                </svg>
-            </div>
-            <!-- <div id="thumb-container">
-                <svg id="thumb" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
-                    <use xlink:href="#svgCanvas" />
-                </svg>
-            </div> -->
-        </el-main>
-
-        <div id="leftSide" class="left-side">
-            <h2>Method Call Relation Graph
-                <!-- <button class="funny" @click="shrink_open()">cxk</button> -->
-                <i id="shrink-icon" class="funny el-icon-arrow-left" @click="shrink_open()"></i>
-            </h2>
-            
-            <el-collapse v-model="activeNames">
-                <el-collapse-item class="titlestyle" title="上传项目" name="1">
-                    <el-card :body-style="{ padding: '0px' }" class="card">
-                        <el-upload class="upload" action="/apiurl/uploadJar" accept="application/jar" :before-upload="onBeforeUpload" ref="upload" :file-list="fileList" :auto-upload="false">
-                            <el-button slot="trigger" type="primary">选取文件</el-button>
-                            <el-button style="margin-left: 10px;" type="success" @click="submitUpload">上传到服务器</el-button>
-                            <div slot="tip" class="el-upload__tip">只能上传jar文件</div>
-                        </el-upload>
-                    </el-card>
-                </el-collapse-item>
-                <el-collapse-item class="titlestyle" name="2">
-                    <template slot="title">
-                        <p class="itemname">调用关系图生成</P>
-                        <p class="require-info">（请先上传项目）</P>
-                    </template>
-                    <el-card :body-style="{ padding: '0px' }" class="card">
-                        <el-container class="formbody">
-                            <el-form ref="form" :model="form" label-width="80px">
-                                <el-form-item label="Jar包选择">
-                                    <el-select v-model="form.selectedjar" placeholder="请选择jar包" @visible-change="showfilelist">
-                                        <el-option
-                                                v-for="item in uploadedFiles"
-                                                :key="item"
-                                                :label="item"
-                                                :value="item">
-                                        </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="包范围">
-                                    <el-input type="textarea" v-model="form.packages" placeholder="请输入包范围"></el-input>
-                                </el-form-item>
-                                <el-form-item>
-                                    <el-button type="primary" :disabled="form.selectedjar.length == 0" size="small" @click="generateGraph()">立即创建</el-button>
-                                </el-form-item>
-                            </el-form>
-                        </el-container>
-                    </el-card>
-                </el-collapse-item>
-                <el-collapse-item class="titlestyle" name="3" :class="JSON.stringify(relation)=='{}'?'disabled': ''">
-                    <template slot="title">
-                        <p class="itemname">辅助定位</P>
-                        <p class="require-info">（请先生成调用关系图）</P>
-                    </template>
-                    <el-card :body-style="{ padding: '0px' }" class="card">
-                        <el-container class="formbody">
-                            <el-form ref="adjustForm" :model="adjustForm" label-width="80px">
-                                <el-form-item label="类选择">
-                                    <el-select filterable  v-model="adjustForm.selectedClass" placeholder="请选择类" @change="getClass($event)">
-                                        <el-option
-                                                v-for="item in adjustForm.allClasses"
-                                                :key="item"
-                                                :label="item"
-                                                :value="item">
-                                        </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="方法选择">
-                                    <el-select filterable  v-model="adjustForm.selectedMethod" placeholder="请选择方法">
-                                        <el-option
-                                                v-for="item in adjustForm.allMethods"
-                                                :key="item"
-                                                :label="item"
-                                                :value="item">
-                                        </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item>
-                                    <el-button :disabled="adjustForm.selectedMethod.length == 0" type="primary" size="small" @click="goToNode()">立即定位</el-button>
-                                </el-form-item>
-                            </el-form>
-                        </el-container>
-                    </el-card>
-                </el-collapse-item>
-                <el-collapse-item class="titlestyle" title="上传测试用例" name="4">
-                    <el-card :body-style="{ padding: '0px' }" class="card">
-                        <el-container class="formbody">
-                            <el-form ref="uploadTestData" :model="uploadTestData" label-width="80px">
-                                <el-form-item label="Test所属项目选择">
-                                    <el-select v-model="uploadTestData.selectedProject" placeholder="请选择项目">
-                                        <el-option
-                                                v-for="item in uploadedFiles"
-                                                :key="item"
-                                                :label="item"
-                                                :value="item">
-                                        </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-upload class="upload" action="/apiurl/uploadTestCase" accept="application/jar" :before-upload="onBeforeUploadTestCase" ref="uploadTest" :file-list="fileList" :auto-upload="false" :data="uploadTestData">
-                                    <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-                                    <el-button style="margin-left: 10px;" size="small" type="success" @click="submitTestUpload">上传到服务器</el-button>
-                                    <div slot="tip" class="el-upload__tip">只能上传java文件或者zip文件</div>
-                                </el-upload>
-                            </el-form>
-                        </el-container>
-                    </el-card>
-                </el-collapse-item>
-                <el-collapse-item class="titlestyle" title="运行测试用例" name="5">
-                    <el-card :body-style="{ padding: '0px' }" class="card">
-                        <el-container class="formbody">
-                            <el-form ref="selectTestForm" :model="selectTestForm" label-width="80px">
-                                <el-form-item label="项目选择">
-                                    <el-select filterable  v-model="selectTestForm.selectedTestProject" placeholder="请选择项目" @change="getTestProject($event)" @visible-change="showTestProjectList">
-                                        <el-option
-                                                v-for="item in uploadedFiles"
-                                                :key="item"
-                                                :label="item"
-                                                :value="item">
-                                        </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="类选择">
-                                    <el-select filterable  v-model="selectTestForm.selectedTestClass" placeholder="请选择测试类" @change="getTestClass($event)">
-                                        <el-option
-                                                v-for="item in selectTestForm.allTestClasses"
-                                                :key="item"
-                                                :label="item"
-                                                :value="item">
-                                        </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="方法选择">
-                                    <el-select filterable  v-model="selectTestForm.selectedTestCase" placeholder="请选择测试方法">
-                                        <el-option
-                                                v-for="item in selectTestForm.allTestCases"
-                                                :key="item"
-                                                :label="item"
-                                                :value="item">
-                                        </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-progress :text-inside="true" :stroke-width="18" :percentage="runTestPercentange"></el-progress>
-                                <el-form-item>
-                                        <el-button type="primary" size="small" @click="startRunTestCase()">执行用例</el-button>
-                                        <el-button type="primary" size="small" @click="getTestResult()" :disabled="runTestPercentange!=100">显示效果</el-button>
-                                        <el-button type="primary" size="small" @click="cancelShow()" :disabled="runTestPercentange!=100">取消效果</el-button>
-                                </el-form-item>
-                            </el-form>
-                        </el-container>
-                    </el-card>
-                </el-collapse-item>
-            </el-collapse>
-        </div>
+        <el-header>Method Call Relation Graph</el-header>
+        <el-container>
+            <el-aside width="350px">
+                <el-collapse v-model="activeNames">
+                    <el-collapse-item class="titlestyle" title="上传项目" name="1">
+                        <el-card :body-style="{ padding: '0px' }" class="card">
+                            <el-upload class="upload" action="/apiurl/uploadJar" accept="application/jar" :before-upload="onBeforeUpload" ref="upload" :file-list="fileList" :auto-upload="false">
+                                <el-button slot="trigger" type="primary">选取文件</el-button>
+                                <el-button style="margin-left: 10px;" type="success" @click="submitUpload">上传到服务器</el-button>
+                                <div slot="tip" class="el-upload__tip">只能上传jar文件</div>
+                            </el-upload>
+                        </el-card>
+                    </el-collapse-item>
+                    <el-collapse-item class="titlestyle" name="2">
+                        <template slot="title">
+                            <p class="itemname">调用关系图生成</P>
+                            <p class="require-info">（请先上传项目）</P>
+                        </template>
+                        <el-card :body-style="{ padding: '0px' }" class="card">
+                            <el-container class="formbody">
+                                <el-form ref="form" :model="form" label-width="80px">
+                                    <el-form-item label="Jar包选择">
+                                        <el-select v-model="form.selectedjar" placeholder="请选择jar包" @visible-change="showfilelist">
+                                            <el-option
+                                                    v-for="item in uploadedFiles"
+                                                    :key="item"
+                                                    :label="item"
+                                                    :value="item">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item label="包范围">
+                                        <el-input type="textarea" v-model="form.packages" placeholder="请输入包范围"></el-input>
+                                    </el-form-item>
+                                    <el-form-item>
+                                        <el-button type="primary" :disabled="form.selectedjar.length == 0" size="small" @click="generateGraph()">立即创建</el-button>
+                                    </el-form-item>
+                                </el-form>
+                            </el-container>
+                        </el-card>
+                    </el-collapse-item>
+                    <el-collapse-item class="titlestyle" name="3" :class="JSON.stringify(relation)=='{}'?'disabled': ''">
+                        <template slot="title">
+                            <p class="itemname">辅助定位</P>
+                            <p class="require-info">（请先生成调用关系图）</P>
+                        </template>
+                        <el-card :body-style="{ padding: '0px' }" class="card">
+                            <el-container class="formbody">
+                                <el-form ref="adjustForm" :model="adjustForm" label-width="80px">
+                                    <el-form-item label="类选择">
+                                        <el-select filterable  v-model="adjustForm.selectedClass" placeholder="请选择类" @change="getClass($event)">
+                                            <el-option
+                                                    v-for="item in adjustForm.allClasses"
+                                                    :key="item"
+                                                    :label="item"
+                                                    :value="item">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item label="方法选择">
+                                        <el-select filterable  v-model="adjustForm.selectedMethod" placeholder="请选择方法">
+                                            <el-option
+                                                    v-for="item in adjustForm.allMethods"
+                                                    :key="item"
+                                                    :label="item"
+                                                    :value="item">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item>
+                                        <el-button :disabled="adjustForm.selectedMethod.length == 0" type="primary" size="small" @click="goToNode()">立即定位</el-button>
+                                    </el-form-item>
+                                </el-form>
+                            </el-container>
+                        </el-card>
+                    </el-collapse-item>
+                    <el-collapse-item class="titlestyle" title="上传测试用例" name="4">
+                        <el-card :body-style="{ padding: '0px' }" class="card">
+                            <el-container class="formbody">
+                                <el-form ref="uploadTestData" :model="uploadTestData" label-width="80px">
+                                    <el-form-item label="Test所属项目选择">
+                                        <el-select v-model="uploadTestData.selectedProject" placeholder="请选择项目">
+                                            <el-option
+                                                    v-for="item in uploadedFiles"
+                                                    :key="item"
+                                                    :label="item"
+                                                    :value="item">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-upload class="upload" action="/apiurl/uploadTestCase" accept="application/jar" :before-upload="onBeforeUploadTestCase" ref="uploadTest" :file-list="fileList" :auto-upload="false" :data="uploadTestData">
+                                        <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+                                        <el-button style="margin-left: 10px;" size="small" type="success" @click="submitTestUpload">上传到服务器</el-button>
+                                        <div slot="tip" class="el-upload__tip">只能上传java文件或者zip文件</div>
+                                    </el-upload>
+                                </el-form>
+                            </el-container>
+                        </el-card>
+                    </el-collapse-item>
+                    <el-collapse-item class="titlestyle" title="运行测试用例" name="5">
+                        <el-card :body-style="{ padding: '0px' }" class="card">
+                            <el-container class="formbody">
+                                <el-form ref="selectTestForm" :model="selectTestForm" label-width="80px">
+                                    <el-form-item label="项目选择">
+                                        <el-select filterable  v-model="selectTestForm.selectedTestProject" placeholder="请选择项目" @change="getTestProject($event)" @visible-change="showTestProjectList">
+                                            <el-option
+                                                    v-for="item in uploadedFiles"
+                                                    :key="item"
+                                                    :label="item"
+                                                    :value="item">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item label="类选择">
+                                        <el-select filterable  v-model="selectTestForm.selectedTestClass" placeholder="请选择测试类" @change="getTestClass($event)">
+                                            <el-option
+                                                    v-for="item in selectTestForm.allTestClasses"
+                                                    :key="item"
+                                                    :label="item"
+                                                    :value="item">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item label="方法选择">
+                                        <el-select filterable  v-model="selectTestForm.selectedTestCase" placeholder="请选择测试方法">
+                                            <el-option
+                                                    v-for="item in selectTestForm.allTestCases"
+                                                    :key="item"
+                                                    :label="item"
+                                                    :value="item">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-progress :text-inside="true" :stroke-width="18" :percentage="runTestPercentange"></el-progress>
+                                    <el-form-item>
+                                            <el-button type="primary" size="small" @click="startRunTestCase()">执行用例</el-button>
+                                            <el-button type="primary" size="small" @click="getTestResult()" :disabled="runTestPercentange!=100">显示效果</el-button>
+                                            <el-button type="primary" size="small" @click="cancelShow()" :disabled="runTestPercentange!=100">取消效果</el-button>
+                                    </el-form-item>
+                                </el-form>
+                            </el-container>
+                        </el-card>
+                    </el-collapse-item>
+                </el-collapse>
+            </el-aside>
+            <el-main>
+                <div id="container" class="container">
+                    <svg id="svgCanvas">
+                        <defs>
+                            <!--节点滤波器-->
+                            <filter id="f1">
+                                <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
+                            </filter>
+                        </defs>
+                        <defs>
+                            <!--直线滤波器-->
+                            <filter id="f2">
+                                <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
+                            </filter>
+                        </defs>
+                    </svg>
+                </div>
+            </el-main>
+        </el-container>
     </el-container>
 </template>
 
@@ -225,11 +217,10 @@ import { setInterval } from 'timers';
                 testCaseMap:{},
                 g:{},
                 tempTrans: d3.zoomIdentity.translate(0, 0).scale(1),
-                activeNames: ['1'],  // 默认展开折叠面板的第一项
+                activeNames: ['1'],  //加上这个不然控制台老报错
                 runTestPercentange:0,
                 taskId:'',
-                taskType:'',  // "many" 和 "one" 
-                toggle:true
+                taskType:''  // "many" 和 "one" 
             }
         },
         methods: {
@@ -247,16 +238,14 @@ import { setInterval } from 'timers';
             },
             //显示用例测试结果
             showTestResult(TestResult,type){
-                // 记录正在显示的测试结果，cancelshow 的时候根据这个来
-                this.TestResult = TestResult;
-                //把第一个节点移到中心
+             //把第一个节点移到中心
                 var node = this.findNodeByName(TestResult[0].split(" ")[0])
-                var trans = this.tempTrans
-                trans.k = 1;
-                this.g.attr('transform',trans);
-                trans.x = (510 - node.x) * trans.k
-                trans.y = (300 - node.y) * trans.k
-                this.g.attr('transform', trans)
+                                            var trans = this.tempTrans
+                                            trans.k = 1;
+                                            this.g.attr('transform',trans);
+                                            trans.x = (510 - node.x) * trans.k
+                                            trans.y = (300 - node.y) * trans.k
+                                             this.g.attr('transform', trans)
                 for(let index in TestResult){
                     var result=TestResult[index].split(" ");
                     //如果是单个结果
@@ -319,8 +308,8 @@ import { setInterval } from 'timers';
             },
             //取消结果显示
             cancelShow(TestResult){
-                for(let index in this.TestResult){
-                    var result=this.TestResult[index].split(" ");
+                for(let index in TestResult){
+                    var result=TestResult[index].split(" ");
                     this.cancelLine(result[0],result[2]);
                     this.cancelNode(result[0]);
                     this.cancelNode(result[2]);
@@ -713,29 +702,7 @@ import { setInterval } from 'timers';
                             return d.x
                         })
                 })
-            },
-            shrink_open(){
-                if (this.toggle) {
-                    this.actived = this.activeNames;
-                    this.activeNames = [""]
-                    setTimeout(() => {
-                        document.getElementById("shrink-icon").classList.remove("el-icon-arrow-left");
-                        document.getElementById("shrink-icon").classList.add("el-icon-arrow-right");
-                        document.getElementById("leftSide").style.transform = "translate(-100%, 0)";
-                        document.getElementById("leftSide").style.overflow = "visible";
-                    }, 500);
-                }
-                else{
-                    setTimeout(() => {
-                        document.getElementById("leftSide").style.overflow = "";
-                        this.activeNames = this.actived;
-                        document.getElementById("shrink-icon").classList.remove("el-icon-arrow-right");
-                        document.getElementById("shrink-icon").classList.add("el-icon-arrow-left");
-                    }, 500);
-                    document.getElementById("leftSide").style.transform = "";
-                }
-                this.toggle = !this.toggle;
-            },
+            }
         },
         created () {
             this.$nextTick(() => {
@@ -763,66 +730,6 @@ import { setInterval } from 'timers';
         font-family: "Arial Black";
         font-size: 25px;
     }
-
-    .funny {
-        position: fixed;
-        margin-left: 33px;
-        background-color: white;
-        border-radius: 0 5px 5px 0;
-        box-shadow: lightgrey 5px 0px 5px 2px;
-    }
-
-    .funny:hover{
-        cursor: pointer;
-        color: #0583f2
-    }
-
-    .left-side{
-        position: absolute;
-        width: 350px;
-        transition: .5s ease;
-        background-color: white;
-        box-shadow: lightgrey 0px 0px 5px 5px;//边框内阴影
-        top: 0;
-        left: 0;
-        padding: 0 15px;
-        max-height: 100%;
-        overflow-y: auto;
-    }
-
-    .left-side::-webkit-scrollbar {
-        /*滚动条整体样式*/
-        width: 4px;
-    }
-
-    .left-side::-webkit-scrollbar-thumb {
-        /*滚动条里面小方块*/
-        border-radius: 5px;
-        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-        background: rgba(0, 0, 0, 0.2);
-    }
-
-    .left-side::-webkit-scrollbar-track {
-        /*滚动条里面轨道*/
-        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-        border-radius: 0;
-    }
-    #thumb {
-        width: 160px;
-        height: 160px;
-        pointer-events: none;
-    }
-
-    #thumb-container {
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        margin: 20px;
-        border: 1px solid silver;
-        background-color: white;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-    }
-
     .titlestyle{
         font-family: "Microsoft YaHei";
         font-weight:bold;
@@ -836,7 +743,6 @@ import { setInterval } from 'timers';
     .upload {
         margin:25px 0px 25px 0px;
     }
-
     .container {
         height: 600px;
         .exit {
@@ -851,16 +757,10 @@ import { setInterval } from 'timers';
             color: #000;
             z-index: 200;
             &:hover {
-                background: #1e82d9;
-            }
-        };
-        overflow-y: scroll;
+                 background: #1e82d9;
+             }
+        }
     }
-
-    .container::-webkit-scrollbar { 
-        display: none;
-    }
-
     .formlabelfont {
         font-size: 12px;
     }
