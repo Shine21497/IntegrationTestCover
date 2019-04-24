@@ -2,7 +2,9 @@ package com.shine.integrationtestcover.service;
 
 import com.shine.integrationtestcover.config.BaseConfig;
 import com.shine.integrationtestcover.service.programInstrument.JarFileInput;
+import com.shine.integrationtestcover.service.programInstrument.ProgramInstrument;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -17,10 +19,19 @@ import java.io.InputStreamReader;
 @Service
 public class ProgramInstrumentService {
 
+    public static boolean isComplete = false;
+
     @Autowired
     BaseConfig baseConfig;
 
+    @Async
     public void doInstrumentation(String fileName) throws IOException {
+        File file = new File(baseConfig.getInstrumentationPath() + fileName);
+        if(file.exists()) {
+            //默认项目不同版本需要在文件名上体现，即同一文件名就是同一个版本
+            System.out.println("插桩已经完成过，不再进行");
+            return;
+        }
         //fileName 是类似 “demo.jar”的文件名
         String getUploadedFilePath=baseConfig.getUploadedFilePath().substring(1).replace('/','\\');
         String getRunTestProjectPath=baseConfig.getInstrumentationPath().substring(1).replace('/','\\');
@@ -54,6 +65,7 @@ public class ProgramInstrumentService {
         command="cmd /c "+"rmdir /s/q   "+"\""+ getUploadedFilePath+sub+"\"";
         System.out.println(command);
         doCmd(command,dir);
+        ProgramInstrumentService.isComplete = true;
 
     }
 

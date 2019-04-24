@@ -59,16 +59,16 @@ public class TestCaseController {
         String type="";
         List result=new LinkedList();
         System.out.println("获取key:"+Thread.currentThread().getName());
-        if (method.equals("all") == false) {
+        if (method.equals("allMethods") == false) {
             type="one";
             runTestService.invokeMethod(testcasename, method);
         }
-        else if (method.equals("all") && testcasename.equals("all") == false)//指定跑某个java文件里面的所有测试用例
+        else if (method.equals("allMethods") && testcasename.equals("allTestFiles") == false)//指定跑某个java文件里面的所有测试用例
         {
             type="many";
             runTestService.runTest(testcasename);
         }
-        else if (testcasename.equals("all") && method.equals("all"))//跑此项目下的所有
+        else if (testcasename.equals("allTestFiles") && method.equals("allMethods"))//跑此项目下的所有
         {
             type="many";
             runTestService.runAll();

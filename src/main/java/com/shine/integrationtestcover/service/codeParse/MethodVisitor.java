@@ -1,5 +1,6 @@
 package com.shine.integrationtestcover.service.codeParse;
 
+import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
 import org.apache.bcel.generic.ConstantPoolGen;
@@ -33,7 +34,8 @@ public class MethodVisitor extends EmptyVisitor {
     public static HashSet<String> classes = new HashSet<>();
     public static HashMap<String, ArrayList<String>> methods = new HashMap<>();
     public static boolean ifOnlySelfPackage = false;
-    public static String[] packageNames = {};
+    public static HashSet<String> allMethods=new HashSet<>();
+    public static String[] packageToCallNames = {};
 
 
     public MethodVisitor(MethodGen m, JavaClass jc) {
@@ -44,14 +46,13 @@ public class MethodVisitor extends EmptyVisitor {
         classes.add(jc.getClassName());
         if (methods.containsKey(jc.getClassName())) {
             methods.get(jc.getClassName()).add(mg.getName());
-            classoutput = jc.getClassName() + " CALL " + jc.getClassName() + ":" + mg.getName();
-            callRelationship.add(classoutput);
+
         } else {
             methods.put(jc.getClassName(), new ArrayList<>());
             methods.get(jc.getClassName()).add(mg.getName());
-            classoutput = jc.getClassName() + " CALL " + jc.getClassName() + ":" + mg.getName();
-            callRelationship.add(classoutput);
+
         }
+        allMethods.add(jc.getClassName()+":"+mg.getName());
 
     }
 
@@ -81,16 +82,15 @@ public class MethodVisitor extends EmptyVisitor {
         String formatInternal = "%s";
         this.DegreeClass = String.format(formatInternal, i.getReferenceType(cp));
         this.DegreeMethod = i.getMethodName(cp);
-        if (!this.DegreeClass.startsWith("java")) {
-            for (String packageName : packageNames) {
+        if(!this.DegreeClass.startsWith("java")) {
+            for (String packageName : packageToCallNames) {
                 if (this.DegreeClass.startsWith(packageName)) {
                     String output = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
                     callRelationship.add(output);
-                    // System.out.println(output);
                 }
             }
-
         }
+
     }
 
     public static List<String> getCallRelationship() {

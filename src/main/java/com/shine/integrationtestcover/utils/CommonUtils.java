@@ -30,6 +30,8 @@ public class CommonUtils {
     }
 
     public void copyFile(String fileName, String sourcePath, String destPath) {
+        sourcePath = sourcePath.replaceFirst("/", "").replace("/", "\\");
+        destPath = destPath.replaceFirst("/", "").replace("/", "\\");
         File file = null;
         if (sourcePath != null && !"".equals(sourcePath)) {
             file = sourcePath.endsWith("\\") ? new File(sourcePath + fileName) : new File(sourcePath + "\\" + fileName);

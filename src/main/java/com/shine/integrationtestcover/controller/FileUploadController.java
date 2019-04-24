@@ -20,8 +20,6 @@ public class FileUploadController {
     @Autowired
     private BaseConfig baseConfig;
 
-    @Autowired
-    private ProgramInstrumentService programInstrumentService;
 
     @RequestMapping(value = "/uploadJar")
     @ResponseBody
@@ -45,12 +43,6 @@ public class FileUploadController {
         } else {
             result =  "上传失败，因为文件是空的.";
         }
-        try {
-            programInstrumentService.doInstrumentation(file.getOriginalFilename());
-        } catch (IOException e) {
-            e.printStackTrace();
-            result = result + "插桩出现异常";
-        }
         return result;
     }
 
@@ -62,7 +54,9 @@ public class FileUploadController {
         if(uploadedDirectory.isDirectory()) {
             File[] files = uploadedDirectory.listFiles();
             for (File file : files) {
-                filenames.add(file.getName());
+                if(!file.isDirectory()) {
+                    filenames.add(file.getName());
+                }
             }
         }
         HashMap<String, Object> result = new HashMap<>();

@@ -31,8 +31,11 @@
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
-                                    <el-form-item label="包范围">
-                                        <el-input type="textarea" v-model="form.packages" placeholder="请输入包范围"></el-input>
+                                    <el-form-item label="遍历包范围">
+                                        <el-input type="textarea" v-model="form.packages" placeholder="请输入遍历包范围，如果打包时把lib一同打入，一定要输入包的范围"></el-input>
+                                    </el-form-item>
+                                    <el-form-item label="生成包范围">
+                                        <el-input type="textarea" v-model="form.packagesCall" placeholder="请输入调用包范围，如果打包时把lib一同打入，一定要输入包的范围"></el-input>
                                     </el-form-item>
                                     <el-form-item>
                                         <el-button type="primary" :disabled="form.selectedjar.length == 0" size="small" @click="generateGraph()">立即创建</el-button>
@@ -197,7 +200,8 @@ import { setInterval } from 'timers';
                 fileList:[],
                 form: {
                     selectedjar: '',
-                    packages:''
+                    packages:'',
+                    packagesCall:''
                 },
                 adjustForm: {
                     selectedClass: '',
@@ -251,7 +255,7 @@ import { setInterval } from 'timers';
                     //如果是单个结果
                     if(type === 'one'){
                        //逐个定位节点
-                            var node = this.findNodeByName(result[2])
+                            /*var node = this.findNodeByName(result[2])
                             var trans = this.tempTrans
                             trans.k = 1;
                             this.g.attr('transform',trans);
@@ -260,7 +264,7 @@ import { setInterval } from 'timers';
                             var temp=this.g;
                             setTimeout(function timer(){
                             temp.attr('transform', trans);
-                            }, (index+1)*2000);
+                            }, (index+1)*2000);*/
                         //线的流动效果和节点效果
                         this.changeSingleLine(result[0],result[2]);
                     }
@@ -374,7 +378,7 @@ import { setInterval } from 'timers';
             generateGraph(){
                 let _this = this
                 this.$nextTick(() => {
-                    getRelationByFileName(this.form.selectedjar, this.form.packages).then(response => {
+                    getRelationByFileName(this.form.selectedjar, this.form.packages, this.form.packagesCall).then(response => {
                         _this.relation.nodes = response.nodes
                         _this.relation.links = response.links
                         _this.adjustForm.allClasses = response.classes
@@ -453,6 +457,7 @@ import { setInterval } from 'timers';
                 let _this = this;
                 getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
+                    console.log(response)
                     _this.showTestResult(response,_this.taskType)
 
                 });
@@ -818,8 +823,7 @@ import { setInterval } from 'timers';
             stroke:#FA8072;
             stroke-dasharray: 1000;
             stroke-dashoffset: 1000;
-            animation: draw 10s;
-            animation-fill-mode:forwards;
+            -webkit-animation: draw 3s infinite ease-in-out;
     }
    @keyframes draw{
         0%{

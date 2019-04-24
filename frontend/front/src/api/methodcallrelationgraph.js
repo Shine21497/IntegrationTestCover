@@ -12,13 +12,14 @@ export function getUploadedFileList () {
     })
 }
 
-export function getRelationByFileName (name, packages) {
+export function getRelationByFileName (name, packages, packagesToCall) {
     return fetch({
         url: '/apiurl/relation',
         method: 'get',
         params: {
             name: name,
-            packages: packages
+            packages: packages,
+            packagesToCall: packagesToCall
         }
     })
 }
