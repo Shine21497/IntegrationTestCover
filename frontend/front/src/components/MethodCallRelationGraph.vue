@@ -1,9 +1,35 @@
 <template>
     <el-container>
-        <el-header>Method Call Relation Graph</el-header>
-        <el-container>
-            <el-aside width="350px">
-                <el-collapse v-model="activeNames">
+        <el-main style="padding:0;">
+            <div id="container" class="container">
+                <svg id="svgCanvas">
+                    <defs>
+                        <!--节点滤波器-->
+                        <filter id="f1">
+                            <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
+                        </filter>
+                    </defs>
+                    <defs>
+                        <!--直线滤波器-->
+                        <filter id="f2">
+                            <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
+                        </filter>
+                    </defs>
+                </svg>
+            </div>
+            <!-- <div id="thumb-container">
+                <svg id="thumb" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
+                    <use xlink:href="#svgCanvas" />
+                </svg>
+            </div> -->
+        </el-main>
+
+        <div id="leftSide" class="left-side">
+            <h2>Method Call Relation Graph
+                <i id="shrink-icon" class="funny el-icon-arrow-left" @click="shrink_open()"></i>
+            </h2>
+
+            <el-collapse v-model="activeNames">
                     <el-collapse-item class="titlestyle" title="上传项目" name="1">
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-upload class="upload" action="/apiurl/uploadJar" accept="application/jar" :before-upload="onBeforeUpload" ref="upload" :file-list="fileList" :auto-upload="false">
@@ -117,7 +143,7 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item label="类选择">
-                                        <el-select filterable  v-model="selectTestForm.selectedTestClass" placeholder="请选择测试类" @change="getTestClass($event)">
+                                        <el-select filterable  :disabled="Object.entries(testCaseMap).length == 0" v-model="selectTestForm.selectedTestClass" placeholder="请选择测试类" @change="getTestClass($event)">
                                             <el-option
                                                     v-for="item in selectTestForm.allTestClasses"
                                                     :key="item"
@@ -127,7 +153,7 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item label="方法选择">
-                                        <el-select filterable  v-model="selectTestForm.selectedTestCase" placeholder="请选择测试方法">
+                                        <el-select filterable  :disabled="Object.entries(testCaseMap).length == 0" v-model="selectTestForm.selectedTestCase" placeholder="请选择测试方法">
                                             <el-option
                                                     v-for="item in selectTestForm.allTestCases"
                                                     :key="item"
@@ -146,27 +172,8 @@
                             </el-container>
                         </el-card>
                     </el-collapse-item>
-                </el-collapse>
-            </el-aside>
-            <el-main>
-                <div id="container" class="container">
-                    <svg id="svgCanvas">
-                        <defs>
-                            <!--节点滤波器-->
-                            <filter id="f1">
-                                <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
-                            </filter>
-                        </defs>
-                        <defs>
-                            <!--直线滤波器-->
-                            <filter id="f2">
-                                <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
-                            </filter>
-                        </defs>
-                    </svg>
-                </div>
-            </el-main>
-        </el-container>
+            </el-collapse>
+        </div>
     </el-container>
 </template>
 
@@ -183,6 +190,7 @@
     } from '@/api/methodcallrelationgraph.js'
     import * as d3 from 'd3'
 import { setInterval } from 'timers';
+import { Promise } from 'q';
     export default {
         components: {
             ElButton,
@@ -242,14 +250,16 @@ import { setInterval } from 'timers';
             },
             //显示用例测试结果
             showTestResult(TestResult,type){
-             //把第一个节点移到中心
+                // 记录正在显示的测试结果，cancelshow 的时候根据这个来
+                this.TestResult = TestResult;
+                //把第一个节点移到中心
                 var node = this.findNodeByName(TestResult[0].split(" ")[0])
-                                            var trans = this.tempTrans
-                                            trans.k = 1;
-                                            this.g.attr('transform',trans);
-                                            trans.x = (510 - node.x) * trans.k
-                                            trans.y = (300 - node.y) * trans.k
-                                             this.g.attr('transform', trans)
+                var trans = this.tempTrans
+                trans.k = 1;
+                this.g.attr('transform',trans);
+                trans.x = (510 - node.x) * trans.k
+                trans.y = (300 - node.y) * trans.k
+                this.g.attr('transform', trans)
                 for(let index in TestResult){
                     var result=TestResult[index].split(" ");
                     //如果是单个结果
@@ -312,8 +322,8 @@ import { setInterval } from 'timers';
             },
             //取消结果显示
             cancelShow(TestResult){
-                for(let index in TestResult){
-                    var result=TestResult[index].split(" ");
+                for(let index in this.TestResult){
+                    var result=this.TestResult[index].split(" ");
                     this.cancelLine(result[0],result[2]);
                     this.cancelNode(result[0]);
                     this.cancelNode(result[2]);
@@ -351,14 +361,12 @@ import { setInterval } from 'timers';
             },
 
             getTestClass(prov) {
-                console.log(this.testCaseMap)
-                console.log(prov)
                 this.selectTestForm.allTestCases =  this.testCaseMap[this.selectTestForm.selectedTestProject.split('.')[0]][prov]
                 // this.methods =  this.testCaseMap[this.selectTestForm.selectedTestProject][prov]
             },
             getTestProject(prov) {
-                 console.log(this.testCaseMap)
-                 console.log(prov.split('.'))
+                console.log(this.testCaseMap)
+                console.log(prov.split('.'))
                 // prov is "demo.jar" but testCaseMap is {"demo":{...}}
                 this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prov.split('.')[0]])
                 //this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prov])
@@ -387,18 +395,16 @@ import { setInterval } from 'timers';
                     })
                 })
             },
-            showTestProjectList(open) {
+            async showTestProjectList(open) {
                 if(open) {
-                    let _this = this
-                    getUploadedFileList().then(response => {
-                        _this.uploadedFiles = response.result
-                    })
-                    getTestCaseList().then(response => {
-                        //response is {"result":{"demo":{"TestMethod.java":["allMehtods"],"allTestFiles":[],"Test2.java":["allMehtods"]}}}
-                        _this.testCaseMap = response.result
-                    })
-                }
+                    // let _this = this;
+                    const [{ result: uploadedFiles }, { result: testCaseMap }] 
+                        = await Promise.all([getUploadedFileList(), getTestCaseList()])
 
+                    this.uploadedFiles = uploadedFiles;
+                    //response is {"result":{"demo":{"TestMethod.java":["allMehtods"],"allTestFiles":[],"Test2.java":["allMehtods"]}}}
+                    this.testCaseMap = testCaseMap;
+                }
             },
             submitUpload() {
                 this.$refs.upload.submit();
@@ -457,7 +463,6 @@ import { setInterval } from 'timers';
                 let _this = this;
                 getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
-                    console.log(response)
                     _this.showTestResult(response,_this.taskType)
 
                 });
@@ -707,7 +712,29 @@ import { setInterval } from 'timers';
                             return d.x
                         })
                 })
-            }
+            },
+            shrink_open(){
+                if (this.toggle) {
+                    this.actived = this.activeNames;
+                    this.activeNames = [""]
+                    setTimeout(() => {
+                        document.getElementById("shrink-icon").classList.remove("el-icon-arrow-left");
+                        document.getElementById("shrink-icon").classList.add("el-icon-arrow-right");
+                        document.getElementById("leftSide").style.transform = "translate(-100%, 0)";
+                        document.getElementById("leftSide").style.overflow = "visible";
+                    }, 500);
+                }
+                else{
+                    setTimeout(() => {
+                        document.getElementById("leftSide").style.overflow = "";
+                        this.activeNames = this.actived;
+                        document.getElementById("shrink-icon").classList.remove("el-icon-arrow-right");
+                        document.getElementById("shrink-icon").classList.add("el-icon-arrow-left");
+                    }, 500);
+                    document.getElementById("leftSide").style.transform = "";
+                }
+                this.toggle = !this.toggle;
+            },
         },
         created () {
             this.$nextTick(() => {
@@ -734,6 +761,64 @@ import { setInterval } from 'timers';
     header{
         font-family: "Arial Black";
         font-size: 25px;
+    }
+    .funny {
+        position: fixed;
+        margin-left: 33px;
+        background-color: white;
+        border-radius: 0 5px 5px 0;
+        box-shadow: lightgrey 5px 0px 5px 2px;
+    }
+
+    .funny:hover{
+        cursor: pointer;
+        color: #0583f2
+    }
+
+    .left-side{
+        position: absolute;
+        width: 350px;
+        transition: .5s ease;
+        background-color: white;
+        box-shadow: lightgrey 0px 0px 5px 5px;//边框内阴影
+        top: 0;
+        left: 0;
+        padding: 0 15px;
+        max-height: 100%;
+        overflow-y: auto;
+    }
+
+    .left-side::-webkit-scrollbar {
+        /*滚动条整体样式*/
+        width: 4px;
+    }
+
+    .left-side::-webkit-scrollbar-thumb {
+        /*滚动条里面小方块*/
+        border-radius: 5px;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .left-side::-webkit-scrollbar-track {
+        /*滚动条里面轨道*/
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+        border-radius: 0;
+    }
+    #thumb {
+        width: 160px;
+        height: 160px;
+        pointer-events: none;
+    }
+
+    #thumb-container {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        margin: 20px;
+        border: 1px solid silver;
+        background-color: white;
+        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
     }
     .titlestyle{
         font-family: "Microsoft YaHei";
@@ -765,9 +850,14 @@ import { setInterval } from 'timers';
                  background: #1e82d9;
              }
         }
+        overflow-y: scroll;
     }
     .formlabelfont {
         font-size: 12px;
+    }
+
+    .container::-webkit-scrollbar { 
+        display: none;
     }
 
     .labeltext {
@@ -819,11 +909,11 @@ import { setInterval } from 'timers';
         text-shadow: 0 -5px 4px #FFFF00,2px -10px 6px #FFA500,-2px -15px 11px #FF6347,2px -25px 18px #FF0000;
         transition: 1s;
     }
-       .showsinglepath{
-            stroke:#FA8072;
-            stroke-dasharray: 1000;
-            stroke-dashoffset: 1000;
-            -webkit-animation: draw 3s infinite ease-in-out;
+    .showsinglepath{
+         stroke:#FA8072;
+         stroke-dasharray: 1000;
+         stroke-dashoffset: 1000;
+         -webkit-animation: draw 3s infinite ease-in-out;
     }
    @keyframes draw{
         0%{
