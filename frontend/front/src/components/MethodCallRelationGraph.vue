@@ -172,6 +172,33 @@
                             </el-container>
                         </el-card>
                     </el-collapse-item>
+                      <el-collapse-item class="titlestyle" title="未覆盖测试用例" name="6">
+                         <el-card :body-style="{ padding: '0px' }" class="card">
+                            <el-container class="formbody">
+                               <el-form ref="form" :model="selectTestForm" label-width="80px">
+                                  <el-form-item label="未覆盖用例选择">
+                                     <el-select v-model="selectTestForm.selectUncoverTest" placeholder="请选择未覆盖的边">
+                                        <el-option
+                                          v-for="item in uncover"
+                                          :key="item"
+                                          :label="item"
+                                          :value="item">
+                                        </el-option>
+                                     </el-select>
+                                   </el-form-item>
+                                  <el-form-item>
+                                     <div id="branches">分支总数：0；</div>
+                                     <div id="usecase">执行用例数：0；</div>
+                                     <div id="uncoverbranch">未覆盖分支数：0；</div>
+                                     <div id="coverrate">覆盖率：0%：</div>
+                                  </el-form-item>
+                                  <el-form-item>
+                                   <el-button type="primary" @click="showTestResult()">立即定位</el-button>
+                                  </el-form-item>
+                            </el-form>
+                         </el-container>
+                      </el-card>
+                    </el-collapse-item>
             </el-collapse>
         </div>
     </el-container>
@@ -222,9 +249,13 @@ import { Promise } from 'q';
                     selectedTestClass: '',
                     selectedTestCase: '',
                     allTestClasses: [],
-                    allTestCases: []
+                    allTestCases: [],
+                    selectUncoverTest:[],
                 },
                 uploadedFiles:[],
+                uncover:[],
+                uncoverfullname:[],
+                usecasenum:'',
                 classMethodMap:{"a": ["a","b"], "b": ["a","c"]},
                 testCaseMap:{},
                 g:{},
@@ -251,6 +282,9 @@ import { Promise } from 'q';
             //显示用例测试结果
             showTestResult(TestResult,type){
                 // 记录正在显示的测试结果，cancelshow 的时候根据这个来
+                //var type="one";
+                //var TestResult=["com.example.demo.controller:Test1:calculate call com.example.demo.controller.Test1:doublevalue"];
+                this.usecasenum=TestResult.length;
                 this.TestResult = TestResult;
                 //把第一个节点移到中心
                 var node = this.findNodeByName(TestResult[0].split(" ")[0])
