@@ -172,6 +172,33 @@
                             </el-container>
                         </el-card>
                     </el-collapse-item>
+                      <el-collapse-item class="titlestyle" title="未覆盖测试用例" name="6">
+                         <el-card :body-style="{ padding: '0px' }" class="card">
+                            <el-container class="formbody">
+                               <el-form ref="form" :model="selectTestForm" label-width="80px">
+                                  <el-form-item label="未覆盖用例选择">
+                                     <el-select v-model="selectTestForm.selectUncoverTest" placeholder="请选择未覆盖的边">
+                                        <el-option
+                                          v-for="item in uncover"
+                                          :key="item"
+                                          :label="item"
+                                          :value="item">
+                                        </el-option>
+                                     </el-select>
+                                   </el-form-item>
+                                  <el-form-item>
+                                     <div id="branches">分支总数：0；</div>
+                                     <div id="usecase">执行用例数：0；</div>
+                                     <div id="uncoverbranch">未覆盖分支数：0；</div>
+                                     <div id="coverrate">覆盖率：0%：</div>
+                                  </el-form-item>
+                                  <el-form-item>
+                                   <el-button type="primary" @click="showTestResult()">立即定位</el-button>
+                                  </el-form-item>
+                            </el-form>
+                         </el-container>
+                      </el-card>
+                    </el-collapse-item>
             </el-collapse>
         </div>
     </el-container>
@@ -222,9 +249,13 @@ import { Promise } from 'q';
                     selectedTestClass: '',
                     selectedTestCase: '',
                     allTestClasses: [],
-                    allTestCases: []
+                    allTestCases: [],
+                    selectUncoverTest:[],
                 },
                 uploadedFiles:[],
+                uncover:[],
+                uncoverfullname:[],
+                usecasenum:'',
                 classMethodMap:{"a": ["a","b"], "b": ["a","c"]},
                 testCaseMap:{},
                 g:{},
@@ -251,6 +282,9 @@ import { Promise } from 'q';
             //显示用例测试结果
             showTestResult(TestResult,type){
                 // 记录正在显示的测试结果，cancelshow 的时候根据这个来
+                //var type="one";
+                //var TestResult=["com.example.demo.controller:Test1:calculate call com.example.demo.controller.Test1:doublevalue"];
+                this.usecasenum=TestResult.length;
                 this.TestResult = TestResult;
                 //把第一个节点移到中心
                 var node = this.findNodeByName(TestResult[0].split(" ")[0])
@@ -297,7 +331,12 @@ import { Promise } from 'q';
                         d3.select('#eachline' + line_id).style('stroke-width',3.5)
                         d3.select('#eachline' + line_id).classed('showsinglepath',true)
                     }
+                    else
+                    {
+                    this.uncoverfullname.push(this.relation.links[index].source.name+" call "+this.relation.links[index].target.name);
+                    }
                 };
+                this.setUncover();
             },
 
             //多个用例测试结果
@@ -308,7 +347,12 @@ import { Promise } from 'q';
                         d3.select('#eachline' + line_id).classed('edgelabel',false)
                         d3.select('#eachline' + line_id).style('stroke-width',3.5).attr('stroke','#ff7438').attr('filter','url(#f2)')
                     }
+                     else
+                      {
+                      this.uncoverfullname.push(this.relation.links[index].source.name+" call "+this.relation.links[index].target.name);
+                      }
                };
+               this.setUncover();
             },
             //给节点加上边界效果
             changeNode(Name) {
@@ -406,6 +450,49 @@ import { Promise } from 'q';
                     this.testCaseMap = testCaseMap;
                 }
             },
+//展示覆盖信息
+            showcoverInformation(){
+            var branches=d3.select('#branches');
+            branches.html("分支总数: "+this.relation.links.length);
+            d3.select("#usecase").html("执行用例数: "+this.usecasenum);
+            d3.select("#uncoverbranch").html("未覆盖分支数: "+this.uncover.length);
+            d3.select("#coverrate").html("覆盖率: "+(this.usecasenum/this.relation.links.length)*100+"%");
+            },
+//获取未覆盖信息
+            setUncover(){
+            for(let index in this.uncoverfullname)
+            {
+            var temp=this.uncoverfullname[index].split(" ");
+                            var A=temp[0].split(":")[1];
+                            var B=temp[2].split(":")[1];
+            this.uncover.push(A+" call "+B);
+                            //console.log(A+" call "+B);
+            }
+            },
+//定位到未覆盖边
+            gotoUncover(){
+            var selectA=this.selectTestForm.selectUncoverTest.split(" ")[0];
+            var selectB=this.selectTestForm.selectUncoverTest.split(" ")[2];
+            for(let index in this.uncoverfullname)
+            {
+            var temp=this.uncoverfullname[index].split(" ");
+            var A=temp[0].split(":")[1];
+            var B=temp[2].split(":")[1];
+            if(selectA==A&&selectB==B)
+            {
+             console.log(temp[0]);
+                        var node = this.findNodeByName(temp[0]);
+                        //console.log(node);
+                        var trans = this.tempTrans
+                        trans.k = 1;
+                        this.g.attr('transform',trans);
+                        trans.x = (510 - node.x) * trans.k
+                        trans.y = (300 - node.y) * trans.k
+                        this.g.attr('transform', trans)
+            }
+            }
+            },
+
             submitUpload() {
                 this.$refs.upload.submit();
             },
@@ -446,6 +533,7 @@ import { Promise } from 'q';
                     // 开始监听运行进度
                     _this._onTestRunning();
                 })
+                 this.showcoverInformation();
             },
             // 获取测试进度的时候要调用的
             _onTestRunning(){
@@ -492,7 +580,7 @@ import { Promise } from 'q';
                 //赋值数据集
                 var nodes = this.relation.nodes
                 var links = this.relation.links
-
+                console.log(links);
                 //  设置画布
                 var svg = d3.select('#svgCanvas')
                     .attr('xmlns', 'http://www.w3.org/2000/svg')
@@ -547,6 +635,7 @@ import { Promise } from 'q';
                         .append('path')
                         .attr('d', 'M0,-5L10,0L0,5')//箭头的路径
                         //.attr('fill', '#ff7438')//箭头颜色
+
 
                 //设置连线
                 var edgesLine = g.selectAll('line')
@@ -969,5 +1058,8 @@ import { Promise } from 'q';
 
     .require-info{
         opacity: 0;
+    }
+    #branches,#usecase,#uncoverbranch,#coverrate{
+    text-align:center;
     }
 </style>
