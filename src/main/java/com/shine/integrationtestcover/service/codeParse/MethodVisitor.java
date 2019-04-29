@@ -41,7 +41,6 @@ public class MethodVisitor extends EmptyVisitor {
     public MethodVisitor(MethodGen m, JavaClass jc) {
         visitedClass = jc;
         mg = m;
-        String classoutput;
         cp = mg.getConstantPool();
         classes.add(jc.getClassName());
         if (methods.containsKey(jc.getClassName())) {

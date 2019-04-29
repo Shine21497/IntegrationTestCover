@@ -31,7 +31,7 @@ public class FileParserController {
     @RequestMapping(value = "/relation",method = RequestMethod.GET)
     public HashMap<String, Object> getInvokeRelationship(@RequestParam String name, @RequestParam String packages, @RequestParam String packagesToCall){
         ParseJarService.packageNames = packages.isEmpty()? new String[]{""}: packages.split("\n");
-        MethodVisitor.packageToCallNames = packagesToCall.isEmpty()? new String[]{""}: packages.split("\n");
+        MethodVisitor.packageToCallNames = packagesToCall.isEmpty()? new String[]{""}: packagesToCall.split("\n");
         JarFileInput.packageNames = packages.isEmpty()? new String[]{""}: packages.split("\n");
         graphService.setFilename(name);
         graphService.setPath(baseConfig.getUploadedFilePath());
