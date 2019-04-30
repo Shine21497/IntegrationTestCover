@@ -44,31 +44,37 @@
                             <p class="itemname">调用关系图生成</P>
                             <p class="require-info">（请先上传项目）</P>
                         </template>
-                        <el-card :body-style="{ padding: '0px' }" class="card">
-                            <el-container class="formbody">
-                                <el-form ref="form" :model="form" label-width="80px">
-                                    <el-form-item label="Jar包选择">
-                                        <el-select v-model="form.selectedjar" placeholder="请选择jar包" @visible-change="showfilelist">
-                                            <el-option
-                                                    v-for="item in uploadedFiles"
-                                                    :key="item"
-                                                    :label="item"
-                                                    :value="item">
-                                            </el-option>
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-form-item label="遍历包范围">
-                                        <el-input type="textarea" v-model="form.packages" placeholder="请输入遍历包范围，如果打包时把lib一同打入，一定要输入包的范围"></el-input>
-                                    </el-form-item>
-                                    <el-form-item label="生成包范围">
-                                        <el-input type="textarea" v-model="form.packagesCall" placeholder="请输入调用包范围，如果打包时把lib一同打入，一定要输入包的范围"></el-input>
-                                    </el-form-item>
-                                    <el-form-item>
-                                        <el-button type="primary" :disabled="form.selectedjar.length == 0" size="small" @click="generateGraph()">立即创建</el-button>
-                                    </el-form-item>
-                                </el-form>
-                            </el-container>
-                        </el-card>
+                        <el-container class="formbody">
+                            <el-form ref="form" :model="form" label-width="80px">
+                                <el-form-item label="Jar包选择">
+                                    <el-select v-model="form.selectedjar" placeholder="请选择jar包" @visible-change="showfilelist">
+                                        <el-option
+                                                v-for="item in uploadedFiles"
+                                                :key="item"
+                                                :label="item"
+                                                :value="item">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <div>
+                                    遍历包范围：
+                                    <el-autocomplete class="inline-input" v-model="form.packages" :fetch-suggestions="packagesHistory"
+                                        placeholder="请输入遍历包范围"
+                                    ></el-autocomplete>
+                                    <div style="color:darkgray;padding: 0 0 20px 0;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
+                                </div>
+                                <div>
+                                    生成包范围：
+                                    <el-autocomplete class="inline-input" v-model="form.packagesCall" :fetch-suggestions="packagesCallHistory"
+                                        placeholder="请输入遍历包范围"
+                                    ></el-autocomplete>
+                                    <div style="color:darkgray;padding: 0 0 20px 0;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
+                                </div>
+                                <el-form-item>
+                                    <el-button type="primary" :disabled="form.selectedjar.length == 0" size="small" @click="generateGraph()">立即创建</el-button>
+                                </el-form-item>
+                            </el-form>
+                        </el-container>
                     </el-collapse-item>
                     <el-collapse-item class="titlestyle" name="3" :class="JSON.stringify(relation)=='{}'?'disabled': ''">
                         <template slot="title">
@@ -172,32 +178,32 @@
                             </el-container>
                         </el-card>
                     </el-collapse-item>
-                      <el-collapse-item class="titlestyle" title="未覆盖测试用例" name="6">
-                         <el-card :body-style="{ padding: '0px' }" class="card">
+                    <el-collapse-item class="titlestyle" title="未覆盖测试用例" name="6">
+                        <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                <el-form ref="form" :model="selectTestForm" label-width="80px">
                                   <el-form-item label="未覆盖用例选择">
-                                     <el-select v-model="selectTestForm.selectUncoverTest" placeholder="请选择未覆盖的边">
-                                        <el-option
-                                          v-for="item in uncover"
-                                          :key="item"
-                                          :label="item"
-                                          :value="item">
-                                        </el-option>
-                                     </el-select>
-                                   </el-form-item>
-                                  <el-form-item>
-                                     <div id="branches">分支总数：0；</div>
-                                     <div id="usecase">执行用例数：0；</div>
-                                     <div id="uncoverbranch">未覆盖分支数：0；</div>
-                                     <div id="coverrate">覆盖率：0%：</div>
-                                  </el-form-item>
-                                  <el-form-item>
-                                   <el-button type="primary" @click="showTestResult()">立即定位</el-button>
-                                  </el-form-item>
-                            </el-form>
-                         </el-container>
-                      </el-card>
+                                        <el-select v-model="selectTestForm.selectUncoverTest" placeholder="请选择未覆盖的边">
+                                            <el-option
+                                            v-for="item in uncover"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
+                                            </el-option>
+                                        </el-select>
+                                    </el-form-item>
+                                    <el-form-item>
+                                        <div id="branches">分支总数：0；</div>
+                                        <div id="usecase">执行用例数：0；</div>
+                                        <div id="uncoverbranch">未覆盖分支数：0；</div>
+                                        <div id="coverrate">覆盖率：0%：</div>
+                                    </el-form-item>
+                                    <el-form-item>
+                                    <el-button type="primary" @click="showTestResult()">立即定位</el-button>
+                                    </el-form-item>
+                                </el-form>
+                            </el-container>
+                        </el-card>
                     </el-collapse-item>
                     <el-collapse-item class="titlestyle" title="添加节点" name="7">
                          <el-card :body-style="{ padding: '0px' }" class="card">
@@ -282,19 +288,34 @@ import { Promise } from 'q';
                 activeNames: ['1'],  //加上这个不然控制台老报错
                 runTestPercentange:0,
                 taskId:'',
-                taskType:''  // "many" 和 "one" 
+                taskType:'',  // "many" 和 "one" 
+                toggle:true,
+                history:{
+                    packages:[],
+                    packagesCall:[]
+                },
             }
         },
         methods: {
+            packagesCallHistory(queryString, cb) {
+                // cb([{ "value": "asdasd"}]);
+                cb(this.history.packagesCall);
+            },
+            packagesHistory(queryString, cb) {
+                cb(this.history.packages);
+            },
             goToNode() {
                 var node = this.findNodeByName(this.adjustForm.selectedClass + ":" + this.adjustForm.selectedMethod)
                 var trans = this.tempTrans
 
                 trans.k = 1;
                 this.g.attr('transform',trans);
+                // 根据视野大小定位
+                var width = document.getElementById('container').offsetWidth;
+                var height = document.getElementById('container').offsetHeight;
                 
-                trans.x = (510 - node.x) * trans.k
-                trans.y = (300 - node.y) * trans.k
+                trans.x = (Math.round(width/2) - node.x) * trans.k
+                trans.y = (Math.round(height/2) - node.y) * trans.k
                 
                 this.g.attr('transform', trans)
             },
@@ -340,7 +361,6 @@ import { Promise } from 'q';
                     this.changeNode(result[2]);
                 }
             },
-
            //改变用例测试经过的直线
             changeSingleLine(SourceName,TargetName){
                 for(let index in this.relation.links) {
@@ -456,6 +476,14 @@ import { Promise } from 'q';
                         _this.classMethodMap = response.classMethodMap
                         _this.showd3()
                     })
+                    // 保存历史记录
+                    if (this.history.packagesCall.filter(item => item.value == this.form.packagesCall).length == 0) {
+                        this.history.packagesCall.push({"value":this.form.packagesCall})
+                    }
+                    if (this.history.packages.filter(item => item.value == this.form.packages).length == 0) {
+                        this.history.packages.push({"value":this.form.packages})
+                    }
+                    localStorage.setItem('history',JSON.stringify(this.history));
                 })
             },
             async showTestProjectList(open) {
@@ -469,7 +497,7 @@ import { Promise } from 'q';
                     this.testCaseMap = testCaseMap;
                 }
             },
-//展示覆盖信息
+            //展示覆盖信息
             showcoverInformation(){
             var branches=d3.select('#branches');
             branches.html("分支总数: "+this.relation.links.length);
@@ -477,7 +505,7 @@ import { Promise } from 'q';
             d3.select("#uncoverbranch").html("未覆盖分支数: "+this.uncover.length);
             d3.select("#coverrate").html("覆盖率: "+(this.usecasenum/this.relation.links.length)*100+"%");
             },
-//获取未覆盖信息
+            //获取未覆盖信息
             setUncover(){
             for(let index in this.uncoverfullname)
             {
@@ -488,7 +516,7 @@ import { Promise } from 'q';
                             //console.log(A+" call "+B);
             }
             },
-//定位到未覆盖边
+            //定位到未覆盖边
             gotoUncover(){
             var selectA=this.selectTestForm.selectUncoverTest.split(" ")[0];
             var selectB=this.selectTestForm.selectUncoverTest.split(" ")[2];
@@ -585,7 +613,7 @@ import { Promise } from 'q';
                     // 开始监听运行进度
                     _this._onTestRunning();
                 })
-                 this.showcoverInformation();
+                this.showcoverInformation();
             },
             // 获取测试进度的时候要调用的
             _onTestRunning(){
@@ -800,7 +828,7 @@ import { Promise } from 'q';
                         });
                     })
                     .call(drag)//监听拖动事件
-console.log(nodes);
+                console.log(nodes);
                 // 节点文字
                 var nodeText = g.selectAll('.nodetext')
                     .data(nodes)
@@ -857,7 +885,7 @@ console.log(nodes);
             shrink_open(){
                 if (this.toggle) {
                     this.actived = this.activeNames;
-                    this.activeNames = [""]
+                    this.activeNames = []
                     setTimeout(() => {
                         document.getElementById("shrink-icon").classList.remove("el-icon-arrow-left");
                         document.getElementById("shrink-icon").classList.add("el-icon-arrow-right");
@@ -876,10 +904,14 @@ console.log(nodes);
                 }
                 this.toggle = !this.toggle;
             },
+        
         },
         created () {
             this.$nextTick(() => {
-
+                var historyForm = JSON.parse(localStorage.getItem('history'))
+                if(historyForm){
+                    this.history = historyForm
+                }
             })
         }
     }
@@ -964,6 +996,11 @@ console.log(nodes);
     .titlestyle{
         font-family: "Microsoft YaHei";
         font-weight:bold;
+        color:black;
+    }
+    // 奇怪的 hover
+    .titlestyle:hover{
+        color:black;
     }
     .formbody {
         margin:20px 0px 0px 0px;
