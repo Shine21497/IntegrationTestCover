@@ -996,11 +996,6 @@ import { Promise } from 'q';
     .titlestyle{
         font-family: "Microsoft YaHei";
         font-weight:bold;
-        color:black;
-    }
-    // 奇怪的 hover
-    .titlestyle:hover{
-        color:black;
     }
     .formbody {
         margin:20px 0px 0px 0px;
@@ -1019,14 +1014,10 @@ import { Promise } from 'q';
             left: 20px;
             width: 60px;
             height: 25px;
-            background: #0583f2;
             border: none;
             border-radius: 2px;
             color: #000;
             z-index: 200;
-            &:hover {
-                 background: #1e82d9;
-             }
         }
         overflow-y: scroll;
     }
