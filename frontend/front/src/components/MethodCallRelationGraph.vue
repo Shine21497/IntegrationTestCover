@@ -199,6 +199,23 @@
                          </el-container>
                       </el-card>
                     </el-collapse-item>
+                    <el-collapse-item class="titlestyle" title="添加节点" name="7">
+                         <el-card :body-style="{ padding: '0px' }" class="card">
+                            <el-container class="formbody">
+                               <el-form ref="form" :model="selectTestForm" label-width="80px">
+                                  <el-form-item label="现有节点">
+                                    <el-input type="textarea" v-model="selectnode" placeholder="请输入现有节点名称"></el-input>
+                                  </el-form-item>
+                                  <el-form-item label="新节点">
+                                    <el-input type="textarea" v-model="newnode" placeholder="请输入新节点名称"></el-input>
+                                  </el-form-item>
+                                  <el-form-item>
+                                   <el-button type="primary" @click="createNewNode()">立即创建</el-button>
+                                  </el-form-item>
+                            </el-form>
+                         </el-container>
+                      </el-card>
+                    </el-collapse-item>
             </el-collapse>
         </div>
     </el-container>
@@ -256,6 +273,8 @@ import { Promise } from 'q';
                 uncover:[],
                 uncoverfullname:[],
                 usecasenum:'',
+                selectnode:'',
+                newnode:'',
                 classMethodMap:{"a": ["a","b"], "b": ["a","c"]},
                 testCaseMap:{},
                 g:{},
@@ -283,7 +302,7 @@ import { Promise } from 'q';
             showTestResult(TestResult,type){
                 // 记录正在显示的测试结果，cancelshow 的时候根据这个来
                 //var type="one";
-                //var TestResult=["com.example.demo.controller:Test1:calculate call com.example.demo.controller.Test1:doublevalue"];
+                //var TestResult=["com.example.demo.controller.Test1:calculate call com.example.demo.controller.Test1:doublevalue"];
                 this.usecasenum=TestResult.length;
                 this.TestResult = TestResult;
                 //把第一个节点移到中心
@@ -492,7 +511,40 @@ import { Promise } from 'q';
             }
             }
             },
-
+            //创建新节点并把源节点移到中心
+            createNewNode(){
+            var node;
+            for(let index in this.relation.nodes) {
+                                if(this.relation.nodes[index].name==this.selectnode) {
+                                    node=this.relation.nodes[index];
+                                    //console.log(node);
+                                }
+                            };
+            //var addnode={name:"",type:0,index:7,vx:-0.0034354444444444444,vy:-0.0003758444444444444,x:171.4738754444444,y:45.5769444444444};
+            var addnode={name:"",type:1,index:'',vx:'',vy:'',x:'',y:''};
+            console.log(node.vx);
+            console.log(node.vy);
+            addnode.name=this.newnode;
+            addnode.vx=node.vx-0.0034354444444444444;
+            addnode.vy=node.vy-0.0003758444444444444;
+            addnode.x=node.x-1.0000000000000000000;
+            addnode.y=node.y-1.0000000000000000000;
+            addnode.index=this.relation.nodes.length;
+            var addline={index:7,source:[],target:[]}
+            addline.source=node;
+            addline.target=addnode;
+             this.relation.nodes.push(addnode);
+             this.relation.links.push(addline);
+             console.log(this.relation.links);
+             this.showd3();
+              var node = this.findNodeByName(this.selectnode)
+              var trans = this.tempTrans
+              trans.k = 1;
+              this.g.attr('transform',trans);
+              trans.x = (510 - node.x) * trans.k
+              trans.y = (300 - node.y) * trans.k
+              this.g.attr('transform', trans)
+            },
             submitUpload() {
                 this.$refs.upload.submit();
             },
@@ -748,7 +800,7 @@ import { Promise } from 'q';
                         });
                     })
                     .call(drag)//监听拖动事件
-
+console.log(nodes);
                 // 节点文字
                 var nodeText = g.selectAll('.nodetext')
                     .data(nodes)
