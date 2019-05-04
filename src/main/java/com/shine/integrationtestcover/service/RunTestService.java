@@ -395,19 +395,18 @@ public class RunTestService {
      */
     boolean ifcompiled(String javafilename) {
         String path = getPackageAbsolutePath(javafilename);
-        System.out.println("java" + javafilename);
-        System.out.println("path" + path);
+//        System.out.println("java" + javafilename);
+//        System.out.println("path" + path);
         File packagepath = new File(path);
         if (packagepath.listFiles() == null) return false;
         for (File f : packagepath.listFiles()) {
             System.out.println("file" + f.getName());
             if (f.getName().equals(javafilename + ".class")) {
-                System.out.println("存在");
                 return true;
             }
 
         }
-        System.out.println("不存在");
+
 
         return false;
     }
