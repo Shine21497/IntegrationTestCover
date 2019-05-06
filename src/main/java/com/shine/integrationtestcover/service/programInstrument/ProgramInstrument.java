@@ -66,7 +66,7 @@ public class ProgramInstrument {
     }
     public static void transform(ClassNode cn) {
         for (MethodNode mn : (List<MethodNode>) cn.methods) {
-            if ("<init>".equals(mn.name) || "<clinit>".equals(mn.name)) {
+            if ("<init>".equals(mn.name) || "<clinit>".equals(mn.name)){
                 continue;
             }
             InsnList insns = mn.instructions;
@@ -75,20 +75,31 @@ public class ProgramInstrument {
             }
             Iterator<AbstractInsnNode> j = insns.iterator();
             while (j.hasNext()) {
-                System.out.println();
                 AbstractInsnNode in = j.next();
                 int op = in.getOpcode();
-                if(in instanceof MethodInsnNode){
-                    MethodInsnNode methodInsnNode = (MethodInsnNode)in;
+                if (in instanceof MethodInsnNode) {
+                    MethodInsnNode methodInsnNode = (MethodInsnNode) in;
                     InsnList i2 = new InsnList();
-                    i2.add(new FieldInsnNode(Opcodes.GETSTATIC,"java/lang/System","out","Ljava/io/PrintStream;"));
-                    String temp=cn.name+ ":" + mn.name+" CALL "+methodInsnNode.owner+ ":" +methodInsnNode.name;
+                    i2.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
+                    String temp = "\n" + cn.name + ":" + mn.name + " CALL " + methodInsnNode.owner + ":" + methodInsnNode.name;
                     i2.add(new LdcInsnNode(temp));
-                    i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL,"java/io/PrintStream","println", "(Ljava/lang/String;)V", false));
-                    if(in.getPrevious()!=null)
-                    insns.insert(in.getPrevious(), i2);
+                    i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "print", "(Ljava/lang/String;)V", false));
+                    if (in.getPrevious() != null)
+                        insns.insert(in.getPrevious(), i2);
                 }
             }
+//                if(in instanceof FieldInsnNode){
+//                    FieldInsnNode fieldInsnNode=(FieldInsnNode) in;
+//                    System.out.println(((FieldInsnNode) in).desc);
+////                    System.out.println(in.getType());
+////                    System.out.println(((FieldInsnNode) in).name);
+////                }
+            InsnList i2 = new InsnList();
+            i2.add(new FieldInsnNode(Opcodes.GETSTATIC,"java/lang/System","out","Ljava/io/PrintStream;"));
+            String temp="=>"+cn.name+":"+mn.name;
+            i2.add(new LdcInsnNode(temp));
+            i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL,"java/io/PrintStream","println", "(Ljava/lang/String;)V", false));
+            mn.instructions.insert(i2);
             mn.maxStack += 5;
         }
     }
