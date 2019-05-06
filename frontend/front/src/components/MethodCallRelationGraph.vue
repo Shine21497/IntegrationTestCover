@@ -149,7 +149,7 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item label="类选择">
-                                        <el-select filterable  :disabled="Object.entries(testCaseMap).length == 0" v-model="selectTestForm.selectedTestClass" placeholder="请选择测试类" @change="getTestClass($event)">
+                                        <el-select filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestClasses.length == 0" v-model="selectTestForm.selectedTestClass" placeholder="请选择测试类" @change="getTestClass($event)">
                                             <el-option
                                                     v-for="item in selectTestForm.allTestClasses"
                                                     :key="item"
@@ -159,7 +159,7 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item label="方法选择">
-                                        <el-select filterable  :disabled="Object.entries(testCaseMap).length == 0" v-model="selectTestForm.selectedTestCase" placeholder="请选择测试方法">
+                                        <el-select filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestCases.length == 0" v-model="selectTestForm.selectedTestCase" placeholder="请选择测试方法">
                                             <el-option
                                                     v-for="item in selectTestForm.allTestCases"
                                                     :key="item"
@@ -444,15 +444,22 @@ import { Promise } from 'q';
             },
 
             getTestClass(prov) {
+                this.selectTestForm.selectedTestCase = '';
                 this.selectTestForm.allTestCases =  this.testCaseMap[this.selectTestForm.selectedTestProject.split('.')[0]][prov]
-                // this.methods =  this.testCaseMap[this.selectTestForm.selectedTestProject][prov]
             },
             getTestProject(prov) {
-                console.log(this.testCaseMap)
-                console.log(prov.split('.'))
+                this.selectTestForm.selectedTestCase = '';
+                this.selectTestForm.selectedTestClass = '';
+
+                var prjName = prov.split('.')[0];
                 // prov is "demo.jar" but testCaseMap is {"demo":{...}}
-                this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prov.split('.')[0]])
-                //this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prov])
+                if(this.testCaseMap[prjName])
+                    this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prjName]);
+                else{
+                    this.$message.error('不存在项目"' + prjName + '"的测试用例，请上传该项目的测试用例，目前有以下项目的测试用例 [' + Object.keys(this.testCaseMap).toString().slice(0,30) + ']');
+                    this.selectTestForm.allTestClasses = [];
+                    this.selectTestForm.allTestCases = [];
+                }
             },
             getClass(prov) {
                 this.adjustForm.allMethods = this.classMethodMap[prov]
@@ -488,7 +495,6 @@ import { Promise } from 'q';
             },
             async showTestProjectList(open) {
                 if(open) {
-                    // let _this = this;
                     const [{ result: uploadedFiles }, { result: testCaseMap }] 
                         = await Promise.all([getUploadedFileList(), getTestCaseList()])
 
@@ -601,24 +607,27 @@ import { Promise } from 'q';
                 var projectname  = this.selectTestForm.selectedTestProject;
                 var testcasename = this.selectTestForm.selectedTestClass;
                 var method       = this.selectTestForm.selectedTestCase;
-                if(!projectname || !testcasename || !method){
+                if(!projectname || !testcasename || (testcasename != 'allTestFiles' && !method)){
                     this.showMsg('请选择完整的项目，测试类以及测试方法')
                     return
                 }
                 let _this = this;
                 // 传参数给后端跑测试用例
                 runTestCase(projectname, testcasename, method).then(response => {// response 为 ["12123123","many"]
+                    if(response[2]) return; // error msg
                     _this.taskId = response[0];
                     _this.taskType = response[1];
                     // 开始监听运行进度
                     _this._onTestRunning();
                 })
-                this.showcoverInformation();
+                if(this.relation.links) // 前提是图已生成
+                    this.showcoverInformation();
             },
             // 获取测试进度的时候要调用的
             _onTestRunning(){
                 let _this = this;
                 getTestRunningStatus(_this.taskId).then(response => {  // 这里的response[0] 和 [1]可能要改，看后端数据结构
+                    if(response[2]) return; // error msg
                     if(response[0] === "sorry,no this task~")
                         return _this.showMsg("sorry,no this task~");
                     _this.runTestPercentange = Math.ceil((response[0] / response[1])*100);
@@ -633,7 +642,6 @@ import { Promise } from 'q';
                     // 展示测试用例的结果
                     console.log(response)
                     _this.showTestResult(response,_this.taskType)
-
                 });
             },
             // 显示消息
