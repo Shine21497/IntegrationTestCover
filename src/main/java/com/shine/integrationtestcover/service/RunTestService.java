@@ -263,7 +263,7 @@ public class RunTestService {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.matches(".*CALL.*")) {
-                    methodsrelationship.add(line.replace("/", "."));
+                    methodsrelationship.add((!line.contains("=>")? line : line.split("=>")[0]).replace("/", "."));
                 }
             }
             br.close();

@@ -631,6 +631,7 @@ import { Promise } from 'q';
                 let _this = this;
                 getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
+                    console.log(response)
                     _this.showTestResult(response,_this.taskType)
 
                 });

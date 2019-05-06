@@ -96,7 +96,7 @@ public class ProgramInstrument {
 ////                }
             InsnList i2 = new InsnList();
             i2.add(new FieldInsnNode(Opcodes.GETSTATIC,"java/lang/System","out","Ljava/io/PrintStream;"));
-            String temp="=>"+cn.name+":"+mn.name;
+            String temp = "=>" + cn.name + ":" + mn.name;
             i2.add(new LdcInsnNode(temp));
             i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL,"java/io/PrintStream","println", "(Ljava/lang/String;)V", false));
             mn.instructions.insert(i2);
