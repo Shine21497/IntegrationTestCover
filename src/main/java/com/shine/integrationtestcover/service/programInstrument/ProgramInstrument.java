@@ -81,7 +81,7 @@ public class ProgramInstrument {
                     MethodInsnNode methodInsnNode = (MethodInsnNode) in;
                     InsnList i2 = new InsnList();
                     i2.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
-                    String temp = "\n" + cn.name + ":" + mn.name + " CALL " + methodInsnNode.owner + ":" + methodInsnNode.name;
+                    String temp = "\n" + cn.name + ":" + mn.name + " CALL " + methodInsnNode.owner + ":" + methodInsnNode.name + "=>";
                     i2.add(new LdcInsnNode(temp));
                     i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "print", "(Ljava/lang/String;)V", false));
                     if (in.getPrevious() != null)
@@ -96,11 +96,12 @@ public class ProgramInstrument {
 ////                }
             InsnList i2 = new InsnList();
             i2.add(new FieldInsnNode(Opcodes.GETSTATIC,"java/lang/System","out","Ljava/io/PrintStream;"));
-            String temp = "=>" + cn.name + ":" + mn.name;
-            i2.add(new LdcInsnNode(temp));
+            i2.add( new VarInsnNode(Opcodes.ALOAD, 0));
+            i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Object", "getClass", "()Ljava/lang/Class;", false));
             i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL,"java/io/PrintStream","println", "(Ljava/lang/String;)V", false));
             mn.instructions.insert(i2);
             mn.maxStack += 5;
         }
     }
+
 }
