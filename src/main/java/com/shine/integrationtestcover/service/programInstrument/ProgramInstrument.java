@@ -94,12 +94,16 @@ public class ProgramInstrument {
 ////                    System.out.println(in.getType());
 ////                    System.out.println(((FieldInsnNode) in).name);
 ////                }
-            InsnList i2 = new InsnList();
-            i2.add(new FieldInsnNode(Opcodes.GETSTATIC,"java/lang/System","out","Ljava/io/PrintStream;"));
-            i2.add( new VarInsnNode(Opcodes.ALOAD, 0));
-            i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Object", "getClass", "()Ljava/lang/Class;", false));
-            i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL,"java/io/PrintStream","println", "(Ljava/lang/String;)V", false));
-            mn.instructions.insert(i2);
+            System.out.println(mn.access);
+            if((mn.access/8) % 2 == 1) {
+                InsnList i2 = new InsnList();
+                i2.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
+                i2.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Object", "getClass", "()Ljava/lang/Class;", false));
+                i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "getName", "()Ljava/lang/String;", false));
+                i2.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V", false));
+                mn.instructions.insert(i2);
+            }
             mn.maxStack += 5;
         }
     }
