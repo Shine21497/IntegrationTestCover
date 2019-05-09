@@ -12,6 +12,7 @@ import java.io.File;
 public class BaseConfig {
     private String uploadedFilePath = "";
     private String instrumentationPath = "";
+    private String regressionTestPath = "";
 
     public String getUploadedFilePath() {
         if(this.uploadedFilePath.isEmpty()) {
@@ -35,6 +36,30 @@ public class BaseConfig {
             }
         }
         return this.uploadedFilePath;
+    }
+
+    public String getRegressionFilePath() {
+        if(this.regressionTestPath.isEmpty()) {
+            this.regressionTestPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile()+ "regressionTest/";
+            try{
+                this.regressionTestPath = java.net.URLDecoder.decode(this.regressionTestPath, "UTF-8");
+            }catch(Exception e)
+            {
+                e.printStackTrace();
+            };
+            File directory=new File(this.regressionTestPath);
+            if(!directory.exists())
+            {
+                try{
+                    directory.mkdirs();
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return this.regressionTestPath;
     }
 
     public String getInstrumentationPath() {
