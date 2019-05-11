@@ -32,9 +32,9 @@ public class Edge {
 
     @Override
     public boolean equals(Object o) {
-        if(o != null && o instanceof Edge) {
+        if(o != null && (o instanceof Edge)) {
             Edge otherEdge = (Edge)o;
-            return super.equals(o) && this.src.equals(otherEdge.src) && this.dest.equals(otherEdge.dest);
+            return this.src.equals(otherEdge.src) && this.dest.equals(otherEdge.dest);
         } else {
             return false;
         }
@@ -43,6 +43,11 @@ public class Edge {
     @Override
     public int hashCode() {
         return super.hashCode() + this.dest.hashCode() + this.src.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return src + "CALL" + dest;
     }
 
 
