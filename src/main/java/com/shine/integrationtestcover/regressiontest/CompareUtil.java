@@ -117,7 +117,7 @@ public class CompareUtil {
         } else if (a instanceof VarInsnNode) {
             return compareVarInsnNode((VarInsnNode)a, (VarInsnNode)b);
         }
-        System.out.println("insn node out of mind");
+        System.out.println("insnode out of list");
         return true;
     }
 

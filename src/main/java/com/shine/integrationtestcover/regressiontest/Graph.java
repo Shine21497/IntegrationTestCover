@@ -112,9 +112,19 @@ public class Graph {
                 }
             }
         }
-        System.out.println("dangerous");
+        System.out.println("dangerous edge");
         for(int i=0;i<dangerousList.size();i++){
             System.out.println(dangerousList.get(i));
+        }
+
+        System.out.println("dangerous node");
+        for(int i=0;i<differentNodeKey.size();i++){
+            System.out.println(differentNodeKey.get(i));
+        }
+
+        System.out.println("new node");
+        for(int i=0;i<newNodeKey.size();i++){
+            System.out.println(newNodeKey.get(i));
         }
 
 }

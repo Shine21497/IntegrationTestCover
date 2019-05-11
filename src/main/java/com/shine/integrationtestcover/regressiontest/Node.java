@@ -2,6 +2,7 @@ package com.shine.integrationtestcover.regressiontest;
 
 import jdk.internal.org.objectweb.asm.tree.FieldInsnNode;
 import jdk.internal.org.objectweb.asm.tree.InsnList;
+import jdk.internal.org.objectweb.asm.tree.JumpInsnNode;
 
 import java.util.*;
 
@@ -49,10 +50,19 @@ public class Node {
             if (CompareUtil.compareInsnNode(this.insnList.get(i), anotherList.get(i))){
                 continue;
             } else {
+                System.out.println("different ins" + i);
+                System.out.println(this.insnList.get(i).getClass());
+                /*if(this.insnList.get(i) instanceof JumpInsnNode) {
+                    System.out.println(((JumpInsnNode)this.insnList.get(i)).label.getLabel().getOffset());
+                    System.out.println(((JumpInsnNode)anotherList.get(i)).label.getLabel().);
+                }*/
                 return false;
             }
         }
         return true;
     }
 
+    public InsnList getInsnList() {
+        return insnList;
+    }
 }
