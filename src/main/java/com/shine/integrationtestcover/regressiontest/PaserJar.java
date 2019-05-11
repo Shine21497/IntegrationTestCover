@@ -28,7 +28,7 @@ public class PaserJar {
     private String filename;
     private String path;
     private Graph graph;
-    public static String[] packageNames = {};
+    public static String packageName = "cn/jimmyshi";
 
     private ClassVisitor visitor;
 
@@ -66,24 +66,26 @@ public class PaserJar {
                 JarEntry entry;
                 while ((entry = in.getNextJarEntry()) != null) {
                     String name = entry.getName();
+                    if (!name.startsWith(packageName)) continue;
                     if (!name.endsWith(".class")) continue;
                     ClassNode classNode = new ClassNode();
                     ClassReader reader = new ClassReader(in);
                     reader.accept(classNode, ClassReader.SKIP_DEBUG);
+                    //System.out.println("ClassAAA" + classNode.name);
                     List<MethodNode> methodNodes = classNode.methods;
                     for (MethodNode methodNode : methodNodes) {
                         Node methodGraphNode;
                         if (this.graph.ifNodeExist(methodNode.name + methodNode.desc)) {
                             methodGraphNode = graph.getNode(methodNode.name + methodNode.desc);
                         } else {
-                            methodGraphNode = new Node(methodNode.name + methodNode.desc);
+                            methodGraphNode = new Node(methodNode.name + methodNode.desc, methodNode.instructions);
                             this.graph.addNode(methodNode.name + methodNode.desc, methodGraphNode);
                         }
                         InsnList insnList = methodNode.instructions;
                         for (int i = 0; i < insnList.size(); ++i) {
                             if(insnList.get(i) instanceof MethodInsnNode) {
                                 MethodInsnNode methodInsnNode = (MethodInsnNode)insnList.get(i);
-                                System.out.println(methodNode.name + methodNode.desc+ "CALL" + methodInsnNode.name + methodInsnNode.desc);
+                                //System.out.println(methodNode.name + methodNode.desc+ "CALL" + methodInsnNode.name + methodInsnNode.desc);
                                 methodGraphNode.addEdge(new Edge(methodNode.name + methodNode.desc, methodInsnNode.name + methodInsnNode.desc));
                             }
                         }
