@@ -28,7 +28,6 @@ public class ProgramInstrumentService {
 
     @Async
     public void doInstrumentation(String fileName) throws IOException {
-        System.out.println("bbb"+ProgramInstrumentService.situation.get(fileName));
         if(!situation.keySet().contains(fileName)){
             situation.put(fileName,0);
         }
@@ -40,13 +39,10 @@ public class ProgramInstrumentService {
             situation.put(fileName,2);
             return;
         }
-        System.out.println("qw"+ProgramInstrumentService.situation.get(fileName));
 
         if(situation.get(fileName)==0) {
             System.out.println("进行中");
             situation.put(fileName,1);//开始插桩
-            System.out.println("qw"+ProgramInstrumentService.situation.get(fileName));
-
             //fileName 是类似 “demo.jar”的文件名
             String getUploadedFilePath = baseConfig.getUploadedFilePath().substring(1).replace('/', '\\');
             String getRunTestProjectPath = baseConfig.getInstrumentationPath().substring(1).replace('/', '\\');
