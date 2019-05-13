@@ -62,6 +62,9 @@ public class RunTestService {
 
     //初始化，接收项目名称
     public void initate(String projectname) {
+        while(ProgramInstrumentService.situation.get(projectname+".jar")!=2){
+
+        }
         commonUtils.deleteDir(new File(baseConfig.getRunTestProjectPath(projectname)));
         commonUtils.copyDic(baseConfig.getUploadedTestPath(projectname), baseConfig.getRunTestProjectPath(projectname));
         commonUtils.copyFile(projectname + ".jar", baseConfig.getInstrumentationPath(), baseConfig.getRunTestProjectPath(projectname));
