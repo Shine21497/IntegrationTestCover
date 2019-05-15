@@ -100,5 +100,9 @@ public class MethodVisitor extends EmptyVisitor {
         callRelationship = new LinkedList<>();
     }
 
+    public static void setallMethodsEmpty() {
+        allMethods = new HashSet<>();
+    }
+
 
 }
