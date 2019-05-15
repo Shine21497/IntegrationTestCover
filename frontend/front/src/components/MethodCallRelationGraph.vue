@@ -453,12 +453,23 @@ import { Promise } from 'q';
 
                 var prjName = prov.split('.')[0];
                 // prov is "demo.jar" but testCaseMap is {"demo":{...}}
+                this.showTestClass(prjName,1)
+            },
+            showTestClass(prjName,time){
                 if(this.testCaseMap[prjName])
                     this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prjName]);
                 else{
-                    this.$message.error('不存在项目"' + prjName + '"的测试用例，请上传该项目的测试用例，目前有以下项目的测试用例 [' + Object.keys(this.testCaseMap).toString().slice(0,30) + ']');
-                    this.selectTestForm.allTestClasses = [];
-                    this.selectTestForm.allTestCases = [];
+                    if (time > 3) {
+                        this.$message.error('不存在项目"' + prjName + '"的测试用例，请上传该项目的测试用例，目前有以下项目的测试用例 [' + Object.keys(this.testCaseMap).toString().slice(0,30) + ']');
+                        this.selectTestForm.allTestClasses = [];
+                        this.selectTestForm.allTestCases = [];
+                    }
+                    else
+                        getTestCaseList().then(response=>{
+                            this.testCaseMap = response.result;
+                            console.log(this.testCaseMap)
+                            this.showTestClass(prjName,time+1);
+                        })
                 }
             },
             getClass(prov) {
@@ -497,10 +508,15 @@ import { Promise } from 'q';
                 if(open) {
                     const [{ result: uploadedFiles }, { result: testCaseMap }] 
                         = await Promise.all([getUploadedFileList(), getTestCaseList()])
-
-                    this.uploadedFiles = uploadedFiles;
                     //response is {"result":{"demo":{"TestMethod.java":["allMehtods"],"allTestFiles":[],"Test2.java":["allMehtods"]}}}
-                    this.testCaseMap = testCaseMap;
+                    this.$nextTick(() => {
+                        this.uploadedFiles = uploadedFiles;
+                        this.testCaseMap = testCaseMap;
+                        console.log(uploadedFiles,testCaseMap);
+                        if (this.selectTestForm.selectedTestProject) {
+                            this.getTestProject(this.selectTestForm.selectedTestProject)
+                        }
+                    })
                 }
             },
             //展示覆盖信息
@@ -657,11 +673,11 @@ import { Promise } from 'q';
                 let width = document.body.clientWidth
 
                 //移动端设备横竖屏重新加载页面
-                function change () {
+                // function change () {
                     // window.location.reload()
-                }
+                // }
 
-                window.addEventListener('onorientationchange' in window ? 'orientationchange' : 'resize', change, false)
+                // window.addEventListener('onorientationchange' in window ? 'orientationchange' : 'resize', change, false)
                 //节点大小（圆圈大小）
                 const nodeSize = 35
                 //初始化时连接线的距离长度
