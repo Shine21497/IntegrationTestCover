@@ -3,16 +3,8 @@ package com.shine.integrationtestcover.service.codeParse;
 import org.apache.bcel.classfile.ClassParser;
 import org.apache.bcel.classfile.JavaClass;
 import org.apache.bcel.classfile.Method;
-import org.apache.bcel.generic.ConstantPoolGen;
-import org.apache.bcel.generic.ConstantPushInstruction;
-import org.apache.bcel.generic.EmptyVisitor;
+import org.apache.bcel.generic.*;
 
-import org.apache.bcel.generic.INVOKEVIRTUAL;
-import org.apache.bcel.generic.Instruction;
-import org.apache.bcel.generic.InstructionConstants;
-import org.apache.bcel.generic.InstructionHandle;
-import org.apache.bcel.generic.MethodGen;
-import org.apache.bcel.generic.ReturnInstruction;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -34,7 +26,7 @@ public class MethodVisitor extends EmptyVisitor {
     public static HashSet<String> classes = new HashSet<>();
     public static HashMap<String, ArrayList<String>> methods = new HashMap<>();
     public static boolean ifOnlySelfPackage = false;
-    public static HashSet<String> allMethods=new HashSet<>();
+    public static HashSet<String> allMethods = new HashSet<>();
     public static String[] packageToCallNames = {};
 
 
@@ -49,9 +41,9 @@ public class MethodVisitor extends EmptyVisitor {
         } else {
             methods.put(jc.getClassName(), new ArrayList<>());
             methods.get(jc.getClassName()).add(mg.getName());
-
         }
-        allMethods.add(jc.getClassName()+":"+mg.getName());
+
+        allMethods.add(jc.getClassName() + ":" + mg.getName());
 
     }
 
@@ -81,7 +73,7 @@ public class MethodVisitor extends EmptyVisitor {
         String formatInternal = "%s";
         this.DegreeClass = String.format(formatInternal, i.getReferenceType(cp));
         this.DegreeMethod = i.getMethodName(cp);
-        if(!this.DegreeClass.startsWith("java")) {
+        if (!this.DegreeClass.startsWith("java")) {
             for (String packageName : packageToCallNames) {
                 if (this.DegreeClass.startsWith(packageName)) {
                     String output = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
@@ -91,6 +83,24 @@ public class MethodVisitor extends EmptyVisitor {
         }
 
     }
+
+    @Override
+    public void visitINVOKESTATIC(INVOKESTATIC obj) {
+        String formatInternal = "%s";
+        this.DegreeClass = String.format(formatInternal, obj.getReferenceType(cp));
+        this.DegreeMethod = obj.getMethodName(cp);
+
+        if (!this.DegreeClass.startsWith("java")) {
+            for (String packageName : packageToCallNames) {
+                if (this.DegreeClass.startsWith(packageName)) {
+                    String output = visitedClass.getClassName() + ":" + mg.getName() + " CALL " + this.DegreeClass + ":" + this.DegreeMethod;
+                    callRelationship.add(output);
+
+                }
+            }
+        }
+    }
+
 
     public static List<String> getCallRelationship() {
         return callRelationship;
