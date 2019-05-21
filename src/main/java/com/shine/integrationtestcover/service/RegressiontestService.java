@@ -15,7 +15,9 @@ import java.util.Map;
 public class RegressiontestService {
     @Autowired
     BaseConfig baseConfig;
-    public List<String> regressiontest(String oldJarName,String newJarName,String packageName){
+    @Autowired
+    RunTestService runTestService;
+    public List<String> regressiontest(String oldJarName,String newJarName,String packageName) throws Exception {
         Graph graph=new Graph();
         graph.Graph(oldJarName, newJarName, packageName);
         List<String> dangerousList=new ArrayList<String>();
@@ -36,7 +38,9 @@ public class RegressiontestService {
         for(int i=0;i<graph.getDeleteNodeKey().size();i++){
             System.out.println(graph.getDeleteNodeKey().get(i));
         }
-        HashMap<String, List<String>> TestMap = new HashMap<>();
+        System.out.println("regressiveTest");
+        HashMap<String,List<String>> TestMap = runTestService.regressionCompare(oldJarName);
+        System.out.println("regressiveTestEnd");
         for(Map.Entry<String,List<String>> entry:TestMap.entrySet()){
             List<String> temp=entry.getValue();
             for(int i=0;i<temp.size();i++){
@@ -61,7 +65,6 @@ public class RegressiontestService {
                     }
                 }
             }
-
         }
         return result;
     }

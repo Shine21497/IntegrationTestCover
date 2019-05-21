@@ -19,7 +19,7 @@ public class RegressiontestController {
     RegressiontestService regressiontestService;
     @RequestMapping(value="/regressiontest")
     @ResponseBody
-    public String regressiontest(@RequestParam("oldJarName") String oldJarName, @RequestParam("newJarName") String newJarName, @RequestParam("packageName") String packageName){
+    public String regressiontest(@RequestParam("oldJarName") String oldJarName, @RequestParam("newJarName") String newJarName, @RequestParam("packageName") String packageName) throws Exception {
     //判断jar文件是否存在
         File oldJar=new File(baseConfig.getRegressionFilePath()+"//"+oldJarName);
         File newJar=new File(baseConfig.getRegressionFilePath()+"//"+newJarName);
