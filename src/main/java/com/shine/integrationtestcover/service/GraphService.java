@@ -2,6 +2,7 @@ package com.shine.integrationtestcover.service;
 
 import com.shine.integrationtestcover.service.codeParse.MethodVisitor;
 import com.shine.integrationtestcover.service.graphCustom.GraphAlo;
+import com.sun.xml.internal.bind.v2.runtime.reflect.Lister;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -39,7 +40,7 @@ public class GraphService {
 
     public ArrayList<HashMap<String, Object>> getVertex() {
         ArrayList<HashMap<String, Object>> result = new ArrayList<>();
-        for(int i = 0; i < this.vertexResult.size(); i++){
+        for (int i = 0; i < this.vertexResult.size(); i++) {
             HashMap<String, Object> node = new HashMap<>();
             node.put("name", vertexResult.get(i));
             node.put("type", (new Random()).nextInt(3));
@@ -57,59 +58,61 @@ public class GraphService {
     }
 
     //获得调用string
-    public void parse(){
+    public void parse() {
         parseJarService.setFilename(filename);
         parseJarService.setPath(path);
-        this.invokeString= parseJarService.getInvoking();
-       // System.out.println("invokeString" +invokeString.size());
+        this.invokeString = parseJarService.getInvoking();
+        // System.out.println("invokeString" +invokeString.size());
     }
 
-    public void initiate(){
+    public void initiate() {
+        MethodVisitor.setallMethodsEmpty();
+        vertexResult = new ArrayList<String>();
         parse();
-        result=new ArrayList<String>();
-        ArrayList<String> vertex=new ArrayList<String>();
-        for(int i=0;i<invokeString.size();i++){
+        result = new ArrayList<String>();
+        ArrayList<String> vertex = new ArrayList<String>();
+        for (int i = 0; i < invokeString.size(); i++) {
             result.add(invokeString.get(i));
         }
-
-        for(String temp:result){
-            String[] tempList=temp.split(" ");
+        for (String temp : result) {
+            String[] tempList = temp.split(" ");
             vertex.add(tempList[0]);
             vertex.add(tempList[2]);
         }
         vertex.addAll(MethodVisitor.allMethods);
+
         vertexResult = new ArrayList<String>(new HashSet<String>(vertex));//
-        System.out.println("vertexResult:"+vertexResult.size());
+        System.out.println("vertexResult:" + vertexResult.size());
 
 
     }
 
     //获取所有边
-    public ArrayList<HashMap> getEdges(){
+    public ArrayList<HashMap> getEdges() {
 
-        int numOfEdge=0;
+        int numOfEdge = 0;
 
-        int vertexNum=vertexResult.size();
+        int vertexNum = vertexResult.size();
         GraphAlo graph = new GraphAlo(vertexNum);
 
-        for(int i=0;i<vertexResult.size();i++) {
+        for (int i = 0; i < vertexResult.size(); i++) {
             graph.insertVertex(vertexResult.get(i));
 
         }
 
-      
+
         for (String temp : result) {
             String[] tempList = temp.split(" ");
             int startVertex = vertexResult.indexOf(tempList[0]);
             int endVertex = vertexResult.indexOf(tempList[2]);
             graph.insertEdge(startVertex, endVertex, 1);
         }
-        ArrayList<HashMap> edges=new ArrayList<>();
-        for(int i=0;i<vertexNum;i++){
-            for(int j=0;j<vertexNum;j++){
-                if(graph.getWeight(i,j)==1){
+        ArrayList<HashMap> edges = new ArrayList<>();
+        for (int i = 0; i < vertexNum; i++) {
+            for (int j = 0; j < vertexNum; j++) {
+                if (graph.getWeight(i, j) == 1) {
                     numOfEdge++;
-                   HashMap<String, Integer> content=new HashMap();
+                    HashMap<String, Integer> content = new HashMap();
                     content.put("source", i);
                     content.put("target", j);
                     edges.add(content);
@@ -117,7 +120,7 @@ public class GraphService {
                 }
             }
         }
-        System.out.println("num"+numOfEdge);
+        System.out.println("num" + numOfEdge);
         return edges;
 
     }

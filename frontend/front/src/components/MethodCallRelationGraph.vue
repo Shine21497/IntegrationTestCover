@@ -222,6 +222,27 @@
                          </el-container>
                       </el-card>
                     </el-collapse-item>
+                    <el-collapse-item class="titlestyle" title="陈志的无敌方块" name="8">
+                    <el-upload
+                        class="upload-demo"
+                        ref="uploadjar"
+                        action="/apiurl/uploadRegressiveJar"
+                        :file-list="regression.Jars"
+                        :on-change="handleChange"
+                        :limit="2"
+                        :auto-upload="false">
+                        <el-button slot="trigger" size="small" type="primary" :disabled="regression.disable">{{regression.status}}</el-button>
+                        <el-button style="margin-left: 10px;" size="small" type="success" @click="UploadJars">上传</el-button>
+                        <el-button style="margin-left: 10px;" size="small" type="success" @click="AnalyseJars">分析</el-button>
+                        <div slot="tip" class="el-upload__tip">请上传新旧版本的Jar包</div>
+                    </el-upload>
+                    <el-input
+                        type="textarea"
+                        autosize
+                        placeholder="请输入包范围"
+                        v-model="regression.info.packageName">
+                    </el-input>
+                    </el-collapse-item>
             </el-collapse>
         </div>
     </el-container>
@@ -237,6 +258,7 @@
         runTestCase,          // 执行测试用例，需要三个参数 (projectname, testcasename, method)，返回值为任务 [id<str>,type<str>]
         getTestRunningStatus, // 获取指定任务的执行进度，需要一个参数 (task_id_Key）
         getInvokingResults,   // 获取测试用例执行结果，需要一个参数 (task_id_Key）
+        postRegression,       // 回归测试上传新旧包，传的参数为 regression.info
     } from '@/api/methodcallrelationgraph.js'
     import * as d3 from 'd3'
 import { setInterval } from 'timers';
@@ -294,9 +316,42 @@ import { Promise } from 'q';
                     packages:[],
                     packagesCall:[]
                 },
+                regression:{
+                    Jars: [], // 新，旧 Jar 包列表
+                    info:{
+                        oldJarName:'',
+                        newJarName:'',
+                        packageName:'',
+                    },
+                    status:'选择旧版本Jar包',
+                    disable:false
+                }
             }
         },
         methods: {
+            UploadJars(){
+                this.$refs.uploadjar.submit();
+            },
+            handleChange(file, fileList) {
+                if(fileList.length == 1){
+                    this.regression.info.oldJarName = fileList[0].name;
+                    this.regression.status = '选择新版本Jar包';
+                    this.regression.disable = false;
+                }
+                else if(fileList.length == 2){
+                    this.regression.info.newJarName = fileList[1].name;
+                    this.regression.disable = true;
+                }
+                else{
+                    this.regression.status = '选择旧版本Jar包';
+                    this.regression.disable = false;
+                }
+            },
+            AnalyseJars(){
+              postRegression(this.regression.info).then(response=> {
+                console.log(response);
+              })
+            },
             packagesCallHistory(queryString, cb) {
                 // cb([{ "value": "asdasd"}]);
                 cb(this.history.packagesCall);
@@ -453,12 +508,23 @@ import { Promise } from 'q';
 
                 var prjName = prov.split('.')[0];
                 // prov is "demo.jar" but testCaseMap is {"demo":{...}}
+                this.showTestClass(prjName,1)
+            },
+            showTestClass(prjName,time){
                 if(this.testCaseMap[prjName])
                     this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prjName]);
                 else{
-                    this.$message.error('不存在项目"' + prjName + '"的测试用例，请上传该项目的测试用例，目前有以下项目的测试用例 [' + Object.keys(this.testCaseMap).toString().slice(0,30) + ']');
-                    this.selectTestForm.allTestClasses = [];
-                    this.selectTestForm.allTestCases = [];
+                    if (time > 3) {
+                        this.$message.error('不存在项目"' + prjName + '"的测试用例，请上传该项目的测试用例，目前有以下项目的测试用例 [' + Object.keys(this.testCaseMap).toString().slice(0,30) + ']');
+                        this.selectTestForm.allTestClasses = [];
+                        this.selectTestForm.allTestCases = [];
+                    }
+                    else
+                        getTestCaseList().then(response=>{
+                            this.testCaseMap = response.result;
+                            console.log(this.testCaseMap)
+                            this.showTestClass(prjName,time+1);
+                        })
                 }
             },
             getClass(prov) {
@@ -497,10 +563,15 @@ import { Promise } from 'q';
                 if(open) {
                     const [{ result: uploadedFiles }, { result: testCaseMap }] 
                         = await Promise.all([getUploadedFileList(), getTestCaseList()])
-
-                    this.uploadedFiles = uploadedFiles;
                     //response is {"result":{"demo":{"TestMethod.java":["allMehtods"],"allTestFiles":[],"Test2.java":["allMehtods"]}}}
-                    this.testCaseMap = testCaseMap;
+                    this.$nextTick(() => {
+                        this.uploadedFiles = uploadedFiles;
+                        this.testCaseMap = testCaseMap;
+                        console.log(uploadedFiles,testCaseMap);
+                        if (this.selectTestForm.selectedTestProject) {
+                            this.getTestProject(this.selectTestForm.selectedTestProject)
+                        }
+                    })
                 }
             },
             //展示覆盖信息
@@ -657,11 +728,11 @@ import { Promise } from 'q';
                 let width = document.body.clientWidth
 
                 //移动端设备横竖屏重新加载页面
-                function change () {
+                // function change () {
                     // window.location.reload()
-                }
+                // }
 
-                window.addEventListener('onorientationchange' in window ? 'orientationchange' : 'resize', change, false)
+                // window.addEventListener('onorientationchange' in window ? 'orientationchange' : 'resize', change, false)
                 //节点大小（圆圈大小）
                 const nodeSize = 35
                 //初始化时连接线的距离长度
@@ -940,6 +1011,7 @@ import { Promise } from 'q';
 </script>
 
 <style lang="less">
+
     header{
         font-family: "Arial Black";
         font-size: 25px;

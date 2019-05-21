@@ -62,3 +62,11 @@ export function getInvokingResults (task_id_Key) {
         }
     })
 }
+
+export function postRegression (params) {
+    return fetch({
+        url: '/apiurl/regressiontest',
+        method: 'get',
+        params: params
+    })
+}
