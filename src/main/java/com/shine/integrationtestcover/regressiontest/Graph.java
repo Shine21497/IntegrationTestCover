@@ -26,22 +26,42 @@ public class Graph {
         return nodeMap;
     }
 
-    public static Graph newGraph = new Graph();
-    public static Graph oldGraph = new Graph();
-    public static List<String> visitedList=new ArrayList<String>();
-    public static List<Edge> dangerousList=new ArrayList<Edge>();
-    public static List<String> differentNodeKey = new ArrayList<>();
-    public static List<String> newNodeKey = new ArrayList<>();
+    private static Graph newGraph = new Graph();
+    private static Graph oldGraph = new Graph();
+    private  List<String> visitedList=new ArrayList<String>();
 
-    public static void initNodeMap(){
-        BaseConfig baseConfig = new BaseConfig();
-        PaserJar paserJar = new PaserJar(baseConfig.getRegressionFilePath(), "bean-query.jar", oldGraph);
-        oldGraph = paserJar.getInvoking();
-        PaserJar paserJarNew = new PaserJar(baseConfig.getRegressionFilePath(), "bean-query-after-change.jar", newGraph);
-        newGraph = paserJarNew.getInvoking();
-
+    public List<Edge> getDangerousList() {
+        return dangerousList;
     }
-    public static Edge match(Node n,Edge edge){
+
+    public List<String> getDifferentNodeKey() {
+        return differentNodeKey;
+    }
+
+    public List<String> getNewNodeKey() {
+        return newNodeKey;
+    }
+
+    private  List<Edge> dangerousList=new ArrayList<Edge>();
+    private  List<String> differentNodeKey = new ArrayList<>();
+    private  List<String> newNodeKey = new ArrayList<>();
+
+    public List<String> getDeleteNodeKey() {
+        return deleteNodeKey;
+    }
+
+    private  List<String> deleteNodeKey=new ArrayList<>();
+
+    public  void initNodeMap(String oldJarName,String newJarName,String packageName){
+        BaseConfig baseConfig = new BaseConfig();
+        PaserJar paserJar = new PaserJar(baseConfig.getRegressionFilePath(), oldJarName, oldGraph);
+        paserJar.setPackageName(packageName);
+        oldGraph = paserJar.getInvoking();
+        PaserJar paserJarNew = new PaserJar(baseConfig.getRegressionFilePath(), newJarName, newGraph);
+        paserJarNew.setPackageName(packageName);
+        newGraph = paserJarNew.getInvoking();
+    }
+    public  Edge match(Node n,Edge edge){
         for(int i = 0; i < n.getEdgeListSize(); i++){
             Edge e = n.getEdge(i);
             if(e.equals(edge)){
@@ -51,7 +71,7 @@ public class Graph {
         return null;
     }
 
-    public static void compare(Node oldNode,Node newNode){
+    public  void compare(Node oldNode,Node newNode){
         //进入compare 一定是 content一致
 
         //遍历newNode中所有的边
@@ -91,8 +111,8 @@ public class Graph {
 
         }
     }
-    public static void main(String[] args) {
-        initNodeMap();
+    public  void Graph(String oldJarName,String newJarName,String packageName) {
+        initNodeMap(oldJarName,newJarName,packageName);
         for (Map.Entry<String, Node> entry : newGraph.getNodeMap().entrySet()){
             if(!visitedList.contains(entry.getKey())) {
                 String key = entry.getKey();
@@ -112,20 +132,27 @@ public class Graph {
                 }
             }
         }
-        System.out.println("dangerous edge");
-        for(int i=0;i<dangerousList.size();i++){
-            System.out.println(dangerousList.get(i));
+        for(String key : oldGraph.getNodeMap().keySet()){
+            if(!newGraph.ifNodeExist(key)){
+                deleteNodeKey.add(key);
+                continue;
+            }
         }
+//        System.out.println("dangerous edge");
+//        for(int i=0;i<dangerousList.size();i++){
+//            System.out.println(dangerousList.get(i));
+//        }
+//
+//        System.out.println("dangerous node");
+//        for(int i=0;i<differentNodeKey.size();i++){
+//            System.out.println(differentNodeKey.get(i));
+//        }
+//
+//        System.out.println("new node");
+//        for(int i=0;i<newNodeKey.size();i++){
+//            System.out.println(newNodeKey.get(i));
+//        }
 
-        System.out.println("dangerous node");
-        for(int i=0;i<differentNodeKey.size();i++){
-            System.out.println(differentNodeKey.get(i));
-        }
-
-        System.out.println("new node");
-        for(int i=0;i<newNodeKey.size();i++){
-            System.out.println(newNodeKey.get(i));
-        }
 
 }
 }

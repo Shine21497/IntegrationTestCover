@@ -18,7 +18,7 @@ import java.util.List;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @EnableAsync
-public class RunServiceTest {
+public class RunServiceTest{
     @Autowired
     RunTestService runTestService=new RunTestService();
 
