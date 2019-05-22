@@ -24,7 +24,7 @@ public class RegressiontestService {
         List<String> result=new ArrayList<String>();
         System.out.println("dangerous edge");
         for(int i=0;i<graph.getDangerousList().size();i++){
-           dangerousList.add(graph.getDangerousList().get(i).toString());
+           System.out.println(graph.getDangerousList().get(i).toString());
         }
         System.out.println("dangerous node");
         for(int i=0;i<graph.getDifferentNodeKey().size();i++){
@@ -39,7 +39,15 @@ public class RegressiontestService {
             System.out.println(graph.getDeleteNodeKey().get(i));
         }
         System.out.println("regressiveTest");
-        HashMap<String,List<String>> TestMap = runTestService.regressionCompare(oldJarName);
+//        HashMap<String,List<String>> TestMap = runTestService.regressionCompare(oldJarName.split("\\.")[0]);
+        HashMap<String,List<String>> TestMap=new HashMap<String,List<String>>();
+        System.out.println(oldJarName.split("\\.")[0]);
+        try{
+            TestMap=runTestService.regressionCompare(oldJarName.split("\\.")[0]);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
         System.out.println("regressiveTestEnd");
         for(Map.Entry<String,List<String>> entry:TestMap.entrySet()){
             List<String> temp=entry.getValue();

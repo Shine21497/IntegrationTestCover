@@ -29,8 +29,12 @@ public class RegressiontestController {
         if(!newJar.exists()){
             return("Jar file " + newJarName + " does not exist");
         }
-        regressiontestService.regressiontest(oldJarName,newJarName,packageName);
-        return "hhh";
+        List<String> result=regressiontestService.regressiontest(oldJarName,newJarName,packageName);
+        System.out.println("result show:");
+        for(int i=0;i<result.size();i++){
+            System.out.println(result.get(i));
+        }
+        return oldJarName+newJarName+packageName;
 
     }
 

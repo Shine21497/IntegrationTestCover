@@ -69,6 +69,7 @@ public class RunTestService {
                 Thread.sleep(50);
                 System.out.println("测试用例");
             }catch (Exception e){
+                System.out.println("zhelichucuo");
                 e.printStackTrace();
             }
         }
