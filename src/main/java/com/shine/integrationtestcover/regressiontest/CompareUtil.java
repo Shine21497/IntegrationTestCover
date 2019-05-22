@@ -40,7 +40,7 @@ public class CompareUtil {
     }
 
     public static boolean compareJumpInsnNode(JumpInsnNode a, JumpInsnNode b) {
-        return (a.label.toString().equals(b.label.toString()));
+        return (a.getOpcode()==b.getOpcode());
     }
 
     public static boolean compareLabelNode(LabelNode a, LabelNode b) {
