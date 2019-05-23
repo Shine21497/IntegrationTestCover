@@ -61,9 +61,7 @@ public class RunTestService {
 
     //初始化，接收项目名称
     public void initate(String projectname) {
-        System.out.println("initate");
         List key=new LinkedList(ProgramInstrumentService.situation.keySet());
-        System.out.println(key.size());
         while(ProgramInstrumentService.situation.get(key.get(0))!=2){
             try {
                 Thread.sleep(50);
