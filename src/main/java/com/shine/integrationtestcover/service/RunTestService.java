@@ -65,7 +65,9 @@ public class RunTestService {
         while(ProgramInstrumentService.situation.get(key.get(0))!=2){
             try {
                 Thread.sleep(50);
+                System.out.println("测试用例");
             }catch (Exception e){
+                System.out.println("zhelichucuo");
                 e.printStackTrace();
             }
         }
@@ -422,8 +424,9 @@ public class RunTestService {
     }
 
 
-    public HashMap<String, Object> regressionCompare(String projectname)throws Exception{
-        HashMap<String,Object> compare=new HashMap<>();
+    public HashMap<String, List<String>> regressionCompare(String projectname)throws Exception{
+        System.out.println("reCompare");
+        HashMap<String,List<String>> compare=new HashMap<>();
         initate(projectname);
         String path = this.javafilepath;
         File file = new File(path);
