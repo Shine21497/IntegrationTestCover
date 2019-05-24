@@ -740,7 +740,7 @@ import { Promise } from 'q';
                 //赋值数据集
                 var nodes = this.relation.nodes
                 var links = this.relation.links
-                console.log(links);
+                
                 //  设置画布
                 var svg = d3.select('#svgCanvas')
                     .attr('xmlns', 'http://www.w3.org/2000/svg')
@@ -821,7 +821,7 @@ import { Promise } from 'q';
                         //设置关系文本
                         return d.relation
                     })
-                    //设置拖拽
+                //设置拖拽
                 var drag = d3.drag()
                     .on('start', (d, i) => {
                         if (!d3.event.active) {
@@ -856,8 +856,13 @@ import { Promise } from 'q';
                     .attr('r', nodeSize)
                     .attr('class','node')
                     .attr('fill',(d,i) => {
-                        return stringToColour(d.name.split(":")[0]);
+                        var color = d3.rgb(stringToColour(d.name.split(":")[0]));
+                        return color.brighter(0.7)
                     })
+                    .attr('stroke',(d,i) => {
+                        return stringToColour(d.name.split(":")[0])
+                    })
+                    .attr('stroke-width',4)
                     .attr('id', (d, i) => {
                         //为每个节点设置不同的id
                         return 'node' + i
