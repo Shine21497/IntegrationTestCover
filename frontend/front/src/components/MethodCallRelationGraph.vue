@@ -194,12 +194,12 @@
                                     </el-form-item>
                                     <el-form-item>
                                         <div id="branches">分支总数：0；</div>
-                                        <div id="usecase">执行用例数：0；</div>
-                                        <div id="uncoverbranch">未覆盖分支数：0；</div>
-                                        <div id="coverrate">覆盖率：0%：</div>
+                                        <div id="usecase">执行用例数：{{usecasenum}}；</div>
+                                        <div id="uncoverbranch">未覆盖分支数：{{uncoverlength}}；</div>
+                                        <div id="coverrate">覆盖率：{{coverrate}}%：</div>
                                     </el-form-item>
                                     <el-form-item>
-                                    <el-button type="primary" @click="showTestResult()">立即定位</el-button>
+                                    <el-button type="primary" @click="gotoUncover()">立即定位</el-button>
                                     </el-form-item>
                                 </el-form>
                             </el-container>
@@ -299,6 +299,8 @@ import { Promise } from 'q';
                 },
                 uploadedFiles:[],
                 uncover:[],
+                uncoverlength:'',
+                coverrate:'',
                 uncoverfullname:[],
                 usecasenum:'',
                 selectnode:'',
@@ -312,6 +314,7 @@ import { Promise } from 'q';
                 taskId:'',
                 taskType:'',  // "many" 和 "one" 
                 toggle:true,
+                Isfirstnode:true,
                 history:{
                     packages:[],
                     packagesCall:[]
@@ -379,31 +382,15 @@ import { Promise } from 'q';
                 // 记录正在显示的测试结果，cancelshow 的时候根据这个来
                 //var type="one";
                 //var TestResult=["com.example.demo.controller.Test1:calculate call com.example.demo.controller.Test1:doublevalue"];
-                this.usecasenum=TestResult.length;
+                this.$nextTick(() => {
+                    this.usecasenum = TestResult.length;
+                    console.log(this.usecasenum);
+                })
                 this.TestResult = TestResult;
-                //把第一个节点移到中心
-                var node = this.findNodeByName(TestResult[0].split(" ")[0])
-                var trans = this.tempTrans
-                trans.k = 1;
-                this.g.attr('transform',trans);
-                trans.x = (510 - node.x) * trans.k
-                trans.y = (300 - node.y) * trans.k
-                this.g.attr('transform', trans)
                 for(let index in TestResult){
                     var result=TestResult[index].split(" ");
                     //如果是单个结果
                     if(type === 'one'){
-                       //逐个定位节点
-                            /*var node = this.findNodeByName(result[2])
-                            var trans = this.tempTrans
-                            trans.k = 1;
-                            this.g.attr('transform',trans);
-                            trans.x = (510 - node.x) * trans.k
-                            trans.y = (300 - node.y) * trans.k
-                            var temp=this.g;
-                            setTimeout(function timer(){
-                            temp.attr('transform', trans);
-                            }, (index+1)*2000);*/
                         //线的流动效果和节点效果
                         this.changeSingleLine(result[0],result[2]);
                     }
@@ -411,9 +398,6 @@ import { Promise } from 'q';
                     else{
                         this.changeMultipleLine(result[0],result[2]);
                     }
-                    //更改结点样式
-                    this.changeNode(result[0]);
-                    this.changeNode(result[2]);
                 }
             },
            //改变用例测试经过的直线
@@ -424,6 +408,20 @@ import { Promise } from 'q';
                         d3.select('#eachline' + line_id).classed('edgelabel',false)
                         d3.select('#eachline' + line_id).style('stroke-width',3.5)
                         d3.select('#eachline' + line_id).classed('showsinglepath',true)
+                        this.changeNode(SourceName);
+                        this.changeNode(TargetName);
+                        if(Isfirstnode)
+                        {
+                            var node = this.findNodeByName(SourceName)
+                            var trans = this.tempTrans
+                            trans.k = 1;
+                            this.g.attr('transform',trans);
+                            trans.x = (510 - node.x) * trans.k
+                            trans.y = (300 - node.y) * trans.k
+                            this.g.attr('transform', trans)
+                            Isfirstnode=false
+                        }
+                       
                     }
                     else
                     {
@@ -440,6 +438,8 @@ import { Promise } from 'q';
                         var line_id=this.relation.links[index].index
                         d3.select('#eachline' + line_id).classed('edgelabel',false)
                         d3.select('#eachline' + line_id).style('stroke-width',3.5).attr('stroke','#ff7438').attr('filter','url(#f2)')
+                        this.changeNode(SourceName);
+                        this.changeNode(TargetName);
                     }
                      else
                       {
@@ -574,14 +574,7 @@ import { Promise } from 'q';
                     })
                 }
             },
-            //展示覆盖信息
-            showcoverInformation(){
-            var branches=d3.select('#branches');
-            branches.html("分支总数: "+this.relation.links.length);
-            d3.select("#usecase").html("执行用例数: "+this.usecasenum);
-            d3.select("#uncoverbranch").html("未覆盖分支数: "+this.uncover.length);
-            d3.select("#coverrate").html("覆盖率: "+(this.usecasenum/this.relation.links.length)*100+"%");
-            },
+    
             //获取未覆盖信息
             setUncover(){
             for(let index in this.uncoverfullname)
@@ -691,8 +684,8 @@ import { Promise } from 'q';
                     // 开始监听运行进度
                     _this._onTestRunning();
                 })
-                if(this.relation.links) // 前提是图已生成
-                    this.showcoverInformation();
+                // if(this.relation.links) 
+                //     this.setUncover();
             },
             // 获取测试进度的时候要调用的
             _onTestRunning(){
@@ -711,6 +704,9 @@ import { Promise } from 'q';
                 let _this = this;
                 getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
+                    _this.usecasenum = response.length;
+                    this.uncoverlength = this.relation.links.length-this.usecasenum;
+                    this.coverrate=(this.usecasenum/this.relation.links.length)*100;
                     console.log(response)
                     _this.showTestResult(response,_this.taskType)
                 });
