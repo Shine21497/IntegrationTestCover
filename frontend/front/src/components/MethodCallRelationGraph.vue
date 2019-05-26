@@ -139,7 +139,7 @@
                             <el-container class="formbody">
                                 <el-form ref="selectTestForm" :model="selectTestForm" label-width="80px">
                                     <el-form-item label="项目选择">
-                                        <el-select filterable  v-model="selectTestForm.selectedTestProject" placeholder="请选择项目" @change="getTestProject($event)" @visible-change="showTestProjectList">
+                                        <el-select ref="selectTestProject" filterable  v-model="selectTestForm.selectedTestProject" placeholder="请选择项目" @change="getTestProject($event)" @visible-change="showTestProjectList">
                                             <el-option
                                                     v-for="item in uploadedFiles"
                                                     :key="item"
@@ -149,7 +149,7 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item label="类选择">
-                                        <el-select filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestClasses.length == 0" v-model="selectTestForm.selectedTestClass" placeholder="请选择测试类" @change="getTestClass($event)">
+                                        <el-select ref="selectTestClass" filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestClasses.length == 0" v-model="selectTestForm.selectedTestClass" placeholder="请选择测试类" @change="getTestClass($event)">
                                             <el-option
                                                     v-for="item in selectTestForm.allTestClasses"
                                                     :key="item"
@@ -159,7 +159,7 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item label="方法选择">
-                                        <el-select filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestCases.length == 0" v-model="selectTestForm.selectedTestCase" placeholder="请选择测试方法">
+                                        <el-select ref="selectTestMethod" filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestCases.length == 0" v-model="selectTestForm.selectedTestCase" placeholder="请选择测试方法">
                                             <el-option
                                                     v-for="item in selectTestForm.allTestCases"
                                                     :key="item"
@@ -428,7 +428,7 @@ import { Promise } from 'q';
                     this.uncoverfullname.push(this.relation.links[index].source.name+" call "+this.relation.links[index].target.name);
                     }
                 };
-                this.setUncover();
+                //this.setUncover();
             },
 
             //多个用例测试结果
@@ -446,7 +446,7 @@ import { Promise } from 'q';
                       this.uncoverfullname.push(this.relation.links[index].source.name+" call "+this.relation.links[index].target.name);
                       }
                };
-               this.setUncover();
+               //this.setUncover();
             },
             //给节点加上边界效果
             changeNode(Name) {
@@ -577,14 +577,15 @@ import { Promise } from 'q';
     
             //获取未覆盖信息
             setUncover(){
-            for(let index in this.uncoverfullname)
-            {
-            var temp=this.uncoverfullname[index].split(" ");
-                            var A=temp[0].split(":")[1];
-                            var B=temp[2].split(":")[1];
-            this.uncover.push(A+" call "+B);
-                            //console.log(A+" call "+B);
-            }
+                console.log(this.uncoverfullname)
+                for(let index in this.uncoverfullname)
+                {
+                var temp=this.uncoverfullname[index].split(" ");
+                                var A=temp[0].split(":")[1];
+                                var B=temp[2].split(":")[1];
+                this.uncover.push(A+" call "+B);
+                                //console.log(A+" call "+B);
+                }
             },
             //定位到未覆盖边
             gotoUncover(){
@@ -648,6 +649,10 @@ import { Promise } from 'q';
             },
             submitTestUpload() {
                 this.$refs.uploadTest.submit();
+                this.selectTestForm.selectedTestProject = ''
+                this.selectTestForm.selectedTestClass = ''
+                this.selectTestForm.selectedTestCase = ''
+                this.testCaseMap = {}
             },
             onBeforeUpload(file) {
                 const isJAR = file.name.endsWith('.jar')
