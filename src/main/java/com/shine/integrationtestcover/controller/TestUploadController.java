@@ -74,7 +74,6 @@ public class TestUploadController {
                             inputStream.close();
                         }
                     }
-
                 } catch (Exception e) {
                     throw new RuntimeException("unzip error from ZipUtils", e);
                 }

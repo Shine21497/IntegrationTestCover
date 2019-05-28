@@ -53,21 +53,25 @@ public class RegressiontestService {
             List<String> temp=entry.getValue();
             for(int i=0;i<temp.size();i++){
                 if(graph.getDangerousList().contains(temp.get(i))){
-                    result.add(entry.getKey());
+                    if(!result.contains(entry.getKey()))
+                        result.add(entry.getKey());
                     break;
                 }
                 for(String node: temp.get(i).split(" ")){
                     if(node!="CALL"){
                         if(graph.getDifferentNodeKey().contains(node)){
-                            result.add(entry.getKey());
+                            if(!result.contains(entry.getKey()))
+                                result.add(entry.getKey());
                             break;
                         }
                         if(graph.getNewNodeKey().contains(node)){
-                            result.add(entry.getKey());
+                            if(!result.contains(entry.getKey()))
+                                result.add(entry.getKey());
                             break;
                         }
                         if(graph.getDeleteNodeKey().contains(node)){
-                            result.add(entry.getKey());
+                            if(!result.contains(entry.getKey()))
+                                result.add(entry.getKey());
                             break;
                         }
                     }

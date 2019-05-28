@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -19,24 +20,24 @@ public class RegressiontestController {
     RegressiontestService regressiontestService;
     @RequestMapping(value="/regressiontest")
     @ResponseBody
-    public String regressiontest(@RequestParam("oldJarName") String oldJarName, @RequestParam("newJarName") String newJarName, @RequestParam("packageName") String packageName) throws Exception {
+    public List<String> regressiontest(@RequestParam("oldJarName") String oldJarName, @RequestParam("newJarName") String newJarName, @RequestParam("packageName") String packageName) throws Exception {
     //判断jar文件是否存在
+        List<String> result= new ArrayList<String>();
         File oldJar=new File(baseConfig.getRegressionFilePath()+"//"+oldJarName);
         File newJar=new File(baseConfig.getRegressionFilePath()+"//"+newJarName);
         if (!oldJar.exists()) {
-            return("Jar file " + oldJarName + " does not exist");
+            result.add("Jar file " + oldJarName + " does not exist");
+            return result;
         }
         if(!newJar.exists()){
-            return("Jar file " + newJarName + " does not exist");
+            result.add("Jar file " + newJarName + " does not exist");
+            return result;
         }
-        List<String> result=regressiontestService.regressiontest(oldJarName,newJarName,packageName);
+        result=regressiontestService.regressiontest(oldJarName,newJarName,packageName);
         System.out.println("result show:");
         for(int i=0;i<result.size();i++){
             System.out.println(result.get(i));
         }
-        return oldJarName+newJarName+packageName;
-
+        return result;
     }
-
-
 }
