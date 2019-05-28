@@ -62,8 +62,10 @@ public class RunTestService {
 
     //初始化，接收项目名称
     public void initate(String projectname) {
-        while(ProgramInstrumentService.situation.get(projectname+".jar")!=2){
+        System.out.println(projectname+".jar");
+        while(!ProgramInstrumentService.situation.containsKey(projectname+".jar") || ProgramInstrumentService.situation.get(projectname+".jar")!=2){
             try {
+                System.out.println("why");
                 Thread.sleep(50);
             }catch (Exception e){
                 e.printStackTrace();
