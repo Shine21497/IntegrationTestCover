@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.List;
+
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class RegressionTestServiceTest {
@@ -14,7 +16,10 @@ public class RegressionTestServiceTest {
     @Test
     public void test(){
         try{
-            regressiontestService.regressiontest("bean-query.jar","bean-query-after-change.jar","cn/jimmyshi");
+            List<String>result= regressiontestService.regressiontest("bean-query.jar","bean-query-after-change.jar","cn/jimmyshi");
+            for(int i=0;i<result.size();i++){
+                System.out.println(result.get(i));
+            }
         }catch (Exception e) {
             e.printStackTrace();
         }

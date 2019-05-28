@@ -52,7 +52,7 @@ public class RegressiontestService {
         for(Map.Entry<String,List<String>> entry:TestMap.entrySet()){
             List<String> temp=entry.getValue();
             for(int i=0;i<temp.size();i++){
-                if(dangerousList.contains(temp.get(i))){
+                if(graph.getDangerousList().contains(temp.get(i))){
                     result.add(entry.getKey());
                     break;
                 }

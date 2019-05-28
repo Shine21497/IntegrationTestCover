@@ -62,17 +62,17 @@ public class RunTestService {
     //初始化，接收项目名称
     public void initate(String projectname) {
         System.out.println("initate");
-        List key=new LinkedList(ProgramInstrumentService.situation.keySet());
+        List key = new LinkedList(ProgramInstrumentService.situation.keySet());
         System.out.println(key.size());
-        while(ProgramInstrumentService.situation.get(key.get(0))!=2){
-            try {
-                Thread.sleep(50);
-                System.out.println("测试用例");
-            }catch (Exception e){
-                System.out.println("zhelichucuo");
-                e.printStackTrace();
-            }
-        }
+//        while(ProgramInstrumentService.situation.get(key.get(0))!=2){
+//            try {
+//                Thread.sleep(50);
+//                System.out.println("测试用例");
+//            }catch (Exception e){
+//                System.out.println("zhelichucuo");
+//                e.printStackTrace();
+//            }
+//        }
         commonUtils.deleteDir(new File(baseConfig.getRunTestProjectPath(projectname)));
         commonUtils.copyDic(baseConfig.getUploadedTestPath(projectname), baseConfig.getRunTestProjectPath(projectname));
         commonUtils.copyFile(projectname + ".jar", baseConfig.getInstrumentationPath(), baseConfig.getRunTestProjectPath(projectname));
@@ -169,8 +169,8 @@ public class RunTestService {
         try {
             //String command=
             // "javac -cp C:\Users\22831\Desktop\lib\IntegrationTestCover.jar;C:\Users\22831\Desktop\lib\junit-4.10.jar com\shine\integrationtestcover\service\GraphServiceTest.java";
-            String command = "javac -cp " + jarpath + jarname + ".jar" + ";" + testwaypath + testwayname + ".jar" + " " + javafilepath + packagename + "//" + javafilename + ".java";
-            // System.out.println(command);
+            String command = "javac -cp " + jarpath + jarname + ".jar" + " " + javafilepath + packagename + "//" + javafilename + ".java";
+            System.out.println(command);
             Process process = Runtime.getRuntime().exec(command);
             process.waitFor();
         } catch (Exception e) {
@@ -178,6 +178,7 @@ public class RunTestService {
         }
 //        }
     }
+    // javac -cp C:/Users/acer/Documents/GitHub/IntegrationTestCover/target/classes/runTestCase/bean-query/bean-query.jar;C:/Users/acer/Documents/GitHub/IntegrationTestCover/target/classes/uploadedJar/junit-4.10.jar C:/Users/acer/Documents/GitHub/IntegrationTestCover/target/classes/runTestCase/bean-query/cn//jimmyshi//beanquery//BeanPropertyMatcherTest.java
 
     /*
     获得一个java文件里面的测试用例的方法名字
@@ -251,9 +252,9 @@ public class RunTestService {
 
         } catch (ClassNotFoundException e) {
             System.out.println(javafilename + "编译失败！！！");
-        } catch (InvocationTargetException e){
-            System.out.println(javafilename+"cuowu");
-        }catch (Exception e) {
+        } catch (InvocationTargetException e) {
+            System.out.println(javafilename + "cuowu");
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -426,9 +427,9 @@ public class RunTestService {
     }
 
 
-    public HashMap<String, List<String>> regressionCompare(String projectname)throws Exception{
+    public HashMap<String, List<String>> regressionCompare(String projectname) throws Exception {
         System.out.println("reCompare");
-        HashMap<String,List<String>> compare=new HashMap<>();
+        HashMap<String, List<String>> compare = new HashMap<>();
         initate(projectname);
         String path = this.javafilepath;
         File file = new File(path);
@@ -437,12 +438,16 @@ public class RunTestService {
             if (f.getName().contains(".java")) {
                 String filename = f.getName().replace(".java", "");
                 List<String> m = getMethods(filename);
-                LinkedList results=new LinkedList();
+                LinkedList results = new LinkedList();
                 for (int i = 0; i < m.size(); i++) {
                     results.addAll(invokeMethod(filename, m.get(i)));
 
                 }
-                compare.put(f.getName(),results);
+                List<String> temp=new ArrayList<String>();
+                for(int i=0;i<results.size();i++){
+                    temp.add(results.get(i).toString().replace(".","/"));
+                }
+                compare.put(f.getName(), temp);
 
             }
         }

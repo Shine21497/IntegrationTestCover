@@ -47,7 +47,7 @@ public class Edge {
 
     @Override
     public String toString() {
-        return src + "CALL" + dest;
+        return src + " CALL " + dest;
     }
 
 
