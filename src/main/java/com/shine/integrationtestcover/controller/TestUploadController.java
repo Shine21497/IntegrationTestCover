@@ -40,7 +40,7 @@ public class TestUploadController {
                 e.printStackTrace();
                 return "上传失败," + e.getMessage();
             }
-            if(testCase.getName().contains(".zip")){
+            if(testCase.getOriginalFilename().contains(".zip")){
                 File srcFile=new File(baseConfig.getUploadedTestPath(selectedProject) + testCase.getOriginalFilename());
                 if(!srcFile.exists()){
                     throw new RuntimeException(srcFile.getPath()+"所指文件不存在");
@@ -104,10 +104,10 @@ public class TestUploadController {
         if(uploadedProjectDirectory.isDirectory()) {
             File[] projectDirectorys = uploadedProjectDirectory.listFiles();
             for (File projectDirectory : projectDirectorys) {
-                if(projectDirectory.isDirectory() && projectDirectory.listFiles().length > 0 && ProgramInstrumentService.situation.containsKey(projectDirectory.getName() + ".jar")) {
+                if(projectDirectory.isDirectory() && projectDirectory.listFiles().length > 0) {
                     projectToTestFiles.put(projectDirectory.getName(), new HashMap<>());
                     File[] testFiles = projectDirectory.listFiles();
-                    runTestService.initate(projectDirectory.getName());
+                    runTestService.initate(projectDirectory.getName(), false);
                     for(File testFile : testFiles) {
                         if (!testFile.isDirectory()) {
                             if (testFile.getName().contains(".java")) {

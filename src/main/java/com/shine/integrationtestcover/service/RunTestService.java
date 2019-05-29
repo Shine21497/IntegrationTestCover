@@ -9,10 +9,12 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -61,14 +63,16 @@ public class RunTestService {
     }
 
     //初始化，接收项目名称
-    public void initate(String projectname) {
+    public void initate(String projectname, boolean needWait) {
         System.out.println(projectname+".jar");
-        while(!ProgramInstrumentService.situation.containsKey(projectname+".jar") || ProgramInstrumentService.situation.get(projectname+".jar")!=2){
-            try {
-                System.out.println("why");
-                Thread.sleep(50);
-            }catch (Exception e){
-                e.printStackTrace();
+        if(needWait) {
+            while (!ProgramInstrumentService.situation.containsKey(projectname + ".jar") || ProgramInstrumentService.situation.get(projectname + ".jar") != 2) {
+                try {
+                    System.out.println("why");
+                    Thread.sleep(50);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
         commonUtils.deleteDir(new File(baseConfig.getRunTestProjectPath(projectname)));
@@ -249,6 +253,8 @@ public class RunTestService {
 
         } catch (ClassNotFoundException e) {
             System.out.println(javafilename + "编译失败！！！");
+        } catch (InvocationTargetException e) {
+            System.out.println(javafilename + "cuowu");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -398,6 +404,33 @@ public class RunTestService {
         }
         logger.info("==***===========" + Thread.currentThread().getName() + "异步");
 
+    }
+
+    public HashMap<String, List<String>> regressionCompare(String projectname) throws Exception {
+        System.out.println("reCompare");
+        HashMap<String, List<String>> compare = new HashMap<>();
+        initate(projectname, true);
+        String path = this.javafilepath;
+        File file = new File(path);
+        List<File> tempList = getAllTestFileFromDic(file);
+        for (File f : tempList) {
+            if (f.getName().contains(".java")) {
+                String filename = f.getName().replace(".java", "");
+                List<String> m = getMethods(filename);
+                LinkedList results = new LinkedList();
+                for (int i = 0; i < m.size(); i++) {
+                    results.addAll(invokeMethod(filename, m.get(i)));
+
+                }
+                List<String> temp=new ArrayList<String>();
+                for(int i=0;i<results.size();i++){
+                    temp.add(results.get(i).toString().replace(".","/"));
+                }
+                compare.put(f.getName(), temp);
+
+            }
+        }
+        return compare;
     }
 
     /*

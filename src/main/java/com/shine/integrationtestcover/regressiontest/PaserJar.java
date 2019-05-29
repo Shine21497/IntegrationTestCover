@@ -28,7 +28,7 @@ public class PaserJar {
     private String filename;
     private String path;
     private Graph graph;
-    public static String packageName = "cn/jimmyshi";
+    private String packageName = "";
 
     private ClassVisitor visitor;
 
@@ -44,6 +44,14 @@ public class PaserJar {
 
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 
     public String getPath() {

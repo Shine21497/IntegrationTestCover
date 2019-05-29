@@ -26,7 +26,7 @@ public class Graph {
         return nodeMap;
     }
 
-    public static Graph newGraph = new Graph();
+/*    public static Graph newGraph = new Graph();
     public static Graph oldGraph = new Graph();
     public static List<String> visitedList=new ArrayList<String>();
     public static List<Edge> dangerousList=new ArrayList<Edge>();
@@ -112,6 +112,13 @@ public class Graph {
                 }
             }
         }
+        for(String key : oldGraph.getNodeMap().keySet()){
+            if(!newGraph.ifNodeExist(key)){
+                deleteNodeKey.add(key);
+                continue;
+            }
+        }
+
         System.out.println("dangerous edge");
         for(int i=0;i<dangerousList.size();i++){
             System.out.println(dangerousList.get(i));
@@ -127,5 +134,5 @@ public class Graph {
             System.out.println(newNodeKey.get(i));
         }
 
-}
+}*/
 }

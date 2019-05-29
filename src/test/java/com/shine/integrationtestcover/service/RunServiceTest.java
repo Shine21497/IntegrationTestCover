@@ -33,7 +33,7 @@ public class RunServiceTest {
 
     @Test
     public void GetPackageName(){
-        runTestService.initate("demo");
+        runTestService.initate("demo", false);
         String Javafilename="Test2";
         System.out.println(runTestService.getPackagename(Javafilename));
         runTestService.handlePackageName(Javafilename);
@@ -41,14 +41,14 @@ public class RunServiceTest {
 
     @Test
     public void CompileJava(){
-        runTestService.initate("demo");
+        runTestService.initate("demo", false);
         String Javafilename="Test2";
         runTestService.compileJava(Javafilename);
     }
 
     @Test
     public void getMethods(){
-        runTestService.initate("demo");
+        runTestService.initate("demo", false);
         runTestService.getMethods("Test2");
     }
     //Test2
@@ -56,7 +56,7 @@ public class RunServiceTest {
 
     @Test
     public void InvokeMethod(){//跑一个方法
-        runTestService.initate("demo");
+        runTestService.initate("demo", true);
         String Javafilename="Test2";
         List list=runTestService.invokeMethod(Javafilename,"test");
         for(int i=0;i<list.size();i++){
@@ -66,14 +66,14 @@ public class RunServiceTest {
 
     @Test
     public void InvokeJavaFile(){//跑一个java文件
-        runTestService.initate("demo");
+        runTestService.initate("demo", true);
         String Javafilename="Test2";
         runTestService.runTest(Javafilename);
     }
 
     @Test
     public void run() throws Exception{
-        runTestService.initate("demo");
+        runTestService.initate("demo", true);
         runTestService.runAll();
         System.out.println(runTestService.getRunprocess());
         System.out.println(runTestService.getRunprocess());
