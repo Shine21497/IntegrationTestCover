@@ -30,23 +30,25 @@
             </h2>
 
             <el-collapse v-model="activeNames">
-                    <el-collapse-item class="titlestyle" title="上传项目" name="1">
-                        <el-card :body-style="{ padding: '0px' }" class="card">
-                            <el-upload class="upload" action="/apiurl/uploadJar" accept="application/jar" :before-upload="onBeforeUpload" ref="upload" :file-list="fileList" :auto-upload="false">
-                                <el-button slot="trigger" type="primary">选取文件</el-button>
-                                <el-button style="margin-left: 10px;" type="success" @click="submitUpload">上传到服务器</el-button>
-                                <div slot="tip" class="el-upload__tip">只能上传jar文件</div>
-                            </el-upload>
-                        </el-card>
-                    </el-collapse-item>
-                    <el-collapse-item class="titlestyle" name="2">
-                        <template slot="title">
-                            <p class="itemname">调用关系图生成</P>
-                            <p class="require-info">（请先上传项目）</P>
-                        </template>
-                        <el-container class="formbody">
-                            <el-form ref="form" :model="form" label-width="80px">
-                                <el-form-item label="Jar包选择">
+                <el-collapse-item class="titlestyle" title="上传项目" name="1">
+                    <el-card :body-style="{ padding: '0px' }" class="card">
+                        <el-upload class="upload" action="/apiurl/uploadJar" accept="application/jar" :before-upload="onBeforeUpload" ref="upload" :file-list="fileList" :auto-upload="false">
+                            <el-button slot="trigger" type="primary">选取文件</el-button>
+                            <el-button style="margin-left: 10px;" type="success" @click="submitUpload">上传到服务器</el-button>
+                            <div slot="tip" class="el-upload__tip">只能上传jar文件</div>
+                        </el-upload>
+                    </el-card>
+                </el-collapse-item>
+                <el-collapse-item class="titlestyle" name="2">
+                    <template slot="title">
+                        <p class="itemname">调用关系图生成</P>
+                        <p class="require-info">（请先上传项目）</P>
+                    </template>
+                    <el-container class="formbody">
+                        <div ref="form" :model="form" style="width:100%;text-align:left">
+                            <el-row :gutter="20" style="margin:10px 0">
+                                <el-col :span="6">Jar包选择</el-col>
+                                <el-col :span="18">
                                     <el-select v-model="form.selectedjar" placeholder="请选择jar包" @visible-change="showfilelist">
                                         <el-option
                                                 v-for="item in uploadedFiles"
@@ -55,86 +57,95 @@
                                                 :value="item">
                                         </el-option>
                                     </el-select>
+                                </el-col>
+                            </el-row>
+                            <div>
+                                <el-row :gutter="20" style="margin:10px 0">
+                                    <el-col :span="6">遍历包范围</el-col>
+                                        <el-col :span="18">
+                                        <el-autocomplete class="inline-input" v-model="form.packages" :fetch-suggestions="packagesHistory"
+                                            placeholder="请输入遍历包范围"
+                                        ></el-autocomplete>
+                                        </el-col>
+                                    </el-row>
+                                <div style="color:darkgray;margin: 0 0 10px 10px;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
+                            </div>
+                            <div>
+                                <el-row :gutter="20" style="margin:10px 0">
+                                    <el-col :span="6">生成包范围</el-col>
+                                    <el-col :span="18">
+                                        <el-autocomplete class="inline-input" v-model="form.packagesCall" :fetch-suggestions="packagesCallHistory"
+                                            placeholder="请输入遍历包范围"
+                                        ></el-autocomplete>
+                                    </el-col>
+                                </el-row>
+                                <div style="color:darkgray;margin:0 0 10px 10px;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
+                            </div>
+                            <div style="text-align:center">
+                                <el-button type="primary" :disabled="form.selectedjar.length == 0" size="small" @click="generateGraph()">立即创建</el-button>
+                            </div>
+                        </div>
+                    </el-container>
+                </el-collapse-item>
+                <el-collapse-item class="titlestyle" name="3" :class="JSON.stringify(relation)=='{}'?'disabled': ''">
+                    <template slot="title">
+                        <p class="itemname">辅助定位</P>
+                        <p class="require-info">（请先生成调用关系图）</P>
+                    </template>
+                    <el-card :body-style="{ padding: '0px' }" class="card">
+                        <el-container class="formbody">
+                            <el-form ref="adjustForm" :model="adjustForm" label-width="80px">
+                                <el-form-item label="类选择">
+                                    <el-select filterable  v-model="adjustForm.selectedClass" placeholder="请选择类" @change="getClass($event)">
+                                        <el-option
+                                                v-for="item in adjustForm.allClasses"
+                                                :key="item"
+                                                :label="item"
+                                                :value="item">
+                                        </el-option>
+                                    </el-select>
                                 </el-form-item>
-                                <div>
-                                    遍历包范围：
-                                    <el-autocomplete class="inline-input" v-model="form.packages" :fetch-suggestions="packagesHistory"
-                                        placeholder="请输入遍历包范围"
-                                    ></el-autocomplete>
-                                    <div style="color:darkgray;padding: 0 0 20px 0;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
-                                </div>
-                                <div>
-                                    生成包范围：
-                                    <el-autocomplete class="inline-input" v-model="form.packagesCall" :fetch-suggestions="packagesCallHistory"
-                                        placeholder="请输入遍历包范围"
-                                    ></el-autocomplete>
-                                    <div style="color:darkgray;padding: 0 0 20px 0;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
-                                </div>
+                                <el-form-item label="方法选择">
+                                    <el-select filterable  v-model="adjustForm.selectedMethod" placeholder="请选择方法">
+                                        <el-option
+                                                v-for="item in adjustForm.allMethods"
+                                                :key="item"
+                                                :label="item"
+                                                :value="item">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
                                 <el-form-item>
-                                    <el-button type="primary" :disabled="form.selectedjar.length == 0" size="small" @click="generateGraph()">立即创建</el-button>
+                                    <el-button :disabled="adjustForm.selectedMethod.length == 0" type="primary" size="small" @click="goToNode()">立即定位</el-button>
                                 </el-form-item>
                             </el-form>
                         </el-container>
-                    </el-collapse-item>
-                    <el-collapse-item class="titlestyle" name="3" :class="JSON.stringify(relation)=='{}'?'disabled': ''">
-                        <template slot="title">
-                            <p class="itemname">辅助定位</P>
-                            <p class="require-info">（请先生成调用关系图）</P>
-                        </template>
-                        <el-card :body-style="{ padding: '0px' }" class="card">
-                            <el-container class="formbody">
-                                <el-form ref="adjustForm" :model="adjustForm" label-width="80px">
-                                    <el-form-item label="类选择">
-                                        <el-select filterable  v-model="adjustForm.selectedClass" placeholder="请选择类" @change="getClass($event)">
-                                            <el-option
-                                                    v-for="item in adjustForm.allClasses"
-                                                    :key="item"
-                                                    :label="item"
-                                                    :value="item">
-                                            </el-option>
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-form-item label="方法选择">
-                                        <el-select filterable  v-model="adjustForm.selectedMethod" placeholder="请选择方法">
-                                            <el-option
-                                                    v-for="item in adjustForm.allMethods"
-                                                    :key="item"
-                                                    :label="item"
-                                                    :value="item">
-                                            </el-option>
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-form-item>
-                                        <el-button :disabled="adjustForm.selectedMethod.length == 0" type="primary" size="small" @click="goToNode()">立即定位</el-button>
-                                    </el-form-item>
-                                </el-form>
-                            </el-container>
-                        </el-card>
-                    </el-collapse-item>
-                    <el-collapse-item class="titlestyle" title="上传测试用例" name="4">
-                        <el-card :body-style="{ padding: '0px' }" class="card">
-                            <el-container class="formbody">
-                                <el-form ref="uploadTestData" :model="uploadTestData" label-width="80px">
-                                    <el-form-item label="Test所属项目选择">
-                                        <el-select v-model="uploadTestData.selectedProject" placeholder="请选择项目">
-                                            <el-option
-                                                    v-for="item in uploadedFiles"
-                                                    :key="item"
-                                                    :label="item"
-                                                    :value="item">
-                                            </el-option>
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-upload class="upload" action="/apiurl/uploadTestCase" accept="application/jar" :before-upload="onBeforeUploadTestCase" ref="uploadTest" :file-list="fileList" :auto-upload="false" :data="uploadTestData">
-                                        <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-                                        <el-button style="margin-left: 10px;" size="small" type="success" @click="submitTestUpload">上传到服务器</el-button>
-                                        <div slot="tip" class="el-upload__tip">只能上传java文件或者zip文件</div>
-                                    </el-upload>
-                                </el-form>
-                            </el-container>
-                        </el-card>
-                    </el-collapse-item>
-                    <el-collapse-item class="titlestyle" title="运行测试用例" name="5">
+                    </el-card>
+                </el-collapse-item>
+                <el-collapse-item class="titlestyle" title="上传测试用例" name="4">
+                    <el-card :body-style="{ padding: '0px' }" class="card">
+                        <el-container class="formbody">
+                            <el-form ref="uploadTestData" :model="uploadTestData" label-width="80px">
+                                <el-form-item label="Test所属项目选择">
+                                    <el-select v-model="uploadTestData.selectedProject" placeholder="请选择项目">
+                                        <el-option
+                                                v-for="item in uploadedFiles"
+                                                :key="item"
+                                                :label="item"
+                                                :value="item">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-upload class="upload" action="/apiurl/uploadTestCase" accept="application/jar" :before-upload="onBeforeUploadTestCase" ref="uploadTest" :file-list="fileList" :auto-upload="false" :data="uploadTestData">
+                                    <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+                                    <el-button style="margin-left: 10px;" size="small" type="success" @click="submitTestUpload">上传到服务器</el-button>
+                                    <div slot="tip" class="el-upload__tip">只能上传java文件或者zip文件</div>
+                                </el-upload>
+                            </el-form>
+                        </el-container>
+                    </el-card>
+                </el-collapse-item>
+                <el-collapse-item class="titlestyle" title="运行测试用例" name="5">
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                 <el-form ref="selectTestForm" :model="selectTestForm" label-width="80px">
@@ -177,8 +188,8 @@
                                 </el-form>
                             </el-container>
                         </el-card>
-                    </el-collapse-item>
-                    <el-collapse-item class="titlestyle" title="未覆盖测试用例" name="6">
+                </el-collapse-item>
+                <el-collapse-item class="titlestyle" title="未覆盖测试用例" name="6">
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                <el-form ref="form" :model="selectTestForm" label-width="80px">
@@ -204,8 +215,8 @@
                                 </el-form>
                             </el-container>
                         </el-card>
-                    </el-collapse-item>
-                    <el-collapse-item class="titlestyle" title="添加节点" name="7">
+                </el-collapse-item>
+                <el-collapse-item class="titlestyle" title="添加节点" name="7">
                          <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                <el-form ref="form" :model="selectTestForm" label-width="80px">
@@ -221,28 +232,84 @@
                             </el-form>
                          </el-container>
                       </el-card>
-                    </el-collapse-item>
-                    <el-collapse-item class="titlestyle" title="陈志的无敌方块" name="8">
-                    <el-upload
-                        class="upload-demo"
-                        ref="uploadjar"
-                        action="/apiurl/uploadRegressiveJar"
-                        :file-list="regression.Jars"
-                        :on-change="handleChange"
-                        :limit="2"
-                        :auto-upload="false">
-                        <el-button slot="trigger" size="small" type="primary" :disabled="regression.disable">{{regression.status}}</el-button>
-                        <el-button style="margin-left: 10px;" size="small" type="success" @click="UploadJars">上传</el-button>
-                        <el-button style="margin-left: 10px;" size="small" type="success" @click="AnalyseJars">分析</el-button>
-                        <div slot="tip" class="el-upload__tip">请上传新旧版本的Jar包</div>
-                    </el-upload>
-                    <el-input
-                        type="textarea"
-                        autosize
-                        placeholder="请输入包范围"
-                        v-model="regression.info.packageName">
-                    </el-input>
-                    </el-collapse-item>
+                </el-collapse-item>
+                <el-collapse-item class="titlestyle" title="回归测试" name="8">
+                    <el-card :body-style="{ padding: '0px 5px' }" class="card">
+                        <el-row :gutter="20" style="margin:10px 0">
+                            <el-col :span="6" style="padding:5px 0;">项目选择</el-col>
+                            <el-col :span="18" style="padding:0;">
+                                <el-select
+                                    v-model="regression.info.oldJarName" 
+                                    placeholder="请选择进行回归测试的项目" 
+                                    @visible-change="showfilelist" 
+                                    @change="getRegressionProj($event)">
+                                    <el-option
+                                        v-for="item in uploadedFiles"
+                                        :key="item"
+                                        :label="item"
+                                        :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-col>
+                        </el-row>
+                        <el-input
+                            type="textarea"
+                            autosize
+                            placeholder="请输入包范围"
+                            v-model="regression.info.packageName">
+                        </el-input>
+                        <!-- action="/apiurl/uploadRegressiveJar" -->
+                        <el-upload
+                            style="margin:10px 0;height:100px"
+                            ref="uploadjar"
+                            action="https://jsonplaceholder.typicode.com/posts/"
+                            :file-list="regression.jarFiles"
+                            :on-change="fileListChange"
+                            :on-remove="fileListChange"
+                            :on-success="uploadSucc"
+                            :limit="1"
+                            :auto-upload="false">
+                            <el-button slot="trigger" size="small" type="primary" :disabled="regression.disable">{{regression.status}}</el-button>
+                            <el-button style="margin-left: 10px;" size="small" type="success" @click="UploadJars"  :disabled="!regression.info.newJarName || !regression.info.oldJarName">上传</el-button>
+                            <div slot="tip" class="el-upload__tip">请上传新版本的Jar包</div>
+                        </el-upload>
+                    </el-card>
+                    <el-row :gutter="20" style="margin:10px 0">
+                        <el-col :span="18" style="padding:0;text-align:left">
+                            <el-select v-model="regression.chosedInfo" placeholder="做过的回归测试">
+                                <el-option
+                                    v-for="item in history.regressionInfos"
+                                    :key="item.name"
+                                    :label="item.name"
+                                    :value="item.name">
+                                </el-option>
+                            </el-select>
+                        </el-col>
+                        <el-col :span="6" style="padding:5px 0;">
+                            <el-button size="small" type="success" @click="analyseHistory" :disabled="!regression.chosedInfo">分析</el-button>
+                        </el-col>
+                    </el-row>
+                    <div v-if="oldvsnew.length">
+                        <div class="list-header">
+                            <el-row>
+                                <el-col :span="5">
+                                    分析结果
+                                </el-col>
+                                <el-col :span="19">
+                                    <el-checkbox-group v-model="filterList" @change="filterChange">
+                                        <el-checkbox label="remain"></el-checkbox>
+                                        <el-checkbox label="affected"></el-checkbox>
+                                    </el-checkbox-group>
+                                </el-col>
+                            </el-row>
+                        </div>
+                        <div class="list-container">
+                            <el-tooltip v-for="(testcase,index) in showoldvsnew" :key="index" :content="['(不变)','(有影响)'][testcase.state] + testcase.casename" placement="right" effect="light">
+                                <div class="hjr-list-item" :style="'border-left-color:'+ ['green','red'][testcase.state] + ';'">{{testcase.casename}}</div>
+                            </el-tooltip>
+                        </div>
+                    </div>
+                </el-collapse-item>
             </el-collapse>
         </div>
     </el-container>
@@ -312,48 +379,134 @@ import { Promise } from 'q';
                 activeNames: ['1'],  //加上这个不然控制台老报错
                 runTestPercentange:0,
                 taskId:'',
-                taskType:'',  // "many" 和 "one" 
+                taskType:'',      // "many" 和 "one" 
                 toggle:true,
                 Isfirstnode:true,
                 history:{
                     packages:[],
-                    packagesCall:[]
+                    packagesCall:[],
+                    regressionInfos:[], // store historic regression infos
                 },
-                regression:{
-                    Jars: [], // 新，旧 Jar 包列表
+                regression:{          // 回归测试用的新旧版本 Jar 包
+                    jarFiles: [],     // 新 Jar 包列表
                     info:{
                         oldJarName:'',
                         newJarName:'',
                         packageName:'',
                     },
-                    status:'选择旧版本Jar包',
-                    disable:false
-                }
+                    status:'选择新版本Jar包', // ui
+                    disable:false,           // ui
+                    oldcases:[],             // 所有的测试用例
+                    chosedInfo:"",
+                },
+                oldvsnew:[],          // 用于新旧版本项目测试用例的对比
+                showoldvsnew:[],      // 存在筛选，所以要一个专门用于展示的
+                filterList:["remain", "affected"],    // 过滤回归测试结果测试用例
             }
         },
         methods: {
+            // 筛选展示的结果
+            filterChange(filters){
+                let filterMap = {
+                    "remain": 0,
+                    "affected": 1
+                }
+                this.showoldvsnew = [] // refresh list to show
+                if(filters.length === 2)
+                    this.showoldvsnew = this.oldvsnew;
+                else
+                    filters.forEach(fil =>{
+                        this.showoldvsnew = this.showoldvsnew.concat(this.oldvsnew.filter(testcase => testcase.state === filterMap[fil]));
+                    })
+            },
             UploadJars(){
                 this.$refs.uploadjar.submit();
             },
-            handleChange(file, fileList) {
-                if(fileList.length == 1){
-                    this.regression.info.oldJarName = fileList[0].name;
-                    this.regression.status = '选择新版本Jar包';
-                    this.regression.disable = false;
+            uploadSucc(resp,file,filelist){
+                this.showMsg("上传'" + file.name + "'成功");
+                // 保存历史记录
+                let option = {
+                    oldJarName: this.regression.info.oldJarName,
+                    newJarName: this.regression.info.newJarName,
+                    packageName:this.regression.info.packageName,
+                    name:this.regression.info.oldJarName + " --> " + file.name
                 }
-                else if(fileList.length == 2){
-                    this.regression.info.newJarName = fileList[1].name;
+                this.$nextTick(()=>{
+                    if(this.history.regressionInfos)
+                        this.history.regressionInfos.push(option)
+                    else
+                        this.history.regressionInfos = [option];
+                    localStorage.setItem('history',JSON.stringify(this.history));
+                })
+                // 自动获取分析结果
+                this.analyseJars(this.regression.info);
+            },
+            analyseHistory(){
+                // 获取已上传的包的分析结果
+                let chosedInfo = this.history.regressionInfos.filter(info=>{return info.name === this.regression.chosedInfo})[0]
+                this.getRegressionProj(chosedInfo.oldJarName)
+                this.analyseJars(chosedInfo);
+            },
+            fileListChange(file, fileList) {
+                if(fileList.length == 1){
+                    this.regression.info.newJarName = fileList[0].name;
+                    this.regression.status = '已选择';
                     this.regression.disable = true;
                 }
                 else{
-                    this.regression.status = '选择旧版本Jar包';
+                    this.regression.info.newJarName = '';
+                    this.regression.status = '选择新版本Jar包';
                     this.regression.disable = false;
                 }
             },
-            AnalyseJars(){
-              postRegression(this.regression.info).then(response=> {
-                console.log(response);
-              })
+            // 选择要进行 回归测试 的项目
+            getRegressionProj(prov) {
+                var prjName = prov.split('.')[0];
+                // 回归测试时获取旧版本的所有测试用例
+                try {
+                    this.regression.oldcases[prov] = Object.keys(this.testCaseMap[prjName]) 
+                } catch (error) {
+                    getTestCaseList().then(response=>{
+                        this.testCaseMap = response.result;
+                        this.regression.oldcases[prov] = Object.keys(this.testCaseMap[prjName])
+                    })
+                }
+            },
+            analyseJars(para,time = 0){
+                // 检查 oldJarName 这个项目的所有用例是否获取
+                if (this.regression.oldcases[para.oldJarName]) {
+                    postRegression(para).then(response=> {
+                        let newcases = response.newcases;                // "oldcases" is all testcases
+                        this.filterList = ["remain", "affected"]         // set filter to all
+                        this.oldvsnew = [];                              // refresh result
+
+                        this.regression.oldcases[para.oldJarName].forEach(testcase => {
+                            if(newcases.includes(testcase)){
+                                // 有影响的
+                                this.oldvsnew.push({
+                                    state:1,
+                                    casename:testcase
+                                })
+                            }
+                            else{
+                                this.oldvsnew.push({
+                                    state:0,
+                                    casename:testcase
+                                })
+                            }
+                        })
+                        this.showoldvsnew = this.oldvsnew;
+                    })
+                }
+                else{
+                    if (time < 3) {
+                        // 重试三次，确保 testcasemap 一样
+                        let _this = this;
+                        setTimeout(()=>{
+                            _this.analyseJars(para,time + 1);
+                        },500)
+                    }
+                }
             },
             packagesCallHistory(queryString, cb) {
                 // cb([{ "value": "asdasd"}]);
@@ -567,7 +720,6 @@ import { Promise } from 'q';
                     this.$nextTick(() => {
                         this.uploadedFiles = uploadedFiles;
                         this.testCaseMap = testCaseMap;
-                        console.log(uploadedFiles,testCaseMap);
                         if (this.selectTestForm.selectedTestProject) {
                             this.getTestProject(this.selectTestForm.selectedTestProject)
                         }
@@ -686,6 +838,8 @@ import { Promise } from 'q';
                     if(response[2]) return; // error msg
                     _this.taskId = response[0];
                     _this.taskType = response[1];
+                    // 归零
+                    _this.runTestPercentange = 0;
                     // 开始监听运行进度
                     _this._onTestRunning();
                 })
@@ -1017,6 +1171,9 @@ import { Promise } from 'q';
 </script>
 
 <style lang="less">
+    .el-select .el-input {
+        width: 250px;
+    }
 
     header{
         font-family: "Arial Black";
@@ -1033,6 +1190,31 @@ import { Promise } from 'q';
     .funny:hover{
         cursor: pointer;
         color: #0583f2
+    }
+
+    .list-header{
+        border-bottom: 1px solid gray;
+        margin: 10px 0 6px;
+    }
+
+    .list-container{
+        height: 300px;
+        overflow: auto;
+    }
+
+    .list-container::-webkit-scrollbar {
+        width: 4px;
+    }
+
+    .list-container::-webkit-scrollbar-thumb {
+        border-radius: 5px;
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+        background: rgba(0, 0, 0, 0.2);
+    }
+
+    .list-container::-webkit-scrollbar-track {
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+        border-radius: 0;
     }
 
     .left-side{
@@ -1065,6 +1247,7 @@ import { Promise } from 'q';
         box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
         border-radius: 0;
     }
+
     #thumb {
         width: 160px;
         height: 160px;
@@ -1227,6 +1410,19 @@ import { Promise } from 'q';
         opacity: 0;
     }
     #branches,#usecase,#uncoverbranch,#coverrate{
-    text-align:center;
+        text-align:center;
+    }
+
+    .hjr-list-item{
+        text-align: left;
+        padding: 8px;
+        cursor: pointer;
+        border-width: 0 0 0 4px;
+        border-style: solid;
+        margin: 2px 0;
+    }
+
+    .hjr-list-item:hover{
+        background-color: lightgray;
     }
 </style>
