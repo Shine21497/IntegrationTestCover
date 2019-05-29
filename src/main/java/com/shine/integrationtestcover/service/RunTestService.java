@@ -64,15 +64,15 @@ public class RunTestService {
         System.out.println("initate");
         List key = new LinkedList(ProgramInstrumentService.situation.keySet());
         System.out.println(key.size());
-//        while(ProgramInstrumentService.situation.get(key.get(0))!=2){
-//            try {
-//                Thread.sleep(50);
-//                System.out.println("测试用例");
-//            }catch (Exception e){
-//                System.out.println("zhelichucuo");
-//                e.printStackTrace();
-//            }
-//        }
+        while(ProgramInstrumentService.situation.get(key.get(0))!=2){
+            try {
+                Thread.sleep(50);
+                System.out.println("测试用例");
+            }catch (Exception e){
+                System.out.println("zhelichucuo");
+                e.printStackTrace();
+            }
+        }
         commonUtils.deleteDir(new File(baseConfig.getRunTestProjectPath(projectname)));
         commonUtils.copyDic(baseConfig.getUploadedTestPath(projectname), baseConfig.getRunTestProjectPath(projectname));
         commonUtils.copyFile(projectname + ".jar", baseConfig.getInstrumentationPath(), baseConfig.getRunTestProjectPath(projectname));
