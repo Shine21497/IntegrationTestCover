@@ -258,11 +258,11 @@
                             placeholder="请输入包范围"
                             v-model="regression.info.packageName">
                         </el-input>
-                        <!-- action="/apiurl/uploadRegressiveJar" -->
+                        <!-- action="https://jsonplaceholder.typicode.com/posts/" -->
                         <el-upload
                             style="margin:10px 0;height:100px"
                             ref="uploadjar"
-                            action="https://jsonplaceholder.typicode.com/posts/"
+                            action="/apiurl/uploadRegressiveJar"
                             :file-list="regression.jarFiles"
                             :on-change="fileListChange"
                             :on-remove="fileListChange"
