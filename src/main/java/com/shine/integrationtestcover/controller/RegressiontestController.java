@@ -23,7 +23,7 @@ public class RegressiontestController {
     public List<String> regressiontest(@RequestParam("oldJarName") String oldJarName, @RequestParam("newJarName") String newJarName, @RequestParam("packageName") String packageName) throws Exception {
     //判断jar文件是否存在
         List<String> result= new ArrayList<String>();
-        File oldJar=new File(baseConfig.getRegressionFilePath()+"//"+oldJarName);
+        File oldJar=new File(baseConfig.getUploadedFilePath()+"//"+oldJarName);
         File newJar=new File(baseConfig.getRegressionFilePath()+"//"+newJarName);
         if (!oldJar.exists()) {
             result.add("Jar file " + oldJarName + " does not exist");

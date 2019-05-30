@@ -54,7 +54,8 @@ public class Graph {
 
     public  void initNodeMap(String oldJarName,String newJarName,String packageName){
         BaseConfig baseConfig = new BaseConfig();
-        PaserJar paserJar = new PaserJar(baseConfig.getRegressionFilePath(), oldJarName, oldGraph);
+//        PaserJar paserJar = new PaserJar(baseConfig.getRegressionFilePath(), oldJarName, oldGraph);
+        PaserJar paserJar = new PaserJar(baseConfig.getUploadedFilePath(), oldJarName, oldGraph);
         paserJar.setPackageName(packageName);
         oldGraph = paserJar.getInvoking();
         PaserJar paserJarNew = new PaserJar(baseConfig.getRegressionFilePath(), newJarName, newGraph);
