@@ -443,19 +443,24 @@ public class RunTestService {
             while ((line = br.readLine()) != null) {
                 if (line.matches(".*CALL.*")) {
                     //methodsrelationship.add((!line.contains("=>")? line : line.split("=>")[0]).replace("/", "."));
-                    String[] a = line.split("call");
+                    String[] a = line.split("CALL");
                     String A = a[0].replace(" ", "");//A的空格去掉
                     String Aafter = a[1];//B=>desc1=>desc2=>C
                     String[] after = Aafter.split("=>");
                     String B = after[0].replace(" ", "");
                     String desc1 = after[1];
                     String desc2 = after[2];
-                    String C = after[3];
-                    String finalline=A+"+"+desc1+" "+"call"+" "+C+"+"+desc2;
+                    String C="";
+                    if (after.length == 3) {
+                        C = B;
+                    } else if (after.length == 4) {
+                        C = after[3].replace("/", ".");
+                    }
+                    String finalline = A + "/" + desc1 + " " + "CALL" + " " + C + "/" + desc2;
                     methodsrelationship.add(finalline);
 
 
-//                    methodsrelationship.add(line.split("=>")[0].replace("/", "."));
+//
                 }
             }
             br.close();
