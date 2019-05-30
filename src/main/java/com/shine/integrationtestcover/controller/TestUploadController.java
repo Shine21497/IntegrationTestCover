@@ -1,6 +1,7 @@
 package com.shine.integrationtestcover.controller;
 
 import com.shine.integrationtestcover.config.BaseConfig;
+import com.shine.integrationtestcover.service.ProgramInstrumentService;
 import com.shine.integrationtestcover.service.RunTestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -102,7 +103,7 @@ public class TestUploadController {
         if(uploadedProjectDirectory.isDirectory()) {
             File[] projectDirectorys = uploadedProjectDirectory.listFiles();
             for (File projectDirectory : projectDirectorys) {
-                if(projectDirectory.isDirectory() && projectDirectory.listFiles().length > 0) {
+                if(projectDirectory.isDirectory() && projectDirectory.listFiles().length > 0 && ProgramInstrumentService.situation.containsKey(projectDirectory.getName() + ".jar")) {
                     projectToTestFiles.put(projectDirectory.getName(), new HashMap<>());
                     File[] testFiles = projectDirectory.listFiles();
                     runTestService.initate(projectDirectory.getName(),true);

@@ -63,6 +63,7 @@ public class RunTestService {
     }
 
     //初始化，接收项目名称
+
     public void initate(String projectname, boolean needWait) {
         System.out.println(projectname + ".jar");
         if (needWait) {
