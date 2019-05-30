@@ -103,10 +103,10 @@ public class TestUploadController {
         if(uploadedProjectDirectory.isDirectory()) {
             File[] projectDirectorys = uploadedProjectDirectory.listFiles();
             for (File projectDirectory : projectDirectorys) {
-                if(projectDirectory.isDirectory() && projectDirectory.listFiles().length > 0 && ProgramInstrumentService.situation.containsKey(projectDirectory.getName() + ".jar")) {
+                if(projectDirectory.isDirectory() && projectDirectory.listFiles().length > 0) {
                     projectToTestFiles.put(projectDirectory.getName(), new HashMap<>());
                     File[] testFiles = projectDirectory.listFiles();
-                    runTestService.initate(projectDirectory.getName(),true);
+                    runTestService.initate(projectDirectory.getName(), false);
                     for(File testFile : testFiles) {
                         if (!testFile.isDirectory()) {
                             if (testFile.getName().contains(".java")) {

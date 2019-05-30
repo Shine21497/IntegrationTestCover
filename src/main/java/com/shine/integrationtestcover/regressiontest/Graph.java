@@ -26,33 +26,15 @@ public class Graph {
         return nodeMap;
     }
 
-    private static Graph newGraph = new Graph();
-    private static Graph oldGraph = new Graph();
-    private  List<String> visitedList=new ArrayList<String>();
 
-    public List<Edge> getDangerousList() {
-        return dangerousList;
-    }
+/*    public static Graph newGraph = new Graph();
+    public static Graph oldGraph = new Graph();
+    public static List<String> visitedList=new ArrayList<String>();
+    public static List<Edge> dangerousList=new ArrayList<Edge>();
+    public static List<String> differentNodeKey = new ArrayList<>();
+    public static List<String> newNodeKey = new ArrayList<>();
 
-    public List<String> getDifferentNodeKey() {
-        return differentNodeKey;
-    }
-
-    public List<String> getNewNodeKey() {
-        return newNodeKey;
-    }
-
-    private  List<Edge> dangerousList=new ArrayList<Edge>();
-    private  List<String> differentNodeKey = new ArrayList<String>();
-    private  List<String> newNodeKey = new ArrayList<>();
-
-    public List<String> getDeleteNodeKey() {
-        return deleteNodeKey;
-    }
-
-    private  List<String> deleteNodeKey=new ArrayList<>();
-
-    public  void initNodeMap(String oldJarName,String newJarName,String packageName){
+    public static void initNodeMap(){
         BaseConfig baseConfig = new BaseConfig();
 //        PaserJar paserJar = new PaserJar(baseConfig.getRegressionFilePath(), oldJarName, oldGraph);
         PaserJar paserJar = new PaserJar(baseConfig.getUploadedFilePath(), oldJarName, oldGraph);
@@ -138,6 +120,17 @@ public class Graph {
                 deleteNodeKey.add(key);
                 continue;
             }
+
+        }
+
+        System.out.println("dangerous edge");
+        for(int i=0;i<dangerousList.size();i++){
+            System.out.println(dangerousList.get(i));
+        }
+
+        System.out.println("dangerous node");
+        for(int i=0;i<differentNodeKey.size();i++){
+            System.out.println(differentNodeKey.get(i));
         }
 //        System.out.println("dangerous edge");
 //        for(int i=0;i<dangerousList.size();i++){
@@ -155,5 +148,5 @@ public class Graph {
 //        }
 
 
-}
+}*/
 }

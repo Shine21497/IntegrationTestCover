@@ -65,8 +65,8 @@ public class RunTestService {
     //初始化，接收项目名称
 
     public void initate(String projectname, boolean needWait) {
-        System.out.println(projectname + ".jar");
-        if (needWait) {
+        System.out.println(projectname+".jar");
+        if(needWait) {
             while (!ProgramInstrumentService.situation.containsKey(projectname + ".jar") || ProgramInstrumentService.situation.get(projectname + ".jar") != 2) {
                 try {
                     System.out.println("why");
@@ -410,8 +410,6 @@ public class RunTestService {
     public HashMap<String, List<String>> regressionCompare(String projectname) throws Exception {
         System.out.println("reCompare");
         HashMap<String, List<String>> compare = new HashMap<>();
-//        initate(projectname, false);
-//        this.javafilepath=
         this.setJarpath(baseConfig.getRunTestProjectPath(projectname).replaceFirst("/", ""));//插桩后的位置
         this.setJarname(projectname);
         this.setJavafilepath(baseConfig.getRunTestProjectPath(projectname).replaceFirst("/", ""));//测试文件位置
@@ -429,6 +427,7 @@ public class RunTestService {
         }
         return compare;
     }
+
 
 
     /*

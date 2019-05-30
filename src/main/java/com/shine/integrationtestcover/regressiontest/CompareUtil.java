@@ -26,7 +26,6 @@ public class CompareUtil {
         else{
             return (a.type == b.type);
         }
-
     }
 
     public static boolean compareIincInsnNode(IincInsnNode a, IincInsnNode b) {
@@ -51,7 +50,6 @@ public class CompareUtil {
 
     public static boolean compareLabelNode(LabelNode a, LabelNode b) {
         return true;
-//        return (a.getLabel().toString().equals(b.getLabel().toString()));
     }
 
     public static boolean compareLdcInsnNode(LdcInsnNode a, LdcInsnNode b) {
