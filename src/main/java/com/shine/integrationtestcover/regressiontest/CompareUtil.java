@@ -20,7 +20,12 @@ public class CompareUtil {
     }
 
     public static boolean compareFrameNode(FrameNode a, FrameNode b) {
-        return (Arrays.equals(a.local.toArray(), b.local.toArray())) && (Arrays.equals(a.stack.toArray(), b.stack.toArray()));
+        if(a.local != null && b.stack !=null){
+            return (Arrays.equals(a.local.toArray(), b.local.toArray())) && (Arrays.equals(a.stack.toArray(), b.stack.toArray()));
+        }
+        else{
+            return (a.type == b.type);
+        }
     }
 
     public static boolean compareIincInsnNode(IincInsnNode a, IincInsnNode b) {
@@ -44,7 +49,7 @@ public class CompareUtil {
     }
 
     public static boolean compareLabelNode(LabelNode a, LabelNode b) {
-        return (a.getLabel().toString().equals(b.getLabel().toString()));
+        return true;
     }
 
     public static boolean compareLdcInsnNode(LdcInsnNode a, LdcInsnNode b) {
