@@ -410,7 +410,11 @@ public class RunTestService {
     public HashMap<String, List<String>> regressionCompare(String projectname) throws Exception {
         System.out.println("reCompare");
         HashMap<String, List<String>> compare = new HashMap<>();
-        initate(projectname, true);
+//        initate(projectname, false);
+//        this.javafilepath=
+        this.setJarpath(baseConfig.getRunTestProjectPath(projectname).replaceFirst("/", ""));//插桩后的位置
+        this.setJarname(projectname);
+        this.setJavafilepath(baseConfig.getRunTestProjectPath(projectname).replaceFirst("/", ""));//测试文件位置
         String path = this.javafilepath;
         File file = new File(path);
         List<File> tempList = getAllTestFileFromDic(file);
@@ -457,7 +461,7 @@ public class RunTestService {
                     } else if (after.length == 4) {
                         C = after[3].replace("/", ".");
                     }
-                    String finalline = A + "/" + desc1 + " " + "CALL" + " " + C + "/" + desc2;
+                    String finalline = A + desc1 + " " + "CALL" + " " + C  + desc2;
                     methodsrelationship.add(finalline);
 
 

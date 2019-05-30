@@ -305,7 +305,7 @@
                         </div>
                         <div class="list-container">
                             <el-tooltip v-for="(testcase,index) in showoldvsnew" :key="index" :content="['(不变)','(有影响)'][testcase.state] + testcase.casename" placement="right" effect="light">
-                                <div class="hjr-list-item" :style="'border-left-color:'+ ['green','red'][testcase.state] + ';'">{{testcase.casename}}</div>
+                                <div class="hjr-list-item" :style="'border-left-color:'+ ['red','green'][testcase.state] + ';'">{{testcase.casename}}</div>
                             </el-tooltip>
                         </div>
                     </div>
@@ -476,11 +476,12 @@ import { Promise } from 'q';
                 // 检查 oldJarName 这个项目的所有用例是否获取
                 if (this.regression.oldcases[para.oldJarName]) {
                     postRegression(para).then(response=> {
-                        let newcases = response.newcases;                // "oldcases" is all testcases
+                        let newcases = response;                // "oldcases" is all testcases
                         this.filterList = ["remain", "affected"]         // set filter to all
                         this.oldvsnew = [];                              // refresh result
 
                         this.regression.oldcases[para.oldJarName].forEach(testcase => {
+
                             if(newcases.includes(testcase)){
                                 // 有影响的
                                 this.oldvsnew.push({
@@ -488,7 +489,7 @@ import { Promise } from 'q';
                                     casename:testcase
                                 })
                             }
-                            else{
+                            else if(testcase != "allTestFiles"){
                                 this.oldvsnew.push({
                                     state:0,
                                     casename:testcase

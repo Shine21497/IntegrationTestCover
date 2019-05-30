@@ -59,6 +59,14 @@ public class RegressiontestService {
                 }
                 for(String node: temp.get(i).split(" ")){
                     if(node!="CALL"){
+                        if(node.contains("cn/jimmyshi/beanquery/selectors/DefaultSelector")){
+                            System.out.println("hh");
+                            System.out.println(graph.getDifferentNodeKey().get(39));
+                            System.out.println(node);
+                            if(node.equals(graph.getDifferentNodeKey().get(39))){
+                                System.out.println("youwenti");
+                            }
+                        }
                         if(graph.getDifferentNodeKey().contains(node)){
                             if(!result.contains(entry.getKey()))
                                 result.add(entry.getKey());

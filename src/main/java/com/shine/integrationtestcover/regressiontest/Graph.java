@@ -43,7 +43,7 @@ public class Graph {
     }
 
     private  List<Edge> dangerousList=new ArrayList<Edge>();
-    private  List<String> differentNodeKey = new ArrayList<>();
+    private  List<String> differentNodeKey = new ArrayList<String>();
     private  List<String> newNodeKey = new ArrayList<>();
 
     public List<String> getDeleteNodeKey() {
