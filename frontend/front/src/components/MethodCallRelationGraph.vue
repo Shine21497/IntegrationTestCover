@@ -170,7 +170,7 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item label="方法选择">
-                                        <el-select ref="selectTestMethod" filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestCases.length == 0" v-model="selectTestForm.selectedTestCase" placeholder="请选择测试方法" @change="getTestMethod">
+                                        <el-select ref="selectTestMethod" filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestCases.length == 0" v-model="selectTestForm.selectedTestCase" placeholder="请选择测试方法" >
                                             <el-option
                                                     v-for="item in selectTestForm.allTestCases"
                                                     :key="item"
@@ -412,6 +412,7 @@ import { Promise } from 'q';
                 oldvsnew:[],          // 用于新旧版本项目测试用例的对比
                 showoldvsnew:[],      // 存在筛选，所以要一个专门用于展示的
                 filterList:["remain", "affected"],    // 过滤回归测试结果测试用例
+                branchnum: 0 // 总分支数
             }
         },
         methods: {
@@ -477,6 +478,7 @@ import { Promise } from 'q';
                     this.regression.oldcases[prov] = Object.keys(this.testCaseMap[prjName]) 
                 } catch (error) {
                     getTestCaseList().then(response=>{
+                        console.log('fuck')
                         this.testCaseMap = response.result;
                         this.regression.oldcases[prov] = Object.keys(this.testCaseMap[prjName])
                     })
@@ -551,6 +553,12 @@ import { Promise } from 'q';
                     console.log(this.usecasenum);
                 })*/
                 this.TestResult = TestResult;
+                for(let index in this.relation.links)
+                                {
+                                 var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
+                                 if(this.testCaseMap.indexOf(callrelation)<0)
+                                    this.uncoverfullname.push(callrelation);
+                                }
                 if(type==='one'){
                     for (let index in TestResult)
                     {
@@ -568,6 +576,7 @@ import { Promise } from 'q';
                         this.changeMultipleLine(result[0],result[2]);
                     }
                 }
+                this.setUncover();
             },
            //改变用例测试经过的直线
             changeSingleLine(SourceName,TargetName){
@@ -580,11 +589,11 @@ import { Promise } from 'q';
                         this.changeNode(SourceName);
                         this.changeNode(TargetName);
                     }
-                    var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
-                    if(this.testCaseMap.indexOf(callrelation)<0)
-                        this.uncoverfullname.push(callrelation);
+                    //var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
+                    //if(this.testCaseMap.indexOf(callrelation)<0)
+                        //this.uncoverfullname.push(callrelation);
                 };
-                this.setUncover();
+                //this.setUncover();
             },
 
             moveFirstnode(name){
@@ -682,6 +691,7 @@ import { Promise } from 'q';
                 this.uncoverfullname=[];
             },
             showTestClass(prjName,time){
+                console.log('fuck you shit')
                 if(this.testCaseMap[prjName])
                     this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prjName]);
                 else{
@@ -693,7 +703,7 @@ import { Promise } from 'q';
                     else
                         getTestCaseList().then(response=>{
                             this.testCaseMap = response.result;
-                            console.log(this.testCaseMap)
+                            console.log("testCaseMap")
                             this.showTestClass(prjName,time+1);
                         })
                 }
@@ -848,6 +858,7 @@ import { Promise } from 'q';
                 }
             },
             startRunTestCase(file) {
+                this.uncoverfullname=[];
                 var projectname  = this.selectTestForm.selectedTestProject;
                 var testcasename = this.selectTestForm.selectedTestClass;
                 var method       = this.selectTestForm.selectedTestCase;
@@ -887,6 +898,8 @@ import { Promise } from 'q';
                 getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
                     //_this.usecasenum = response.length;
+                    console.log(reponse)
+                    _this.showTestResult(resonse,_this.taskType)
                     this.branchnum=this.relation.links.length;
                     if(this.selectTestForm.selectedTestClass=="allClass")
                     {
@@ -902,8 +915,7 @@ import { Promise } from 'q';
                     }
                     this.uncoverlength = this.uncover.length;
                     this.coverrate=((this.branchnum-this.uncoverlength)/this.branchnum)*100;
-                    console.log(response)
-                    _this.showTestResult(response,_this.taskType)
+
                 });
             },
             // 显示消息

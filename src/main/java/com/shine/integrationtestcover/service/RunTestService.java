@@ -173,7 +173,10 @@ public class RunTestService {
             //String command=
             // "javac -cp C:\Users\22831\Desktop\lib\IntegrationTestCover.jar;C:\Users\22831\Desktop\lib\junit-4.10.jar com\shine\integrationtestcover\service\GraphServiceTest.java";
             String command = "javac -cp " + jarpath + jarname + ".jar" + ";" + testwaypath + testwayname + ".jar" + " " + javafilepath + packagename + "//" + javafilename + ".java";
-            // System.out.println(command);
+             System.out.println(command);
+             if(command.equals("javac -cp C:/Users/acer/Documents/GitHub/IntegrationTestCover/target/classes/runTestCase/bean-query/bean-query.jar;C:/Users/acer/Documents/GitHub/IntegrationTestCover/target/classes/uploadedJar/junit-4.10.jar C:/Users/acer/Documents/GitHub/IntegrationTestCover/target/classes/runTestCase/bean-query/cn//jimmyshi//beanquery//comparators//PropertyComparatorTest.java")){
+                 System.out.println("jhjj");
+             }
             Process process = Runtime.getRuntime().exec(command);
             process.waitFor();
         } catch (Exception e) {

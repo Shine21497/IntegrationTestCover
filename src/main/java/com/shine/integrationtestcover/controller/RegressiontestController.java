@@ -1,7 +1,7 @@
 package com.shine.integrationtestcover.controller;
 
 import com.shine.integrationtestcover.config.BaseConfig;
-import com.shine.integrationtestcover.service.RegressiontestService;
+import com.shine.integrationtestcover.service.RegressionTestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,7 +17,7 @@ public class RegressiontestController {
     @Autowired
     BaseConfig baseConfig;
     @Autowired
-    RegressiontestService regressiontestService;
+    RegressionTestService regressiontestService;
     @RequestMapping(value="/regressiontest")
     @ResponseBody
     public List<String> regressiontest(@RequestParam("oldJarName") String oldJarName, @RequestParam("newJarName") String newJarName, @RequestParam("packageName") String packageName) throws Exception {

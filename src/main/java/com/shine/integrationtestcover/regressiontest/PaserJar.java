@@ -33,20 +33,13 @@ public class PaserJar {
 
 
     //    public static String packageName = "cn/jimmyshi";
-    private String packageName="cn/jimmyshi";
+//    private String packageName="cn/jimmyshi";
     private ClassVisitor visitor;
 
     public PaserJar(String path, String filename, Graph graph) {
         this.path = path;
         this.filename = filename;
         this.graph = graph;
-    }
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
     }
     public String getFilename() {
         return filename;
