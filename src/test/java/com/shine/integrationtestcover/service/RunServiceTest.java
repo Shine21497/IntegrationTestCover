@@ -1,3 +1,4 @@
+
 package com.shine.integrationtestcover.service;
 
 import org.junit.Before;
@@ -41,15 +42,15 @@ public class RunServiceTest {
 
     @Test
     public void CompileJava(){
-        runTestService.initate("demo", false);
-        String Javafilename="Test2";
+        runTestService.initate("bean-query", false);
+        String Javafilename="PropertyComparatorTest";
         runTestService.compileJava(Javafilename);
     }
 
     @Test
     public void getMethods(){
-        runTestService.initate("demo", false);
-        runTestService.getMethods("Test2");
+        runTestService.initate("bean-query", false);
+        System.out.println(runTestService.getMethods("PropertyComparatorTest"));
     }
     //Test2
 
@@ -73,7 +74,7 @@ public class RunServiceTest {
 
     @Test
     public void run() throws Exception{
-        runTestService.initate("demo", true);
+        runTestService.initate("bean-query", false);
         runTestService.runAll();
         System.out.println(runTestService.getRunprocess());
         System.out.println(runTestService.getRunprocess());
@@ -86,3 +87,4 @@ public class RunServiceTest {
 
     }
 }
+
