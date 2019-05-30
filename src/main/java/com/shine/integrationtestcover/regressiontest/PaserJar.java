@@ -28,8 +28,11 @@ public class PaserJar {
     private String filename;
     private String path;
     private Graph graph;
-    public static String packageName = "cn/jimmyshi";
 
+
+
+    //    public static String packageName = "cn/jimmyshi";
+    private String packageName="cn/jimmyshi";
     private ClassVisitor visitor;
 
     public PaserJar(String path, String filename, Graph graph) {
@@ -37,7 +40,13 @@ public class PaserJar {
         this.filename = filename;
         this.graph = graph;
     }
+    public String getPackageName() {
+        return packageName;
+    }
 
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
+    }
     public String getFilename() {
         return filename;
     }
@@ -77,9 +86,13 @@ public class PaserJar {
                         Node methodGraphNode;
                         if (this.graph.ifNodeExist(classNode.name + methodNode.name + methodNode.desc)) {
                             methodGraphNode = graph.getNode(classNode.name + methodNode.name + methodNode.desc);
+//                        if (this.graph.ifNodeExist(classNode.name +":"+ methodNode.name)) {
+//                            methodGraphNode = graph.getNode(classNode.name +":"+ methodNode.name);
                         } else {
                             methodGraphNode = new Node(classNode.name + methodNode.name + methodNode.desc, methodNode.instructions);
+//                            methodGraphNode = new Node(classNode.name +":"+methodNode.name,methodNode.instructions);
                             this.graph.addNode(classNode.name + methodNode.name + methodNode.desc, methodGraphNode);
+//                            this.graph.addNode(classNode.name +":"+ methodNode.name, methodGraphNode);
                         }
                         InsnList insnList = methodNode.instructions;
                         for (int i = 0; i < insnList.size(); ++i) {
@@ -87,6 +100,7 @@ public class PaserJar {
                                 MethodInsnNode methodInsnNode = (MethodInsnNode)insnList.get(i);
                                 //System.out.println(classNode.name + methodNode.name + methodNode.desc+ "CALL" + methodInsnNode.owner + methodInsnNode.name + methodInsnNode.desc);
                                 methodGraphNode.addEdge(new Edge(classNode.name + methodNode.name + methodNode.desc, methodInsnNode.owner + methodInsnNode.name + methodInsnNode.desc));
+//                                methodGraphNode.addEdge(new Edge(classNode.name + ":"+methodNode.name, methodInsnNode.owner +":"+ methodInsnNode.name));
                             }
                         }
                     }

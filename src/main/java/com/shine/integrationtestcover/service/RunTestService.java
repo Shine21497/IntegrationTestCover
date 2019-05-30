@@ -9,10 +9,12 @@ import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -61,14 +63,17 @@ public class RunTestService {
     }
 
     //初始化，接收项目名称
-    public void initate(String projectname) {
-        System.out.println(projectname+".jar");
-        while(!ProgramInstrumentService.situation.containsKey(projectname+".jar") || ProgramInstrumentService.situation.get(projectname+".jar")!=2){
-            try {
-                System.out.println("why");
-                Thread.sleep(50);
-            }catch (Exception e){
-                e.printStackTrace();
+
+    public void initate(String projectname, boolean needWait) {
+        System.out.println(projectname + ".jar");
+        if (needWait) {
+            while (!ProgramInstrumentService.situation.containsKey(projectname + ".jar") || ProgramInstrumentService.situation.get(projectname + ".jar") != 2) {
+                try {
+                    System.out.println("why");
+                    Thread.sleep(50);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         }
         commonUtils.deleteDir(new File(baseConfig.getRunTestProjectPath(projectname)));
@@ -249,6 +254,8 @@ public class RunTestService {
 
         } catch (ClassNotFoundException e) {
             System.out.println(javafilename + "编译失败！！！");
+        } catch (InvocationTargetException e) {
+            System.out.println(javafilename + "cuowu");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -399,6 +406,69 @@ public class RunTestService {
         logger.info("==***===========" + Thread.currentThread().getName() + "异步");
 
     }
+
+    public HashMap<String, List<String>> regressionCompare(String projectname) throws Exception {
+        System.out.println("reCompare");
+        HashMap<String, List<String>> compare = new HashMap<>();
+        initate(projectname, true);
+        String path = this.javafilepath;
+        File file = new File(path);
+        List<File> tempList = getAllTestFileFromDic(file);
+        for (File f : tempList) {
+            if (f.getName().contains(".java")) {
+                String filename = f.getName().replace(".java", "");
+                List<String> temp = new ArrayList<String>();
+                temp.addAll(invokeRegressionMethod(filename));
+                compare.put(f.getName(), temp);
+
+            }
+        }
+        return compare;
+    }
+
+
+    /*
+     回归测试的解析，A call B=>desc1=>desc2=>C
+     解析为A+desc1 call C + desc2
+     */
+    public List<String> invokeRegressionMethod(String javafilename) {
+        List<String> methodsrelationship = new LinkedList<>();
+        //读文件内容
+        try {
+            String filepath = this.javafilepath + "//output-" + javafilename + ".txt";//txt位置
+            File file = new File(filepath);
+            if (file == null) System.out.println("txt生成失败!!!");
+            InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
+            BufferedReader br = new BufferedReader(reader);
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.matches(".*CALL.*")) {
+                    //methodsrelationship.add((!line.contains("=>")? line : line.split("=>")[0]).replace("/", "."));
+                    String[] a = line.split("call");
+                    String A = a[0].replace(" ", "");//A的空格去掉
+                    String Aafter = a[1];//B=>desc1=>desc2=>C
+                    String[] after = Aafter.split("=>");
+                    String B = after[0].replace(" ", "");
+                    String desc1 = after[1];
+                    String desc2 = after[2];
+                    String C = after[3];
+                    String finalline=A+"+"+desc1+" "+"call"+" "+C+"+"+desc2;
+                    methodsrelationship.add(finalline);
+
+
+//                    methodsrelationship.add(line.split("=>")[0].replace("/", "."));
+                }
+            }
+            br.close();
+            reader.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return methodsrelationship;
+    }
+
 
     /*
     是否被编译过，编译过返回true，未编译返回false

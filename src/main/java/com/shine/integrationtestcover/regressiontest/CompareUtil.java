@@ -20,7 +20,13 @@ public class CompareUtil {
     }
 
     public static boolean compareFrameNode(FrameNode a, FrameNode b) {
-        return (Arrays.equals(a.local.toArray(), b.local.toArray())) && (Arrays.equals(a.stack.toArray(), b.stack.toArray()));
+        if(a.local != null && b.stack !=null){
+            return (Arrays.equals(a.local.toArray(), b.local.toArray())) && (Arrays.equals(a.stack.toArray(), b.stack.toArray()));
+        }
+        else{
+            return (a.type == b.type);
+        }
+
     }
 
     public static boolean compareIincInsnNode(IincInsnNode a, IincInsnNode b) {
@@ -44,7 +50,8 @@ public class CompareUtil {
     }
 
     public static boolean compareLabelNode(LabelNode a, LabelNode b) {
-        return (a.getLabel().toString().equals(b.getLabel().toString()));
+        return true;
+//        return (a.getLabel().toString().equals(b.getLabel().toString()));
     }
 
     public static boolean compareLdcInsnNode(LdcInsnNode a, LdcInsnNode b) {
@@ -100,6 +107,7 @@ public class CompareUtil {
             return compareJumpInsnNode((JumpInsnNode)a, (JumpInsnNode)b);
         } else if (a instanceof LabelNode) {
             return compareLabelNode((LabelNode)a, (LabelNode)b);
+//            return true;
         } else if (a instanceof LdcInsnNode) {
             return compareLdcInsnNode((LdcInsnNode)a, (LdcInsnNode)b);
         } else if (a instanceof LineNumberNode) {

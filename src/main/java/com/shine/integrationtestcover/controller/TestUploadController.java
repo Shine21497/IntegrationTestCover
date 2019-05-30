@@ -40,7 +40,7 @@ public class TestUploadController {
                 e.printStackTrace();
                 return "上传失败," + e.getMessage();
             }
-            if(testCase.getName().contains(".zip")){
+            if(testCase.getOriginalFilename().contains(".zip")){
                 File srcFile=new File(baseConfig.getUploadedTestPath(selectedProject) + testCase.getOriginalFilename());
                 if(!srcFile.exists()){
                     throw new RuntimeException(srcFile.getPath()+"所指文件不存在");
@@ -75,7 +75,6 @@ public class TestUploadController {
                             inputStream.close();
                         }
                     }
-
                 } catch (Exception e) {
                     throw new RuntimeException("unzip error from ZipUtils", e);
                 }
