@@ -105,6 +105,7 @@ public class CompareUtil {
             return compareJumpInsnNode((JumpInsnNode)a, (JumpInsnNode)b);
         } else if (a instanceof LabelNode) {
             return compareLabelNode((LabelNode)a, (LabelNode)b);
+//            return true;
         } else if (a instanceof LdcInsnNode) {
             return compareLdcInsnNode((LdcInsnNode)a, (LdcInsnNode)b);
         } else if (a instanceof LineNumberNode) {

@@ -45,7 +45,30 @@ public class FileUploadController {
         }
         return result;
     }
-
+    @RequestMapping(value = "/uploadRegressiveJar")
+    @ResponseBody
+    public String uploadRegressiveJar(@RequestParam("file") MultipartFile file){
+        String result = "";
+        if (!file.isEmpty()) {
+            try {
+                BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(baseConfig.getRegressionFilePath() + file.getOriginalFilename())));
+                System.out.println(file.getName());
+                out.write(file.getBytes());
+                out.flush();
+                out.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                result =  "上传失败," + e.getMessage();
+            } catch (IOException e) {
+                e.printStackTrace();
+                result =  "上传失败," + e.getMessage();
+            }
+            result = "上传成功";
+        } else {
+            result =  "上传失败，因为文件是空的.";
+        }
+        return result;
+    }
     @RequestMapping(value = "/fileList", method = RequestMethod.GET)
     @ResponseBody
     public HashMap<String, Object> getFileList(){
