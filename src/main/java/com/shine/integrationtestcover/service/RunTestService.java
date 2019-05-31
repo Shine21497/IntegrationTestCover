@@ -63,6 +63,7 @@ public class RunTestService {
     }
 
     //初始化，接收项目名称
+
     public void initate(String projectname, boolean needWait) {
         System.out.println(projectname+".jar");
         if(needWait) {
@@ -172,7 +173,10 @@ public class RunTestService {
             //String command=
             // "javac -cp C:\Users\22831\Desktop\lib\IntegrationTestCover.jar;C:\Users\22831\Desktop\lib\junit-4.10.jar com\shine\integrationtestcover\service\GraphServiceTest.java";
             String command = "javac -cp " + jarpath + jarname + ".jar" + ";" + testwaypath + testwayname + ".jar" + " " + javafilepath + packagename + "//" + javafilename + ".java";
-            // System.out.println(command);
+             System.out.println(command);
+             if(command.equals("javac -cp C:/Users/acer/Documents/GitHub/IntegrationTestCover/target/classes/runTestCase/bean-query/bean-query.jar;C:/Users/acer/Documents/GitHub/IntegrationTestCover/target/classes/uploadedJar/junit-4.10.jar C:/Users/acer/Documents/GitHub/IntegrationTestCover/target/classes/runTestCase/bean-query/cn//jimmyshi//beanquery//comparators//PropertyComparatorTest.java")){
+                 System.out.println("jhjj");
+             }
             Process process = Runtime.getRuntime().exec(command);
             process.waitFor();
         } catch (Exception e) {
@@ -409,29 +413,73 @@ public class RunTestService {
     public HashMap<String, List<String>> regressionCompare(String projectname) throws Exception {
         System.out.println("reCompare");
         HashMap<String, List<String>> compare = new HashMap<>();
-        initate(projectname, true);
+        this.setJarpath(baseConfig.getRunTestProjectPath(projectname).replaceFirst("/", ""));//插桩后的位置
+        this.setJarname(projectname);
+        this.setJavafilepath(baseConfig.getRunTestProjectPath(projectname).replaceFirst("/", ""));//测试文件位置
         String path = this.javafilepath;
         File file = new File(path);
         List<File> tempList = getAllTestFileFromDic(file);
         for (File f : tempList) {
             if (f.getName().contains(".java")) {
                 String filename = f.getName().replace(".java", "");
-                List<String> m = getMethods(filename);
-                LinkedList results = new LinkedList();
-                for (int i = 0; i < m.size(); i++) {
-                    results.addAll(invokeMethod(filename, m.get(i)));
-
-                }
-                List<String> temp=new ArrayList<String>();
-                for(int i=0;i<results.size();i++){
-                    temp.add(results.get(i).toString().replace(".","/"));
-                }
+                List<String> temp = new ArrayList<String>();
+                temp.addAll(invokeRegressionMethod(filename));
                 compare.put(f.getName(), temp);
 
             }
         }
         return compare;
     }
+
+
+
+    /*
+     回归测试的解析，A call B=>desc1=>desc2=>C
+     解析为A+desc1 call C + desc2
+     */
+    public List<String> invokeRegressionMethod(String javafilename) {
+        List<String> methodsrelationship = new LinkedList<>();
+        //读文件内容
+        try {
+            String filepath = this.javafilepath + "//output-" + javafilename + ".txt";//txt位置
+            File file = new File(filepath);
+            if (file == null) System.out.println("txt生成失败!!!");
+            InputStreamReader reader = new InputStreamReader(new FileInputStream(file));
+            BufferedReader br = new BufferedReader(reader);
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.matches(".*CALL.*")) {
+                    //methodsrelationship.add((!line.contains("=>")? line : line.split("=>")[0]).replace("/", "."));
+                    String[] a = line.split("CALL");
+                    String A = a[0].replace(" ", "");//A的空格去掉
+                    String Aafter = a[1];//B=>desc1=>desc2=>C
+                    String[] after = Aafter.split("=>");
+                    String B = after[0].replace(" ", "");
+                    String desc1 = after[1];
+                    String desc2 = after[2];
+                    String C="";
+                    if (after.length == 3) {
+                        C = B;
+                    } else if (after.length == 4) {
+                        C = after[3].replace("/", ".");
+                    }
+                    String finalline = A + desc1 + " " + "CALL" + " " + C  + desc2;
+                    methodsrelationship.add(finalline);
+
+
+//
+                }
+            }
+            br.close();
+            reader.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return methodsrelationship;
+    }
+
 
     /*
     是否被编译过，编译过返回true，未编译返回false

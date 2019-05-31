@@ -6,6 +6,7 @@ import com.shine.integrationtestcover.regressiontest.Graph;
 import com.shine.integrationtestcover.regressiontest.Node;
 import com.shine.integrationtestcover.regressiontest.PaserJar;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,6 +17,7 @@ import java.util.Map;
  * @Author: Shine
  * @Date: 2019/5/29
  */
+@Service
 public class RegressionTestService {
     @Autowired
     RunTestService runTestService;
