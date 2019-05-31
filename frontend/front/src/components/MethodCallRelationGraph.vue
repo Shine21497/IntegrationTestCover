@@ -400,7 +400,7 @@ import { Promise } from 'q';
                 for(let index in this.relation.links)
                 {
                  var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
-                 if(this.testCaseMap.indexOf(callrelation)<0)
+                 if(TestResult.indexOf(callrelation)<0)
                     this.uncoverfullname.push(callrelation);
                 }
                 if(type==='one'){
@@ -701,6 +701,9 @@ import { Promise } from 'q';
             },
             startRunTestCase(file) {
                 this.uncoverfullname=[];
+                if(this.TestResult!=null){
+                this.cancelShow(this.TestResult);
+                }
                 var projectname  = this.selectTestForm.selectedTestProject;
                 var testcasename = this.selectTestForm.selectedTestClass;
                 var method       = this.selectTestForm.selectedTestCase;
@@ -743,7 +746,13 @@ import { Promise } from 'q';
                     this.branchnum=this.relation.links.length;
                     if(this.selectTestForm.selectedTestClass=="allClass")
                     {
-                        this.usecasenum=this.testCaseMap[this.selectedTestProject].length;
+                        //this.usecasenum=this.testCaseMap[this.selectedTestProject].length;
+                         var sum=0;
+                         for(let index in this.testCaseMap["result"][this.selectedTestProject])
+                             {
+                                sum+=this.testCaseMap["result"][this.selectedTestProject][index].length;
+                             }
+                         this.usecasenum=sum;
                     }
                     else
                     {
