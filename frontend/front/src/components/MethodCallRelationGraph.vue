@@ -383,6 +383,7 @@ import { Promise } from 'q';
                 branchnum:'',
                 selectnode:'',
                 newnode:'',
+                selectednodetype:'',
                 classMethodMap:{"a": ["a","b"], "b": ["a","c"]},
                 testCaseMap:{},
                 g:{},
@@ -891,7 +892,7 @@ import { Promise } from 'q';
                     //_this.usecasenum = response.length;
                     console.log(response)
                     _this.showTestResult(response,_this.taskType)
-                    this.branchnum=this.relation.links.length;
+                    _this.branchnum=this.relation.links.length;
                     if(this.selectTestForm.selectedTestClass=="allClass")
                     {
                         //this.usecasenum=this.testCaseMap[this.selectedTestProject].length;
@@ -900,18 +901,18 @@ import { Promise } from 'q';
                              {
                                 sum+=this.testCaseMap["result"][this.selectedTestProject][index].length;
                              }
-                         this.usecasenum=sum;
+                         _this.usecasenum=sum;
                     }
                     else
                     {
                     if(this.selectTestForm.selectedTestCase=="allMethods")
                     {
-                         this.usecasenum=this.testCaseMap[this.selectedTestProject][this.selectedTestClass].length;
+                         _this.usecasenum=this.testCaseMap[this.selectedTestProject][this.selectedTestClass].length;
                     }
-                    else this.usecasenum=1;
+                    else _this.usecasenum=1;
                     }
-                    this.uncoverlength = this.uncover.length;
-                    this.coverrate=((this.branchnum-this.uncoverlength)/this.branchnum)*100;
+                    _this.uncoverlength = this.uncover.length;
+                    _this.coverrate=((_this.branchnum-_this.uncoverlength)/_this.branchnum)*100;
                 });
             },
             // 显示消息
