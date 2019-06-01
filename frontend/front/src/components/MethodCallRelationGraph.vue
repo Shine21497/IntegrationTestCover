@@ -204,7 +204,7 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item>
-                                        <div id="branches">分支总数：0；</div>
+                                        <div id="branches">分支总数：{{branchnum}}；</div>
                                         <div id="usecase">执行用例数：{{usecasenum}}；</div>
                                         <div id="uncoverbranch">未覆盖分支数：{{uncoverlength}}；</div>
                                         <div id="coverrate">覆盖率：{{coverrate}}%：</div>
@@ -226,6 +226,16 @@
                                   <el-form-item label="新节点">
                                     <el-input type="textarea" v-model="newnode" placeholder="请输入新节点名称"></el-input>
                                   </el-form-item>
+                                  <el-form-item label="类型选择">
+                                                                          <el-select v-model="selectednodetype" filterable placeholder="请选择节点类型" @change="getnodetype()">
+
+                                                                                      <el-option label="数据库" value="1"> </el-option>
+                                                                                      <el-option label="外设" value="2"> </el-option>
+                                                                                      <el-option label="前端" value="3"> </el-option>
+                                                                                      <el-option label="其他系统" value="4"> </el-option>
+
+                                                                          </el-select>
+                                                                      </el-form-item>
                                   <el-form-item>
                                    <el-button type="primary" @click="createNewNode()">立即创建</el-button>
                                   </el-form-item>
@@ -370,6 +380,7 @@ import { Promise } from 'q';
                 coverrate:'',
                 uncoverfullname:[],
                 usecasenum:'',
+                branchnum:'',
                 selectnode:'',
                 newnode:'',
                 classMethodMap:{"a": ["a","b"], "b": ["a","c"]},
@@ -536,23 +547,35 @@ import { Promise } from 'q';
                 // 记录正在显示的测试结果，cancelshow 的时候根据这个来
                 //var type="one";
                 //var TestResult=["com.example.demo.controller.Test1:calculate call com.example.demo.controller.Test1:doublevalue"];
-                this.$nextTick(() => {
-                    this.usecasenum = TestResult.length;
-                    console.log(this.usecasenum);
-                })
+                // this.$nextTick(() => {
+                //     this.usecasenum = TestResult.length;
+                //     console.log(this.usecasenum);
+                // })
                 this.TestResult = TestResult;
-                for(let index in TestResult){
-                    var result=TestResult[index].split(" ");
-                    //如果是单个结果
-                    if(type === 'one'){
-                        //线的流动效果和节点效果
+                for(let index in this.relation.links)
+                {
+                 var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
+                 if(TestResult.indexOf(callrelation)<0)
+                    this.uncoverfullname.push(callrelation);
+                }
+                if(type==='one'){
+                    for (let index in TestResult)
+                    {
+                        var result=TestResult[index].split(" ");
+                        if(index===0){
+                            moveFirstnode(result[0]);
+                        }
                         this.changeSingleLine(result[0],result[2]);
                     }
+                }
                     //如果多个结果
                     else{
+                        for(let index in TestResult){
+                        var result=TestResult[index].split(" ");
                         this.changeMultipleLine(result[0],result[2]);
                     }
-                }
+                    }
+                  this.setUncover();
             },
            //改变用例测试经过的直线
             changeSingleLine(SourceName,TargetName){
@@ -564,9 +587,15 @@ import { Promise } from 'q';
                         d3.select('#eachline' + line_id).classed('showsinglepath',true)
                         this.changeNode(SourceName);
                         this.changeNode(TargetName);
-                        if(Isfirstnode)
-                        {
-                            var node = this.findNodeByName(SourceName)
+                    }
+                    // var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
+                    // if(this.testCaseMap.indexOf(callrelation)<0)
+                    //     this.uncoverfullname.push(callrelation);
+                };
+            },
+
+            moveFirstnode(name){
+                    var node = this.findNodeByName(name)
                             var trans = this.tempTrans
                             trans.k = 1;
                             this.g.attr('transform',trans);
@@ -574,16 +603,7 @@ import { Promise } from 'q';
                             trans.y = (300 - node.y) * trans.k
                             this.g.attr('transform', trans)
                             Isfirstnode=false
-                        }
-                       
-                    }
-                    else
-                    {
-                    this.uncoverfullname.push(this.relation.links[index].source.name+" call "+this.relation.links[index].target.name);
-                    }
-                };
-                //this.setUncover();
-            },
+                        },
 
             //多个用例测试结果
             changeMultipleLine(SourceName,TargetName) {
@@ -595,12 +615,10 @@ import { Promise } from 'q';
                         this.changeNode(SourceName);
                         this.changeNode(TargetName);
                     }
-                     else
-                      {
-                      this.uncoverfullname.push(this.relation.links[index].source.name+" call "+this.relation.links[index].target.name);
-                      }
-               };
-               //this.setUncover();
+                    // var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
+                    // if(this.testCaseMap.indexOf(callrelation)<0)
+                    //     this.uncoverfullname.push(callrelation);
+                };
             },
             //给节点加上边界效果
             changeNode(Name) {
@@ -659,7 +677,7 @@ import { Promise } from 'q';
             getTestProject(prov) {
                 this.selectTestForm.selectedTestCase = '';
                 this.selectTestForm.selectedTestClass = '';
-
+                this.uncoverfullname=[];
                 var prjName = prov.split('.')[0];
                 // prov is "demo.jar" but testCaseMap is {"demo":{...}}
                 this.showTestClass(prjName,1)
@@ -731,6 +749,7 @@ import { Promise } from 'q';
             //获取未覆盖信息
             setUncover(){
                 console.log(this.uncoverfullname)
+                this.uncover=[];
                 for(let index in this.uncoverfullname)
                 {
                 var temp=this.uncoverfullname[index].split(" ");
@@ -782,6 +801,7 @@ import { Promise } from 'q';
             addnode.x=node.x-1.0000000000000000000;
             addnode.y=node.y-1.0000000000000000000;
             addnode.index=this.relation.nodes.length;
+            addnode.type=this.selectednodetype;
             var addline={index:7,source:[],target:[]}
             addline.source=node;
             addline.target=addnode;
@@ -826,6 +846,10 @@ import { Promise } from 'q';
                 }
             },
             startRunTestCase(file) {
+                this.uncoverfullname=[];
+                if(this.TestResult!=null){
+                this.cancelShow(this.TestResult);
+                }
                 var projectname  = this.selectTestForm.selectedTestProject;
                 var testcasename = this.selectTestForm.selectedTestClass;
                 var method       = this.selectTestForm.selectedTestCase;
@@ -864,11 +888,30 @@ import { Promise } from 'q';
                 let _this = this;
                 getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
-                    _this.usecasenum = response.length;
-                    this.uncoverlength = this.relation.links.length-this.usecasenum;
-                    this.coverrate=(this.usecasenum/this.relation.links.length)*100;
+                    //_this.usecasenum = response.length;
                     console.log(response)
                     _this.showTestResult(response,_this.taskType)
+                    this.branchnum=this.relation.links.length;
+                    if(this.selectTestForm.selectedTestClass=="allClass")
+                    {
+                        //this.usecasenum=this.testCaseMap[this.selectedTestProject].length;
+                         var sum=0;
+                         for(let index in this.testCaseMap["result"][this.selectedTestProject])
+                             {
+                                sum+=this.testCaseMap["result"][this.selectedTestProject][index].length;
+                             }
+                         this.usecasenum=sum;
+                    }
+                    else
+                    {
+                    if(this.selectTestForm.selectedTestCase=="allMethods")
+                    {
+                         this.usecasenum=this.testCaseMap[this.selectedTestProject][this.selectedTestClass].length;
+                    }
+                    else this.usecasenum=1;
+                    }
+                    this.uncoverlength = this.uncover.length;
+                    this.coverrate=((this.branchnum-this.uncoverlength)/this.branchnum)*100;
                 });
             },
             // 显示消息
