@@ -892,27 +892,33 @@ import { Promise } from 'q';
                     //_this.usecasenum = response.length;
                     console.log(response)
                     _this.showTestResult(response,_this.taskType)
-                    _this.branchnum=this.relation.links.length;
-                    if(this.selectTestForm.selectedTestClass=="allClass")
+                    _this.branchnum=_this.relation.links.length;
+                    if(_this.selectTestForm.selectedTestClass == "allTestFiles")
                     {
                         //this.usecasenum=this.testCaseMap[this.selectedTestProject].length;
                          var sum=0;
-                         for(let index in this.testCaseMap["result"][this.selectedTestProject])
-                             {
-                                sum+=this.testCaseMap["result"][this.selectedTestProject][index].length;
-                             }
-                         _this.usecasenum=sum;
+                         console.log(_this.testCaseMap)
+                         console.log(_this.selectTestForm.selectedTestProject.split('.')[0])
+                         for(let index in _this.testCaseMap[_this.selectTestForm.selectedTestProject.split('.')[0]])
+                         {
+                                sum+=_this.testCaseMap[_this.selectTestForm.selectedTestProject.split('.')[0]][index].length;
+                         }
+                        console.log(_this.usecasenum)
+                         _this.usecasenum  =sum;
                     }
                     else
                     {
-                    if(this.selectTestForm.selectedTestCase=="allMethods")
-                    {
-                         _this.usecasenum=this.testCaseMap[this.selectedTestProject][this.selectedTestClass].length;
+                        if(_this.selectTestForm.selectedTestCase == "allMethods")
+                        {
+                             _this.usecasenum = _this.testCaseMap[_this.selectTestForm.selectedTestProject.split('.')[0]][_this.selectTestForm.selectedTestClass].length;
+                        } else {
+                            _this.usecasenum = 1;
+                        }
                     }
-                    else _this.usecasenum=1;
-                    }
-                    _this.uncoverlength = this.uncover.length;
+                    _this.uncoverlength = _this.uncover.length;
                     _this.coverrate=((_this.branchnum-_this.uncoverlength)/_this.branchnum)*100;
+                    console.log(_this.uncoverlength)
+                    console.log(_this.coverrate)
                 });
             },
             // 显示消息
