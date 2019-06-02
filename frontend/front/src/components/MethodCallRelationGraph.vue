@@ -638,8 +638,11 @@ import { Promise } from 'q';
                     this.cancelLine(result[0],result[2]);
                     this.cancelNode(result[0]);
                     this.cancelNode(result[2]);
-
                 }
+                 this.branchnum=0;
+                                this.usecasenum=0;
+                                this.uncoverlength=0;
+                                this.coverrate=0;
             },
             //取消连线效果
             cancelLine(SourceName,TargetName){
