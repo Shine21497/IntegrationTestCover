@@ -193,7 +193,7 @@
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                <el-form ref="form" :model="selectTestForm" label-width="80px">
-                                  <el-form-item label="未覆盖用例选择">
+                                  <el-form-item label="未覆盖分支选择">
                                         <el-select v-model="selectTestForm.selectUncoverTest" placeholder="请选择未覆盖的边">
                                             <el-option
                                             v-for="item in uncover"
@@ -552,34 +552,38 @@ import { Promise } from 'q';
                 //     this.usecasenum = TestResult.length;
                 //     console.log(this.usecasenum);
                 // })
+                console.log("start show ")
                 this.TestResult = TestResult;
                 for(let index in this.relation.links)
                 {
-                 var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
-                 if(TestResult.indexOf(callrelation)<0)
-                    this.uncoverfullname.push(callrelation);
+                    var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
+                    if(TestResult.indexOf(callrelation)<0)
+                        this.uncoverfullname.push(callrelation);
                 }
                 if(type==='one'){
+                    console.log("start one ")
                     for (let index in TestResult)
                     {
                         var result=TestResult[index].split(" ");
                         if(index===0){
-                            moveFirstnode(result[0]);
+                            this.moveFirstnode(result[0]);
                         }
                         this.changeSingleLine(result[0],result[2]);
                     }
                 }
-                    //如果多个结果
-                    else{
-                        for(let index in TestResult){
+                //如果多个结果
+                else{
+                    console.log("start mouti ")
+                    for(let index in TestResult){
                         var result=TestResult[index].split(" ");
                         this.changeMultipleLine(result[0],result[2]);
                     }
-                    }
-                  this.setUncover();
+                }
+                this.setUncover();
             },
            //改变用例测试经过的直线
             changeSingleLine(SourceName,TargetName){
+                console.log("change one start ")
                 for(let index in this.relation.links) {
                     if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
                         var line_id=this.relation.links[index].index
@@ -593,18 +597,24 @@ import { Promise } from 'q';
                     // if(this.testCaseMap.indexOf(callrelation)<0)
                     //     this.uncoverfullname.push(callrelation);
                 };
+                console.log("change one end ")
             },
 
             moveFirstnode(name){
-                    var node = this.findNodeByName(name)
-                            var trans = this.tempTrans
-                            trans.k = 1;
-                            this.g.attr('transform',trans);
-                            trans.x = (510 - node.x) * trans.k
-                            trans.y = (300 - node.y) * trans.k
-                            this.g.attr('transform', trans)
-                            Isfirstnode=false
-                        },
+                var node = this.findNodeByName(name)
+                var trans = this.tempTrans
+                trans.k = 1;
+                this.g.attr('transform',trans);
+                // 根据视野大小定位
+                var width = document.getElementById('container').offsetWidth;
+                var height = document.getElementById('container').offsetHeight;
+
+                trans.x = (Math.round(width/2) - node.x) * trans.k
+                trans.y = (Math.round(height/2) - node.y) * trans.k
+
+                this.g.attr('transform', trans)
+
+            },
 
             //多个用例测试结果
             changeMultipleLine(SourceName,TargetName) {
@@ -616,16 +626,13 @@ import { Promise } from 'q';
                         this.changeNode(SourceName);
                         this.changeNode(TargetName);
                     }
-                    // var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
-                    // if(this.testCaseMap.indexOf(callrelation)<0)
-                    //     this.uncoverfullname.push(callrelation);
                 };
             },
             //给节点加上边界效果
             changeNode(Name) {
-                for(let index in this.relation.nodes) {
-                    if(this.relation.nodes[index].name==Name) {
-                        var node_id=this.relation.nodes[index].index
+                for(let indexc in this.relation.nodes) {
+                    if(this.relation.nodes[indexc].name==Name) {
+                        var node_id=this.relation.nodes[indexc].index
                         d3.select('#node' + node_id).classed('bling',true)
                         d3.select('#node' + node_id).attr('stroke-width',3).attr('stroke','#FA8072').attr('filter','url(#f1)')
                     }
@@ -664,9 +671,9 @@ import { Promise } from 'q';
             },
 
             findNodeByName(name) {
-                for(let index in this.relation.nodes) {
-                    if(this.relation.nodes[index].name == name) {
-                        return this.relation.nodes[index]
+                for(let indexfindnode in this.relation.nodes) {
+                    if(this.relation.nodes[indexfindnode].name == name) {
+                        return this.relation.nodes[indexfindnode]
                     }
                 }
             },
@@ -751,13 +758,13 @@ import { Promise } from 'q';
             setUncover(){
                 console.log(this.uncoverfullname)
                 this.uncover=[];
-                for(let index in this.uncoverfullname)
+                for(let indexU in this.uncoverfullname)
                 {
-                var temp=this.uncoverfullname[index].split(" ");
-                                var A=temp[0].split(":")[1];
-                                var B=temp[2].split(":")[1];
-                this.uncover.push(A+" call "+B);
-                                //console.log(A+" call "+B);
+                    var temp=this.uncoverfullname[indexU].split(" ");
+                    var A=temp[0].split(":")[1];
+                    var B=temp[2].split(":")[1];
+                    if(this.uncover.indexOf(A+" call "+B)<0)
+                        this.uncover.push(A+" call "+B);
                 }
             },
             //定位到未覆盖边
@@ -771,15 +778,20 @@ import { Promise } from 'q';
             var B=temp[2].split(":")[1];
             if(selectA==A&&selectB==B)
             {
-             console.log(temp[0]);
-                        var node = this.findNodeByName(temp[0]);
-                        //console.log(node);
-                        var trans = this.tempTrans
-                        trans.k = 1;
-                        this.g.attr('transform',trans);
-                        trans.x = (510 - node.x) * trans.k
-                        trans.y = (300 - node.y) * trans.k
-                        this.g.attr('transform', trans)
+                console.log(temp[0]);
+                var node = this.findNodeByName(temp[0]);
+                //console.log(node);
+                var trans = this.tempTrans
+                trans.k = 1;
+                this.g.attr('transform',trans);
+                // 根据视野大小定位
+                var width = document.getElementById('container').offsetWidth;
+                var height = document.getElementById('container').offsetHeight;
+
+                trans.x = (Math.round(width/2) - node.x) * trans.k
+                trans.y = (Math.round(height/2) - node.y) * trans.k
+
+                this.g.attr('transform', trans)
             }
             }
             },
@@ -812,11 +824,16 @@ import { Promise } from 'q';
              this.showd3();
               var node = this.findNodeByName(this.selectnode)
               var trans = this.tempTrans
-              trans.k = 1;
-              this.g.attr('transform',trans);
-              trans.x = (510 - node.x) * trans.k
-              trans.y = (300 - node.y) * trans.k
-              this.g.attr('transform', trans)
+                trans.k = 1;
+                this.g.attr('transform',trans);
+                // 根据视野大小定位
+                var width = document.getElementById('container').offsetWidth;
+                var height = document.getElementById('container').offsetHeight;
+
+                trans.x = (Math.round(width/2) - node.x) * trans.k
+                trans.y = (Math.round(height/2) - node.y) * trans.k
+
+                this.g.attr('transform', trans)
             },
             submitUpload() {
                 this.$refs.upload.submit();
@@ -885,13 +902,22 @@ import { Promise } from 'q';
                     }
                 });
             },
+             uniq(array){
+                var temp = []; //一个新的临时数组
+                for(var i = 0; i < array.length; i++){
+                    if(temp.indexOf(array[i]) == -1){
+                        temp.push(array[i]);
+                    }
+                }
+                return temp;
+            },
             getTestResult(){
                 let _this = this;
                 getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
                     //_this.usecasenum = response.length;
                     console.log(response)
-                    _this.showTestResult(response,_this.taskType)
+                    _this.showTestResult(this.uniq(response), _this.taskType)
                     _this.branchnum=_this.relation.links.length;
                     if(_this.selectTestForm.selectedTestClass == "allTestFiles")
                     {
