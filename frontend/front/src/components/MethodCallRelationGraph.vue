@@ -630,9 +630,9 @@ import { Promise } from 'q';
             },
             //给节点加上边界效果
             changeNode(Name) {
-                for(let indexc in this.relation.nodes) {
-                    if(this.relation.nodes[indexc].name==Name) {
-                        var node_id=this.relation.nodes[indexc].index
+                for(let index in this.relation.nodes) {
+                    if(this.relation.nodes[index].name==Name) {
+                        var node_id=this.relation.nodes[index].index
                         d3.select('#node' + node_id).classed('bling',true)
                         d3.select('#node' + node_id).attr('stroke-width',3).attr('stroke','#FA8072').attr('filter','url(#f1)')
                     }
@@ -671,9 +671,9 @@ import { Promise } from 'q';
             },
 
             findNodeByName(name) {
-                for(let indexfindnode in this.relation.nodes) {
-                    if(this.relation.nodes[indexfindnode].name == name) {
-                        return this.relation.nodes[indexfindnode]
+                for(let index in this.relation.nodes) {
+                    if(this.relation.nodes[index].name == name) {
+                        return this.relation.nodes[index]
                     }
                 }
             },
@@ -758,9 +758,9 @@ import { Promise } from 'q';
             setUncover(){
                 console.log(this.uncoverfullname)
                 this.uncover=[];
-                for(let indexU in this.uncoverfullname)
+                for(let index in this.uncoverfullname)
                 {
-                    var temp=this.uncoverfullname[indexU].split(" ");
+                    var temp=this.uncoverfullname[index].split(" ");
                     var A=temp[0].split(":")[1];
                     var B=temp[2].split(":")[1];
                     if(this.uncover.indexOf(A+" call "+B)<0)
