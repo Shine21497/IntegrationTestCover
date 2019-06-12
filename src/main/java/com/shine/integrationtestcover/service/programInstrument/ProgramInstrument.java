@@ -95,7 +95,7 @@ public class ProgramInstrument {
 ////                    System.out.println(((FieldInsnNode) in).name);
 ////                }
             System.out.println(mn.access);
-            if((mn.access/8) % 2 == 1) {
+            if((mn.access/8) % 2 != 1) {
                 InsnList i2 = new InsnList();
                 i2.add(new FieldInsnNode(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;"));
                 i2.add(new VarInsnNode(Opcodes.ALOAD, 0));

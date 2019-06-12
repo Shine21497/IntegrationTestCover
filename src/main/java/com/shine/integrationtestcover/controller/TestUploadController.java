@@ -106,7 +106,7 @@ public class TestUploadController {
                 if(projectDirectory.isDirectory() && projectDirectory.listFiles().length > 0 && ProgramInstrumentService.situation.containsKey(projectDirectory.getName() + ".jar")) {
                     projectToTestFiles.put(projectDirectory.getName(), new HashMap<>());
                     File[] testFiles = projectDirectory.listFiles();
-                    runTestService.initate(projectDirectory.getName());
+                    runTestService.initate(projectDirectory.getName(), true);
                     for(File testFile : testFiles) {
                         if (!testFile.isDirectory()) {
                             if (testFile.getName().contains(".java")) {

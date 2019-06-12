@@ -10,9 +10,10 @@ import java.util.List;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-public class RegressionTestServiceTest {
+public class RegressionServiceTest {
+
     @Autowired
-    RegressiontestService regressiontestService;
+    RegressionTestService regressiontestService;
     @Test
     public void test(){
         try{

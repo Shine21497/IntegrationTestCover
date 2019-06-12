@@ -1,3 +1,4 @@
+
 package com.shine.integrationtestcover.service;
 
 import org.junit.Before;
@@ -18,7 +19,7 @@ import java.util.List;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @EnableAsync
-public class RunServiceTest{
+public class RunServiceTest {
     @Autowired
     RunTestService runTestService=new RunTestService();
 
@@ -33,7 +34,7 @@ public class RunServiceTest{
 
     @Test
     public void GetPackageName(){
-        runTestService.initate("demo");
+        runTestService.initate("demo", false);
         String Javafilename="Test2";
         System.out.println(runTestService.getPackagename(Javafilename));
         runTestService.handlePackageName(Javafilename);
@@ -41,22 +42,22 @@ public class RunServiceTest{
 
     @Test
     public void CompileJava(){
-        runTestService.initate("demo");
-        String Javafilename="Test2";
+        runTestService.initate("bean-query", false);
+        String Javafilename="PropertyComparatorTest";
         runTestService.compileJava(Javafilename);
     }
 
     @Test
     public void getMethods(){
-        runTestService.initate("demo");
-        runTestService.getMethods("Test2");
+        runTestService.initate("bean-query", false);
+        System.out.println(runTestService.getMethods("PropertyComparatorTest"));
     }
     //Test2
 
 
     @Test
     public void InvokeMethod(){//跑一个方法
-        runTestService.initate("demo");
+        runTestService.initate("demo", true);
         String Javafilename="Test2";
         List list=runTestService.invokeMethod(Javafilename,"test");
         for(int i=0;i<list.size();i++){
@@ -66,14 +67,14 @@ public class RunServiceTest{
 
     @Test
     public void InvokeJavaFile(){//跑一个java文件
-        runTestService.initate("demo");
+        runTestService.initate("demo", true);
         String Javafilename="Test2";
         runTestService.runTest(Javafilename);
     }
 
     @Test
     public void run() throws Exception{
-        runTestService.initate("demo");
+        runTestService.initate("bean-query", false);
         runTestService.runAll();
         System.out.println(runTestService.getRunprocess());
         System.out.println(runTestService.getRunprocess());
@@ -86,3 +87,4 @@ public class RunServiceTest{
 
     }
 }
+

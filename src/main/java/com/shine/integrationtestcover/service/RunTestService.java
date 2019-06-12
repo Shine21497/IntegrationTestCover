@@ -65,8 +65,8 @@ public class RunTestService {
     //初始化，接收项目名称
 
     public void initate(String projectname, boolean needWait) {
-        System.out.println(projectname + ".jar");
-        if (needWait) {
+        System.out.println(projectname+".jar");
+        if(needWait) {
             while (!ProgramInstrumentService.situation.containsKey(projectname + ".jar") || ProgramInstrumentService.situation.get(projectname + ".jar") != 2) {
                 try {
                     System.out.println("why");
@@ -173,7 +173,10 @@ public class RunTestService {
             //String command=
             // "javac -cp C:\Users\22831\Desktop\lib\IntegrationTestCover.jar;C:\Users\22831\Desktop\lib\junit-4.10.jar com\shine\integrationtestcover\service\GraphServiceTest.java";
             String command = "javac -cp " + jarpath + jarname + ".jar" + ";" + testwaypath + testwayname + ".jar" + " " + javafilepath + packagename + "//" + javafilename + ".java";
-            // System.out.println(command);
+             System.out.println(command);
+             if(command.equals("javac -cp C:/Users/acer/Documents/GitHub/IntegrationTestCover/target/classes/runTestCase/bean-query/bean-query.jar;C:/Users/acer/Documents/GitHub/IntegrationTestCover/target/classes/uploadedJar/junit-4.10.jar C:/Users/acer/Documents/GitHub/IntegrationTestCover/target/classes/runTestCase/bean-query/cn//jimmyshi//beanquery//comparators//PropertyComparatorTest.java")){
+                 System.out.println("jhjj");
+             }
             Process process = Runtime.getRuntime().exec(command);
             process.waitFor();
         } catch (Exception e) {
@@ -410,7 +413,9 @@ public class RunTestService {
     public HashMap<String, List<String>> regressionCompare(String projectname) throws Exception {
         System.out.println("reCompare");
         HashMap<String, List<String>> compare = new HashMap<>();
-        initate(projectname, true);
+        this.setJarpath(baseConfig.getRunTestProjectPath(projectname).replaceFirst("/", ""));//插桩后的位置
+        this.setJarname(projectname);
+        this.setJavafilepath(baseConfig.getRunTestProjectPath(projectname).replaceFirst("/", ""));//测试文件位置
         String path = this.javafilepath;
         File file = new File(path);
         List<File> tempList = getAllTestFileFromDic(file);
@@ -425,6 +430,7 @@ public class RunTestService {
         }
         return compare;
     }
+
 
 
     /*
@@ -444,19 +450,24 @@ public class RunTestService {
             while ((line = br.readLine()) != null) {
                 if (line.matches(".*CALL.*")) {
                     //methodsrelationship.add((!line.contains("=>")? line : line.split("=>")[0]).replace("/", "."));
-                    String[] a = line.split("call");
+                    String[] a = line.split("CALL");
                     String A = a[0].replace(" ", "");//A的空格去掉
                     String Aafter = a[1];//B=>desc1=>desc2=>C
                     String[] after = Aafter.split("=>");
                     String B = after[0].replace(" ", "");
                     String desc1 = after[1];
                     String desc2 = after[2];
-                    String C = after[3];
-                    String finalline=A+"+"+desc1+" "+"call"+" "+C+"+"+desc2;
+                    String C="";
+                    if (after.length == 3) {
+                        C = B;
+                    } else if (after.length == 4) {
+                        C = after[3].replace("/", ".");
+                    }
+                    String finalline = A + desc1 + " " + "CALL" + " " + C  + desc2;
                     methodsrelationship.add(finalline);
 
 
-//                    methodsrelationship.add(line.split("=>")[0].replace("/", "."));
+//
                 }
             }
             br.close();

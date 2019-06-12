@@ -193,7 +193,7 @@
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                <el-form ref="form" :model="selectTestForm" label-width="80px">
-                                  <el-form-item label="未覆盖用例选择">
+                                  <el-form-item label="未覆盖分支选择">
                                         <el-select v-model="selectTestForm.selectUncoverTest" placeholder="请选择未覆盖的边">
                                             <el-option
                                             v-for="item in uncover"
@@ -204,7 +204,7 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item>
-                                        <div id="branches">分支总数：0；</div>
+                                        <div id="branches">分支总数：{{branchnum}}；</div>
                                         <div id="usecase">执行用例数：{{usecasenum}}；</div>
                                         <div id="uncoverbranch">未覆盖分支数：{{uncoverlength}}；</div>
                                         <div id="coverrate">覆盖率：{{coverrate}}%：</div>
@@ -226,6 +226,16 @@
                                   <el-form-item label="新节点">
                                     <el-input type="textarea" v-model="newnode" placeholder="请输入新节点名称"></el-input>
                                   </el-form-item>
+                                  <el-form-item label="类型选择">
+                                                                          <el-select v-model="selectednodetype" filterable placeholder="请选择节点类型" @change="getnodetype()">
+
+                                                                                      <el-option label="数据库" value="1"> </el-option>
+                                                                                      <el-option label="外设" value="2"> </el-option>
+                                                                                      <el-option label="前端" value="3"> </el-option>
+                                                                                      <el-option label="其他系统" value="4"> </el-option>
+
+                                                                          </el-select>
+                                                                      </el-form-item>
                                   <el-form-item>
                                    <el-button type="primary" @click="createNewNode()">立即创建</el-button>
                                   </el-form-item>
@@ -305,7 +315,7 @@
                         </div>
                         <div class="list-container">
                             <el-tooltip v-for="(testcase,index) in showoldvsnew" :key="index" :content="['(不变)','(有影响)'][testcase.state] + testcase.casename" placement="right" effect="light">
-                                <div class="hjr-list-item" :style="'border-left-color:'+ ['green','red'][testcase.state] + ';'">{{testcase.casename}}</div>
+                                <div class="hjr-list-item" :style="'border-left-color:'+ ['red','green'][testcase.state] + ';'">{{testcase.casename}}</div>
                             </el-tooltip>
                         </div>
                     </div>
@@ -366,12 +376,14 @@ import { Promise } from 'q';
                 },
                 uploadedFiles:[],
                 uncover:[],
-                uncoverlength:'',
+                uncoverlength:0,
                 coverrate:'',
                 uncoverfullname:[],
-                usecasenum:'',
+                usecasenum:0,
+                branchnum:0,
                 selectnode:'',
                 newnode:'',
+                selectednodetype:'',
                 classMethodMap:{"a": ["a","b"], "b": ["a","c"]},
                 testCaseMap:{},
                 g:{},
@@ -476,11 +488,12 @@ import { Promise } from 'q';
                 // 检查 oldJarName 这个项目的所有用例是否获取
                 if (this.regression.oldcases[para.oldJarName]) {
                     postRegression(para).then(response=> {
-                        let newcases = response.newcases;                // "oldcases" is all testcases
+                        let newcases = response;                // "oldcases" is all testcases
                         this.filterList = ["remain", "affected"]         // set filter to all
                         this.oldvsnew = [];                              // refresh result
 
                         this.regression.oldcases[para.oldJarName].forEach(testcase => {
+
                             if(newcases.includes(testcase)){
                                 // 有影响的
                                 this.oldvsnew.push({
@@ -488,7 +501,7 @@ import { Promise } from 'q';
                                     casename:testcase
                                 })
                             }
-                            else{
+                            else if(testcase != "allTestFiles"){
                                 this.oldvsnew.push({
                                     state:0,
                                     casename:testcase
@@ -535,26 +548,42 @@ import { Promise } from 'q';
                 // 记录正在显示的测试结果，cancelshow 的时候根据这个来
                 //var type="one";
                 //var TestResult=["com.example.demo.controller.Test1:calculate call com.example.demo.controller.Test1:doublevalue"];
-                this.$nextTick(() => {
-                    this.usecasenum = TestResult.length;
-                    console.log(this.usecasenum);
-                })
+                // this.$nextTick(() => {
+                //     this.usecasenum = TestResult.length;
+                //     console.log(this.usecasenum);
+                // })
+                console.log("start show ")
                 this.TestResult = TestResult;
-                for(let index in TestResult){
-                    var result=TestResult[index].split(" ");
-                    //如果是单个结果
-                    if(type === 'one'){
-                        //线的流动效果和节点效果
+                for(let index in this.relation.links)
+                {
+                    var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
+                    if(TestResult.indexOf(callrelation)<0)
+                        this.uncoverfullname.push(callrelation);
+                }
+                if(type==='one'){
+                    console.log("start one ")
+                    for (let index in TestResult)
+                    {
+                        var result=TestResult[index].split(" ");
+                        if(index===0){
+                            this.moveFirstnode(result[0]);
+                        }
                         this.changeSingleLine(result[0],result[2]);
                     }
-                    //如果多个结果
-                    else{
+                }
+                //如果多个结果
+                else{
+                    console.log("start mouti ")
+                    for(let index in TestResult){
+                        var result=TestResult[index].split(" ");
                         this.changeMultipleLine(result[0],result[2]);
                     }
                 }
+                this.setUncover();
             },
            //改变用例测试经过的直线
             changeSingleLine(SourceName,TargetName){
+                console.log("change one start ")
                 for(let index in this.relation.links) {
                     if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
                         var line_id=this.relation.links[index].index
@@ -563,25 +592,28 @@ import { Promise } from 'q';
                         d3.select('#eachline' + line_id).classed('showsinglepath',true)
                         this.changeNode(SourceName);
                         this.changeNode(TargetName);
-                        if(Isfirstnode)
-                        {
-                            var node = this.findNodeByName(SourceName)
-                            var trans = this.tempTrans
-                            trans.k = 1;
-                            this.g.attr('transform',trans);
-                            trans.x = (510 - node.x) * trans.k
-                            trans.y = (300 - node.y) * trans.k
-                            this.g.attr('transform', trans)
-                            Isfirstnode=false
-                        }
-                       
                     }
-                    else
-                    {
-                    this.uncoverfullname.push(this.relation.links[index].source.name+" call "+this.relation.links[index].target.name);
-                    }
+                    // var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
+                    // if(this.testCaseMap.indexOf(callrelation)<0)
+                    //     this.uncoverfullname.push(callrelation);
                 };
-                //this.setUncover();
+                console.log("change one end ")
+            },
+
+            moveFirstnode(name){
+                var node = this.findNodeByName(name)
+                var trans = this.tempTrans
+                trans.k = 1;
+                this.g.attr('transform',trans);
+                // 根据视野大小定位
+                var width = document.getElementById('container').offsetWidth;
+                var height = document.getElementById('container').offsetHeight;
+
+                trans.x = (Math.round(width/2) - node.x) * trans.k
+                trans.y = (Math.round(height/2) - node.y) * trans.k
+
+                this.g.attr('transform', trans)
+
             },
 
             //多个用例测试结果
@@ -594,12 +626,7 @@ import { Promise } from 'q';
                         this.changeNode(SourceName);
                         this.changeNode(TargetName);
                     }
-                     else
-                      {
-                      this.uncoverfullname.push(this.relation.links[index].source.name+" call "+this.relation.links[index].target.name);
-                      }
-               };
-               //this.setUncover();
+                };
             },
             //给节点加上边界效果
             changeNode(Name) {
@@ -658,7 +685,7 @@ import { Promise } from 'q';
             getTestProject(prov) {
                 this.selectTestForm.selectedTestCase = '';
                 this.selectTestForm.selectedTestClass = '';
-
+                this.uncoverfullname=[];
                 var prjName = prov.split('.')[0];
                 // prov is "demo.jar" but testCaseMap is {"demo":{...}}
                 this.showTestClass(prjName,1)
@@ -730,13 +757,14 @@ import { Promise } from 'q';
             //获取未覆盖信息
             setUncover(){
                 console.log(this.uncoverfullname)
+                this.uncover=[];
                 for(let index in this.uncoverfullname)
                 {
-                var temp=this.uncoverfullname[index].split(" ");
-                                var A=temp[0].split(":")[1];
-                                var B=temp[2].split(":")[1];
-                this.uncover.push(A+" call "+B);
-                                //console.log(A+" call "+B);
+                    var temp=this.uncoverfullname[index].split(" ");
+                    var A=temp[0].split(":")[1];
+                    var B=temp[2].split(":")[1];
+                    if(this.uncover.indexOf(A+" call "+B)<0)
+                        this.uncover.push(A+" call "+B);
                 }
             },
             //定位到未覆盖边
@@ -750,15 +778,20 @@ import { Promise } from 'q';
             var B=temp[2].split(":")[1];
             if(selectA==A&&selectB==B)
             {
-             console.log(temp[0]);
-                        var node = this.findNodeByName(temp[0]);
-                        //console.log(node);
-                        var trans = this.tempTrans
-                        trans.k = 1;
-                        this.g.attr('transform',trans);
-                        trans.x = (510 - node.x) * trans.k
-                        trans.y = (300 - node.y) * trans.k
-                        this.g.attr('transform', trans)
+                console.log(temp[0]);
+                var node = this.findNodeByName(temp[0]);
+                //console.log(node);
+                var trans = this.tempTrans
+                trans.k = 1;
+                this.g.attr('transform',trans);
+                // 根据视野大小定位
+                var width = document.getElementById('container').offsetWidth;
+                var height = document.getElementById('container').offsetHeight;
+
+                trans.x = (Math.round(width/2) - node.x) * trans.k
+                trans.y = (Math.round(height/2) - node.y) * trans.k
+
+                this.g.attr('transform', trans)
             }
             }
             },
@@ -781,6 +814,7 @@ import { Promise } from 'q';
             addnode.x=node.x-1.0000000000000000000;
             addnode.y=node.y-1.0000000000000000000;
             addnode.index=this.relation.nodes.length;
+            addnode.type=this.selectednodetype;
             var addline={index:7,source:[],target:[]}
             addline.source=node;
             addline.target=addnode;
@@ -790,11 +824,16 @@ import { Promise } from 'q';
              this.showd3();
               var node = this.findNodeByName(this.selectnode)
               var trans = this.tempTrans
-              trans.k = 1;
-              this.g.attr('transform',trans);
-              trans.x = (510 - node.x) * trans.k
-              trans.y = (300 - node.y) * trans.k
-              this.g.attr('transform', trans)
+                trans.k = 1;
+                this.g.attr('transform',trans);
+                // 根据视野大小定位
+                var width = document.getElementById('container').offsetWidth;
+                var height = document.getElementById('container').offsetHeight;
+
+                trans.x = (Math.round(width/2) - node.x) * trans.k
+                trans.y = (Math.round(height/2) - node.y) * trans.k
+
+                this.g.attr('transform', trans)
             },
             submitUpload() {
                 this.$refs.upload.submit();
@@ -825,6 +864,10 @@ import { Promise } from 'q';
                 }
             },
             startRunTestCase(file) {
+                this.uncoverfullname=[];
+                if(this.TestResult!=null){
+                this.cancelShow(this.TestResult);
+                }
                 var projectname  = this.selectTestForm.selectedTestProject;
                 var testcasename = this.selectTestForm.selectedTestClass;
                 var method       = this.selectTestForm.selectedTestCase;
@@ -859,15 +902,49 @@ import { Promise } from 'q';
                     }
                 });
             },
+             uniq(array){
+                var temp = []; //一个新的临时数组
+                for(var i = 0; i < array.length; i++){
+                    if(temp.indexOf(array[i]) == -1){
+                        temp.push(array[i]);
+                    }
+                }
+                return temp;
+            },
             getTestResult(){
                 let _this = this;
                 getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
                     // 展示测试用例的结果
-                    _this.usecasenum = response.length;
-                    this.uncoverlength = this.relation.links.length-this.usecasenum;
-                    this.coverrate=(this.usecasenum/this.relation.links.length)*100;
+                    //_this.usecasenum = response.length;
                     console.log(response)
-                    _this.showTestResult(response,_this.taskType)
+                    _this.showTestResult(this.uniq(response), _this.taskType)
+                    _this.branchnum=_this.relation.links.length;
+                    if(_this.selectTestForm.selectedTestClass == "allTestFiles")
+                    {
+                        //this.usecasenum=this.testCaseMap[this.selectedTestProject].length;
+                         var sum=0;
+                         console.log(_this.testCaseMap)
+                         console.log(_this.selectTestForm.selectedTestProject.split('.')[0])
+                         for(let index in _this.testCaseMap[_this.selectTestForm.selectedTestProject.split('.')[0]])
+                         {
+                                sum+=_this.testCaseMap[_this.selectTestForm.selectedTestProject.split('.')[0]][index].length;
+                         }
+                        console.log(_this.usecasenum)
+                         _this.usecasenum  =sum;
+                    }
+                    else
+                    {
+                        if(_this.selectTestForm.selectedTestCase == "allMethods")
+                        {
+                             _this.usecasenum = _this.testCaseMap[_this.selectTestForm.selectedTestProject.split('.')[0]][_this.selectTestForm.selectedTestClass].length;
+                        } else {
+                            _this.usecasenum = 1;
+                        }
+                    }
+                    _this.uncoverlength = _this.uncover.length;
+                    _this.coverrate=((_this.branchnum-_this.uncoverlength)/_this.branchnum)*100;
+                    console.log(_this.uncoverlength)
+                    console.log(_this.coverrate)
                 });
             },
             // 显示消息
