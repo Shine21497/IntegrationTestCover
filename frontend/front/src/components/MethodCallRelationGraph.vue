@@ -320,6 +320,18 @@
                         </div>
                     </div>
                 </el-collapse-item>
+                <el-collapse-item class="titlestyle" title="脚本录制" name="9">
+                    <el-button size="small" type="primary" ref="recordBtn" @click="startRecord">{{isRecording ? '停止录制':'开始录制'}}</el-button>
+                    <el-button size="small" type="primary" @click="watchReplay = true">查看回放</el-button>
+                    <el-dialog
+                        :visible.sync="watchReplay"
+                        width="60%">
+                        <Player ref="replayer"/>
+                        <span slot="footer" class="dialog-footer">
+                            <el-button type="primary" @click="toggleReplay">{{playandpause}}</el-button>
+                        </span>
+                    </el-dialog>
+                </el-collapse-item>
             </el-collapse>
         </div>
     </el-container>
@@ -338,12 +350,16 @@
         postRegression,       // 回归测试上传新旧包，传的参数为 regression.info
     } from '@/api/methodcallrelationgraph.js'
     import * as d3 from 'd3'
-import { setInterval } from 'timers';
-import { Promise } from 'q';
+    import { setInterval } from 'timers';
+    import { Promise } from 'q';
+    import * as rrweb from "rrweb";
+    import Player from '@/components/Player.vue';
+
     export default {
         components: {
             ElButton,
-            ElContainer
+            ElContainer,
+            Player
         },
         name: "method-call-relation-graph",
         data () {
@@ -414,9 +430,46 @@ import { Promise } from 'q';
                 oldvsnew:[],          // 用于新旧版本项目测试用例的对比
                 showoldvsnew:[],      // 存在筛选，所以要一个专门用于展示的
                 filterList:["remain", "affected"],    // 过滤回归测试结果测试用例
+                events:[], //脚本录制,
+                watchReplay:false, // 回放
+                isRecording:false,
+                isplay:true,
+                playandpause:'暂停'
             }
         },
         methods: {
+            toggleReplay(){
+                this.$refs.replayer.togglePlay(this.isplay);
+                if (this.isplay)
+                    this.playandpause = '播放';
+                else
+                    this.playandpause = '暂停';
+                this.isplay = !this.isplay;
+            },
+            // toggleRecord(){
+            //     if (!this.isRecording) {
+            //         this.startRecord();
+            //     }
+            //     else
+            //         this.save();
+            //     this.isRecording = !this.isRecording;
+            // },
+            startRecord() {
+                let _this = this;
+                rrweb.record({
+                    emit(event) {
+                        // 将 event 存入 events 数组中
+                        _this.events.push(event);
+                    }
+                });
+
+                // 每 5 秒调用一次 save 方法，避免请求过多
+                setInterval(this.save, 5 * 1000);
+            },
+            // save 函数用于将 events 发送至后端存入，并重置 events 数组
+            save() {
+                localStorage.setItem('events',JSON.stringify(this.events));
+            },
             // 筛选展示的结果
             filterChange(filters){
                 let filterMap = {

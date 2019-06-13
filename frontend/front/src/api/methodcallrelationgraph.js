@@ -5,14 +5,14 @@
 
 import fetch from '@/utils/fetch'
 
-export function getUploadedFileList () {
+export function getUploadedFileList() {
     return fetch({
         url: '/apiurl/fileList',
         method: 'get'
     })
 }
 
-export function getRelationByFileName (name, packages, packagesToCall) {
+export function getRelationByFileName(name, packages, packagesToCall) {
     return fetch({
         url: '/apiurl/relation',
         method: 'get',
@@ -24,14 +24,14 @@ export function getRelationByFileName (name, packages, packagesToCall) {
     })
 }
 
-export function getTestCaseList () {
+export function getTestCaseList() {
     return fetch({
         url: '/apiurl/testCaseList',
         method: 'get'
     })
 }
 
-export function runTestCase (projectname, testcasename, method) {
+export function runTestCase(projectname, testcasename, method) {
     return fetch({
         url: '/apiurl/runTestCase',
         method: 'get',
@@ -43,7 +43,7 @@ export function runTestCase (projectname, testcasename, method) {
     })
 }
 
-export function getTestRunningStatus (taskId) {
+export function getTestRunningStatus(taskId) {
     return fetch({
         url: '/apiurl/getInvokingProcess',
         method: 'get',
@@ -53,7 +53,7 @@ export function getTestRunningStatus (taskId) {
     })
 }
 
-export function getInvokingResults (task_id_Key) {
+export function getInvokingResults(task_id_Key) {
     return fetch({
         url: '/apiurl/getInvokingResults',
         method: 'get',
@@ -63,10 +63,23 @@ export function getInvokingResults (task_id_Key) {
     })
 }
 
-export function postRegression (params) {
+export function postRegression(params) {
     return fetch({
         url: '/apiurl/regressiontest',
         method: 'get',
         params: params
     })
+}
+
+export function uploadRecord(events) {
+    const body = JSON.stringify({ events });
+    console.log(events)
+    return fetch({
+        url: '/apiurl/record',
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body
+    });
 }
