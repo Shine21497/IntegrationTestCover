@@ -8,9 +8,11 @@
     "test:unit": "vue-cli-service test:unit"
   },
   "dependencies": {
-    "axios": "^0.18.0",
+    "axios": "^0.19.0",
     "d3": "^5.9.1",
     "element-ui": "^2.6.1",
+    "rrweb": "^0.7.16",
+    "rrweb-player": "^0.3.11",
     "vue": "^2.6.6",
     "vue-router": "^3.0.1",
     "vuex": "^3.0.1"
@@ -18,7 +20,7 @@
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.5.0",
     "@vue/cli-plugin-unit-mocha": "^3.5.0",
-    "@vue/cli-service": "^3.5.0",
+    "@vue/cli-service": "^3.8.0",
     "@vue/test-utils": "1.0.0-beta.29",
     "chai": "^4.1.2",
     "less": "^3.0.4",
