@@ -7,7 +7,6 @@
 <script>
 import * as rrweb from "rrweb";
 import * as rrwebPlayer from "rrweb-player";
-import { getRecord } from "@/api/methodcallrelationgraph.js";
 
 export default {
   name: "Player",
@@ -26,14 +25,32 @@ export default {
       }
       else
         this.replayer.resume(this.currentTime);
+    },
+    startPlay(){
+        let events = JSON.parse(localStorage.getItem("events"));
+        if (this.replayer) {
+            this.replayer.events = events;
+            this.replayer.start();
+        }
+        else{
+            this.replayer = new rrweb.Replayer(events,{
+                speed: 1,
+                root: this.$refs.frame,
+                skipInactive: true,
+                showWarning: true,
+            });
+            this.replayer.wrapper.style.transform ='scale(0.5) translate(-50%, -50%)';
+            this.replayer.play();
+        }
     }
   },
-  mounted() {
-    let events = JSON.parse(localStorage.getItem("events"));
+  mounted(){
+    let events = JSON.parse(localStorage.getItem("testevents"));
+    console.log(events)
     this.replayer = new rrweb.Replayer(events,{
         speed: 1,
         root: this.$refs.frame,
-        // skipInactive: true,
+        skipInactive: true,
         showWarning: true,
     });
     this.replayer.wrapper.style.transform ='scale(0.5) translate(-50%, -50%)';

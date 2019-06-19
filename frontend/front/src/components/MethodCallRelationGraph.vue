@@ -60,6 +60,7 @@
                                 </el-col>
                             </el-row>
                             <div>
+                                <div style="color:darkgray;margin: 0 0 10px 10px;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
                                 <el-row :gutter="20" style="margin:10px 0">
                                     <el-col :span="6">遍历包范围</el-col>
                                         <el-col :span="18">
@@ -68,9 +69,9 @@
                                         ></el-autocomplete>
                                         </el-col>
                                     </el-row>
-                                <div style="color:darkgray;margin: 0 0 10px 10px;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
                             </div>
                             <div>
+                                <div style="color:darkgray;margin:0 0 10px 10px;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
                                 <el-row :gutter="20" style="margin:10px 0">
                                     <el-col :span="6">生成包范围</el-col>
                                     <el-col :span="18">
@@ -79,7 +80,6 @@
                                         ></el-autocomplete>
                                     </el-col>
                                 </el-row>
-                                <div style="color:darkgray;margin:0 0 10px 10px;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
                             </div>
                             <div style="text-align:center">
                                 <el-button type="primary" :disabled="form.selectedjar.length == 0" size="small" @click="generateGraph()">立即创建</el-button>
@@ -89,7 +89,7 @@
                 </el-collapse-item>
                 <el-collapse-item class="titlestyle" name="3" :class="JSON.stringify(relation)=='{}'?'disabled': ''">
                     <template slot="title">
-                        <p class="itemname">辅助定位</P>
+                        <p class="itemname">定位方法</P>
                         <p class="require-info">（请先生成调用关系图）</P>
                     </template>
                     <el-card :body-style="{ padding: '0px' }" class="card">
@@ -126,13 +126,13 @@
                     <el-card :body-style="{ padding: '0px' }" class="card">
                         <el-container class="formbody">
                             <el-form ref="uploadTestData" :model="uploadTestData" label-width="80px">
-                                <el-form-item label="Test所属项目选择">
+                                <el-form-item label="被测项目">
                                     <el-select v-model="uploadTestData.selectedProject" placeholder="请选择项目">
                                         <el-option
-                                                v-for="item in uploadedFiles"
-                                                :key="item"
-                                                :label="item"
-                                                :value="item">
+                                            v-for="item in uploadedFiles"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
                                         </el-option>
                                     </el-select>
                                 </el-form-item>
@@ -217,31 +217,34 @@
                         </el-card>
                 </el-collapse-item>
                 <el-collapse-item class="titlestyle" title="添加节点" name="7">
-                         <el-card :body-style="{ padding: '0px' }" class="card">
-                            <el-container class="formbody">
-                               <el-form ref="form" :model="selectTestForm" label-width="80px">
-                                  <el-form-item label="现有节点">
-                                    <el-input type="textarea" v-model="selectnode" placeholder="请输入现有节点名称"></el-input>
-                                  </el-form-item>
-                                  <el-form-item label="新节点">
+                    <el-card :body-style="{ padding: '0px' }" class="card">
+                        <el-container class="formbody">
+                            <el-form ref="form" :model="selectTestForm" label-width="80px">
+                                <el-form-item label="现有节点">
+                                    <el-cascader
+                                        v-model="cascaderNode"
+                                        :options="cascaderClassMethod"
+                                        @visible-change="praseClassMethod"
+                                        @change="selectNode">
+                                    </el-cascader>
+                                </el-form-item>
+                                <el-form-item label="新节点">
                                     <el-input type="textarea" v-model="newnode" placeholder="请输入新节点名称"></el-input>
-                                  </el-form-item>
-                                  <el-form-item label="类型选择">
-                                                                          <el-select v-model="selectednodetype" filterable placeholder="请选择节点类型" @change="getnodetype()">
-
-                                                                                      <el-option label="数据库" value="1"> </el-option>
-                                                                                      <el-option label="外设" value="2"> </el-option>
-                                                                                      <el-option label="前端" value="3"> </el-option>
-                                                                                      <el-option label="其他系统" value="4"> </el-option>
-
-                                                                          </el-select>
-                                                                      </el-form-item>
-                                  <el-form-item>
-                                   <el-button type="primary" @click="createNewNode()">立即创建</el-button>
-                                  </el-form-item>
+                                </el-form-item>
+                                <el-form-item label="类型选择">
+                                    <el-select v-model="selectednodetype" filterable placeholder="请选择节点类型" @change="getnodetype()">
+                                        <el-option label="数据库" value="1"> </el-option>
+                                        <el-option label="外设" value="2"> </el-option>
+                                        <el-option label="前端" value="3"> </el-option>
+                                        <el-option label="其他系统" value="4"> </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item>
+                                    <el-button type="primary" @click="createNewNode()">立即创建</el-button>
+                                </el-form-item>
                             </el-form>
-                         </el-container>
-                      </el-card>
+                        </el-container>
+                    </el-card>
                 </el-collapse-item>
                 <el-collapse-item class="titlestyle" title="回归测试" name="8">
                     <el-card :body-style="{ padding: '0px 5px' }" class="card">
@@ -321,10 +324,10 @@
                     </div>
                 </el-collapse-item>
                 <el-collapse-item class="titlestyle" title="脚本录制" name="9">
-                    <el-button size="small" type="primary" ref="recordBtn" @click="startRecord">{{isRecording ? '停止录制':'开始录制'}}</el-button>
-                    <el-button size="small" type="primary" @click="watchReplay = true">查看回放</el-button>
+                    <!-- 选择框，选择要回放的测试用例 -->
+                    <el-button size="small" type="primary" @click="watchReplay">查看回放</el-button>
                     <el-dialog
-                        :visible.sync="watchReplay"
+                        :visible.sync="showReplay"
                         width="60%">
                         <Player ref="replayer"/>
                         <span slot="footer" class="dialog-footer">
@@ -397,7 +400,7 @@
                 uncoverfullname:[],
                 usecasenum:0,
                 branchnum:0,
-                selectnode:'',
+                selectednode:'',
                 newnode:'',
                 selectednodetype:'',
                 classMethodMap:{"a": ["a","b"], "b": ["a","c"]},
@@ -430,62 +433,504 @@
                 oldvsnew:[],          // 用于新旧版本项目测试用例的对比
                 showoldvsnew:[],      // 存在筛选，所以要一个专门用于展示的
                 filterList:["remain", "affected"],    // 过滤回归测试结果测试用例
-                events:[], //脚本录制,
-                watchReplay:false, // 回放
-                isRecording:false,
+                events:[],            // 脚本录制,
+                showReplay:false,     // 回放
+                isRecording:false,    // 是否正在录制
                 isplay:true,
-                playandpause:'暂停'
+                playandpause:'暂停',
+                cascaderClassMethod:[],  // 添加节点板块的级联选择，已有节点
+                cascaderNode:[],
             }
         },
         methods: {
-            toggleReplay(){
-                this.$refs.replayer.togglePlay(this.isplay);
-                if (this.isplay)
-                    this.playandpause = '播放';
-                else
-                    this.playandpause = '暂停';
-                this.isplay = !this.isplay;
+// --- card 上传项目
+            submitUpload() {
+                this.$refs.upload.submit();
             },
-            // toggleRecord(){
-            //     if (!this.isRecording) {
-            //         this.startRecord();
-            //     }
-            //     else
-            //         this.save();
-            //     this.isRecording = !this.isRecording;
-            // },
-            startRecord() {
+            onBeforeUpload(file) {
+                const isJAR = file.name.endsWith('.jar')
+                if (!isJAR) {
+                    this.$message.error('只能上传Jar文件!');
+                    return false;
+                }
+                return isJAR
+            },
+// -- card 上传项目
+
+// --- card 调用关系图的生成
+            showfilelist(open){
+                if(open) {
+                    let _this = this
+                    getUploadedFileList().then(response => {
+                        _this.uploadedFiles = response.result
+                    })
+                }
+            },
+            packagesHistory(queryString, cb) {
+                cb(this.history.packages);
+            },
+            packagesCallHistory(queryString, cb) {
+                // cb([{ "value": "asdasd"}]);
+                cb(this.history.packagesCall);
+            },
+            generateGraph(){
+                let _this = this
+                this.$nextTick(() => {
+                    getRelationByFileName(this.form.selectedjar, this.form.packages, this.form.packagesCall).then(response => {
+                        _this.relation.nodes = response.nodes
+                        _this.relation.links = response.links
+                        _this.adjustForm.allClasses = response.classes
+                        _this.classMethodMap = response.classMethodMap
+                        try {
+                            _this.showd3()
+
+                            // 选择默认将项目设为此项目
+                            _this.uploadTestData.selectedProject = _this.form.selectedjar;      // 上传测试用例部分
+                            _this.selectTestForm.selectedTestProject = _this.form.selectedjar;  // 运行测试用例部分
+                        } catch (error) {
+                            if (!_this.relation.nodes) {
+                                this.$message.error("生成调用图失败，可能的原因是：遍历程序包方法时出错");
+                            }
+                            if (!_this.relation.links) {
+                                this.$message.error("生成调用图失败，可能的原因是：解析调用关系时出错");
+                            }
+                        }
+                    })
+                    // 保存历史记录
+                    if (this.history.packagesCall.filter(item => item.value == this.form.packagesCall).length == 0) {
+                        this.history.packagesCall.push({"value":this.form.packagesCall})
+                    }
+                    if (this.history.packages.filter(item => item.value == this.form.packages).length == 0) {
+                        this.history.packages.push({"value":this.form.packages})
+                    }
+                    localStorage.setItem('history',JSON.stringify(this.history));
+                })
+            },
+// -- card 调用关系图的生成
+
+// --- card 定位方法
+            getClass(prov) {
+                this.adjustForm.allMethods = this.classMethodMap[prov]
+                this.adjustForm.selectedMethod = '';
+            },
+            goToNode() {
+                var node = this.findNodeByName(this.adjustForm.selectedClass + ":" + this.adjustForm.selectedMethod)
+                var trans = this.tempTrans
+
+                trans.k = 1;
+                this.g.attr('transform',trans);
+                // 根据视野大小定位
+                var width = document.getElementById('container').offsetWidth;
+                var height = document.getElementById('container').offsetHeight;
+                
+                trans.x = (Math.round(width/2) - node.x) * trans.k
+                trans.y = (Math.round(height/2) - node.y) * trans.k
+                
+                this.g.attr('transform', trans)
+            },
+// -- card 定位方法
+
+// --- card 上传测试用例
+            submitTestUpload() {
+                this.$refs.uploadTest.submit();
+                this.selectTestForm.selectedTestProject = ''
+                this.selectTestForm.selectedTestClass = ''
+                this.selectTestForm.selectedTestCase = ''
+                this.testCaseMap = {}
+            },
+            onBeforeUploadTestCase(file) {
+                const isJava = file.name.endsWith('.java')
+                const isZip = file.name.endsWith('.zip')
+                if (!isJava && !isZip) {
+                    this.$message.error('只能上传Java文件或者Zip文件!');
+                    return false;
+                } else {
+                    return true
+                }
+            },
+// -- card 上传测试用例
+
+// --- card 运行测试用例
+            getTestProject(prov) {
+                this.selectTestForm.selectedTestCase = '';
+                this.selectTestForm.selectedTestClass = '';
+                this.uncoverfullname=[];
+                var prjName = prov.split('.')[0];
+                // prov is "demo.jar" but testCaseMap is {"demo":{...}}
+                this.showTestClass(prjName,1)
+            },
+            showTestClass(prjName,time){
+                if(this.testCaseMap[prjName])
+                    this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prjName]);
+                else{
+                    if (time > 3) {
+                        this.$message.error('不存在项目"' + prjName + '"的测试用例，请上传该项目的测试用例，目前有以下项目的测试用例 [' + Object.keys(this.testCaseMap).toString().slice(0,30) + ']');
+                        this.selectTestForm.allTestClasses = [];
+                        this.selectTestForm.allTestCases = [];
+                    }
+                    else
+                        getTestCaseList().then(response=>{
+                            this.testCaseMap = response.result;
+                            console.log(this.testCaseMap)
+                            this.showTestClass(prjName,time+1);
+                        })
+                }
+            },
+            getTestClass(prov) {
+                this.selectTestForm.selectedTestCase = '';
+                this.selectTestForm.allTestCases =  this.testCaseMap[this.selectTestForm.selectedTestProject.split('.')[0]][prov]
+            },
+            async showTestProjectList(open) {
+                if(open) {
+                    const [{ result: uploadedFiles }, { result: testCaseMap }] 
+                        = await Promise.all([getUploadedFileList(), getTestCaseList()])
+                    //response is {"result":{"demo":{"TestMethod.java":["allMehtods"],"allTestFiles":[],"Test2.java":["allMehtods"]}}}
+                    this.$nextTick(() => {
+                        this.uploadedFiles = uploadedFiles;
+                        this.testCaseMap = testCaseMap;
+                        if (this.selectTestForm.selectedTestProject) {
+                            this.getTestProject(this.selectTestForm.selectedTestProject)
+                        }
+                    })
+                }
+            },
+            startRunTestCase(file) {
+                this.uncoverfullname=[];
+                if(this.TestResult!=null){
+                    this.cancelShow(this.TestResult);
+                }
+                var projectname  = this.selectTestForm.selectedTestProject;
+                var testcasename = this.selectTestForm.selectedTestClass;
+                var method       = this.selectTestForm.selectedTestCase;
+                if(!projectname || !testcasename || (testcasename != 'allTestFiles' && !method)){
+                    this.showMsg('请选择完整的项目，测试类以及测试方法')
+                    return
+                }
                 let _this = this;
-                rrweb.record({
-                    emit(event) {
-                        // 将 event 存入 events 数组中
-                        _this.events.push(event);
+                // 传参数给后端跑测试用例
+                runTestCase(projectname, testcasename, method).then(response => {// response 为 ["12123123","many"]
+                    if(response[2]) return; // error msg
+                    _this.taskId = response[0];
+                    _this.taskType = response[1];
+                    // 归零
+                    _this.runTestPercentange = 0;
+                    // 开始监听运行进度
+                    _this._onTestRunning();
+                })
+                // if(this.relation.links) 
+                //     this.setUncover();
+            },            // 获取测试进度的时候要调用的
+            _onTestRunning(){
+                let _this = this;
+                getTestRunningStatus(_this.taskId).then(response => {  // 这里的response[0] 和 [1]可能要改，看后端数据结构
+                    if(response[2]) return; // error msg
+                    if(response[0] === "sorry,no this task~")
+                        return _this.showMsg("sorry,no this task~");
+                    _this.runTestPercentange = Math.ceil((response[0] / response[1])*100);
+                    if (_this.runTestPercentange != 100) {
+                        setTimeout(_this._onTestRunning, 500);
                     }
                 });
-
-                // 每 5 秒调用一次 save 方法，避免请求过多
-                setInterval(this.save, 5 * 1000);
             },
-            // save 函数用于将 events 发送至后端存入，并重置 events 数组
-            save() {
-                localStorage.setItem('events',JSON.stringify(this.events));
+            getTestResult(){
+                let _this = this;
+                getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
+                    // 展示测试用例的结果
+                    //_this.usecasenum = response.length;
+                    console.log(response)
+                    _this.showTestResult(this.uniq(response), _this.taskType)
+                    _this.branchnum=_this.relation.links.length;
+                    if(_this.selectTestForm.selectedTestClass == "allTestFiles")
+                    {
+                        //this.usecasenum=this.testCaseMap[this.selectedTestProject].length;
+                         var sum=0;
+                         console.log(_this.testCaseMap)
+                         console.log(_this.selectTestForm.selectedTestProject.split('.')[0])
+                         for(let index in _this.testCaseMap[_this.selectTestForm.selectedTestProject.split('.')[0]])
+                         {
+                                sum+=_this.testCaseMap[_this.selectTestForm.selectedTestProject.split('.')[0]][index].length;
+                         }
+                        console.log(_this.usecasenum)
+                         _this.usecasenum  =sum;
+                    }
+                    else
+                    {
+                        if(_this.selectTestForm.selectedTestCase == "allMethods")
+                        {
+                             _this.usecasenum = _this.testCaseMap[_this.selectTestForm.selectedTestProject.split('.')[0]][_this.selectTestForm.selectedTestClass].length;
+                        } else {
+                            _this.usecasenum = 1;
+                        }
+                    }
+                    _this.uncoverlength = _this.uncover.length;
+                    _this.coverrate=((_this.branchnum-_this.uncoverlength)/_this.branchnum)*100;
+                    console.log(_this.uncoverlength)
+                    console.log(_this.coverrate)
+                });
             },
-            // 筛选展示的结果
-            filterChange(filters){
-                let filterMap = {
-                    "remain": 0,
-                    "affected": 1
+            uniq(array){
+                var temp = []; //一个新的临时数组
+                for(var i = 0; i < array.length; i++){
+                    if(temp.indexOf(array[i]) == -1){
+                        temp.push(array[i]);
+                    }
                 }
-                this.showoldvsnew = [] // refresh list to show
-                if(filters.length === 2)
-                    this.showoldvsnew = this.oldvsnew;
-                else
-                    filters.forEach(fil =>{
-                        this.showoldvsnew = this.showoldvsnew.concat(this.oldvsnew.filter(testcase => testcase.state === filterMap[fil]));
+                return temp;
+            },            //显示用例测试结果
+            showTestResult(TestResult,type){
+                // 记录正在显示的测试结果，cancelshow 的时候根据这个来
+                //var type="one";
+                //var TestResult=["com.example.demo.controller.Test1:calculate call com.example.demo.controller.Test1:doublevalue"];
+                // this.$nextTick(() => {
+                //     this.usecasenum = TestResult.length;
+                //     console.log(this.usecasenum);
+                // })
+                console.log("start show ")
+                this.TestResult = TestResult;
+                for(let index in this.relation.links)
+                {
+                    var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
+                    if(TestResult.indexOf(callrelation)<0)
+                        this.uncoverfullname.push(callrelation);
+                }
+                if(type==='one'){
+                    console.log("start one ")
+                    for (let index in TestResult)
+                    {
+                        var result=TestResult[index].split(" ");
+                        if(index===0){
+                            this.moveFirstnode(result[0]);
+                        }
+                        this.changeSingleLine(result[0],result[2]);
+                    }
+                }
+                //如果多个结果
+                else{
+                    console.log("start mouti ")
+                    for(let index in TestResult){
+                        var result=TestResult[index].split(" ");
+                        this.changeMultipleLine(result[0],result[2]);
+                    }
+                }
+                this.setUncover();
+            },
+            //获取未覆盖信息
+            setUncover(){
+                console.log(this.uncoverfullname)
+                this.uncover=[];
+                for(let index in this.uncoverfullname)
+                {
+                    var temp=this.uncoverfullname[index].split(" ");
+                    var A=temp[0].split(":")[1];
+                    var B=temp[2].split(":")[1];
+                    if(this.uncover.indexOf(A+" call "+B)<0)
+                        this.uncover.push(A+" call "+B);
+                }
+            },
+            //多个用例测试结果
+            changeMultipleLine(SourceName,TargetName) {
+                for(let index in this.relation.links) {
+                    if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
+                        var line_id=this.relation.links[index].index
+                        d3.select('#eachline' + line_id).classed('edgelabel',false)
+                        d3.select('#eachline' + line_id).style('stroke-width',3.5).attr('stroke','#ff7438').attr('filter','url(#f2)')
+                        this.changeNode(SourceName);
+                        this.changeNode(TargetName);
+                    }
+                };
+            },
+            moveFirstnode(name){
+                var node = this.findNodeByName(name)
+                var trans = this.tempTrans
+                trans.k = 1;
+                this.g.attr('transform',trans);
+                // 根据视野大小定位
+                var width = document.getElementById('container').offsetWidth;
+                var height = document.getElementById('container').offsetHeight;
+
+                trans.x = (Math.round(width/2) - node.x) * trans.k
+                trans.y = (Math.round(height/2) - node.y) * trans.k
+
+                this.g.attr('transform', trans)
+
+            },
+            //改变用例测试经过的直线
+            changeSingleLine(SourceName,TargetName){
+                console.log("change one start ")
+                for(let index in this.relation.links) {
+                    if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
+                        var line_id=this.relation.links[index].index
+                        d3.select('#eachline' + line_id).classed('edgelabel',false)
+                        d3.select('#eachline' + line_id).style('stroke-width',3.5)
+                        d3.select('#eachline' + line_id).classed('showsinglepath',true)
+                        this.changeNode(SourceName);
+                        this.changeNode(TargetName);
+                    }
+                    // var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
+                    // if(this.testCaseMap.indexOf(callrelation)<0)
+                    //     this.uncoverfullname.push(callrelation);
+                };
+                console.log("change one end ")
+            },
+            //取消结果显示
+            cancelShow(TestResult){
+                for(let index in this.TestResult){
+                    var result=this.TestResult[index].split(" ");
+                    this.cancelLine(result[0],result[2]);
+                    this.cancelNode(result[0]);
+                    this.cancelNode(result[2]);
+
+                }
+            },
+            //给节点加上边界效果
+            changeNode(Name) {
+                for(let index in this.relation.nodes) {
+                    if(this.relation.nodes[index].name==Name) {
+                        var node_id=this.relation.nodes[index].index
+                        d3.select('#node' + node_id).classed('bling',true)
+                        d3.select('#node' + node_id).attr('stroke-width',3).attr('stroke','#FA8072').attr('filter','url(#f1)')
+                    }
+                };
+            },
+            //取消连线效果
+            cancelLine(SourceName,TargetName){
+                for(let index in this.relation.links) {
+                    if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
+                       var line_id=this.relation.links[index].index
+                    }
+                };
+                d3.select('#eachline' + line_id).classed('showsinglepath',false).attr('filter','')
+                d3.select('#eachline' + line_id).style('stroke-width',2)
+                d3.select('#eachline' + line_id).classed('edgelabel',true)
+            },
+            //取消节点边界显示
+            cancelNode(Name){
+                for(let index in this.relation.nodes) {
+                    if(this.relation.nodes[index].name==Name) {
+                        var node_id=this.relation.nodes[index].index
+                    }
+                };
+                d3.select('#node' + node_id).attr('stroke-width',0).attr('stroke','').attr('filter','')
+            },
+// -- card 运行测试用例
+
+// --- card 未覆盖测试用例
+            //定位到未覆盖边
+            gotoUncover(){
+                var selectA=this.selectTestForm.selectUncoverTest.split(" ")[0];
+                var selectB=this.selectTestForm.selectUncoverTest.split(" ")[2];
+                for(let index in this.uncoverfullname)
+                {
+                    var temp=this.uncoverfullname[index].split(" ");
+                    var A=temp[0].split(":")[1];
+                    var B=temp[2].split(":")[1];
+                    if(selectA==A&&selectB==B)
+                    {
+                        console.log(temp[0]);
+                        var node = this.findNodeByName(temp[0]);
+                        //console.log(node);
+                        var trans = this.tempTrans
+                        trans.k = 1;
+                        this.g.attr('transform',trans);
+                        // 根据视野大小定位
+                        var width = document.getElementById('container').offsetWidth;
+                        var height = document.getElementById('container').offsetHeight;
+
+                        trans.x = (Math.round(width/2) - node.x) * trans.k
+                        trans.y = (Math.round(height/2) - node.y) * trans.k
+
+                        this.g.attr('transform', trans)
+                    }
+                }
+            },
+// -- card 未覆盖测试用例
+
+// --- card 添加节点
+            //创建新节点并把源节点移到中心
+            createNewNode(){
+                var node;
+                for(let index in this.relation.nodes) {
+                    if(this.relation.nodes[index].name==this.selectednode) {
+                        node=this.relation.nodes[index];
+                        //console.log(node);
+                    }
+                };
+                //var addnode={name:"",type:0,index:7,vx:-0.0034354444444444444,vy:-0.0003758444444444444,x:171.4738754444444,y:45.5769444444444};
+                var addnode={name:"",type:1,index:'',vx:'',vy:'',x:'',y:''};
+                console.log(node.vx);
+                console.log(node.vy);
+                addnode.name=this.newnode;
+                addnode.vx=node.vx-0.0034354444444444444;
+                addnode.vy=node.vy-0.0003758444444444444;
+                addnode.x=node.x-1.0000000000000000000;
+                addnode.y=node.y-1.0000000000000000000;
+                addnode.index=this.relation.nodes.length;
+                addnode.type=this.selectednodetype;
+                var addline={index:7,source:[],target:[]}
+                addline.source=node;
+                addline.target=addnode;
+                this.relation.nodes.push(addnode);
+                this.relation.links.push(addline);
+                console.log(this.relation.links);
+                this.showd3();
+                var node = this.findNodeByName(this.selectednode)
+                var trans = this.tempTrans
+                trans.k = 1;
+                this.g.attr('transform',trans);
+                // 根据视野大小定位
+                var width = document.getElementById('container').offsetWidth;
+                var height = document.getElementById('container').offsetHeight;
+
+                trans.x = (Math.round(width/2) - node.x) * trans.k
+                trans.y = (Math.round(height/2) - node.y) * trans.k
+
+                this.g.attr('transform', trans)
+            },
+            // 把 this.classMethodMap 解析成 cascader 格式的 ClassMethod 
+            praseClassMethod(){
+                if(!this.cascaderClassMethod.length)
+                    Object.entries(this.classMethodMap).forEach(keyValue=>{
+                        this.cascaderClassMethod.push({
+                            value: keyValue[0],
+                            label: keyValue[0],
+                            children: keyValue[1].map((value)=>{return {
+                                value,
+                                label: value,
+                            }})
+                        })
                     })
             },
-            UploadJars(){
-                this.$refs.uploadjar.submit();
+            selectNode(){
+                this.selectednode = this.cascaderNode[0] + ":" + this.cascaderNode[1];
+                console.log(this.selectednode)
+            },
+// -- card 添加节点
+
+// --- card 回归测试
+            // 选择要进行 回归测试 的项目
+            getRegressionProj(prov) {
+                var prjName = prov.split('.')[0];
+                // 回归测试时获取旧版本的所有测试用例
+                try {
+                    this.regression.oldcases[prov] = Object.keys(this.testCaseMap[prjName]) 
+                } catch (error) {
+                    getTestCaseList().then(response=>{
+                        this.testCaseMap = response.result;
+                        this.regression.oldcases[prov] = Object.keys(this.testCaseMap[prjName])
+                    })
+                }
+            },
+            fileListChange(file, fileList) {
+                if(fileList.length == 1){
+                    this.regression.info.newJarName = fileList[0].name;
+                    this.regression.status = '已选择';
+                    this.regression.disable = true;
+                }
+                else{
+                    this.regression.info.newJarName = '';
+                    this.regression.status = '选择新版本Jar包';
+                    this.regression.disable = false;
+                }
             },
             uploadSucc(resp,file,filelist){
                 this.showMsg("上传'" + file.name + "'成功");
@@ -506,36 +951,28 @@
                 // 自动获取分析结果
                 this.analyseJars(this.regression.info);
             },
+            UploadJars(){
+                this.$refs.uploadjar.submit();
+            },
             analyseHistory(){
                 // 获取已上传的包的分析结果
                 let chosedInfo = this.history.regressionInfos.filter(info=>{return info.name === this.regression.chosedInfo})[0]
                 this.getRegressionProj(chosedInfo.oldJarName)
                 this.analyseJars(chosedInfo);
             },
-            fileListChange(file, fileList) {
-                if(fileList.length == 1){
-                    this.regression.info.newJarName = fileList[0].name;
-                    this.regression.status = '已选择';
-                    this.regression.disable = true;
+            // 筛选展示的结果
+            filterChange(filters){
+                let filterMap = {
+                    "remain": 0,
+                    "affected": 1
                 }
-                else{
-                    this.regression.info.newJarName = '';
-                    this.regression.status = '选择新版本Jar包';
-                    this.regression.disable = false;
-                }
-            },
-            // 选择要进行 回归测试 的项目
-            getRegressionProj(prov) {
-                var prjName = prov.split('.')[0];
-                // 回归测试时获取旧版本的所有测试用例
-                try {
-                    this.regression.oldcases[prov] = Object.keys(this.testCaseMap[prjName]) 
-                } catch (error) {
-                    getTestCaseList().then(response=>{
-                        this.testCaseMap = response.result;
-                        this.regression.oldcases[prov] = Object.keys(this.testCaseMap[prjName])
+                this.showoldvsnew = [] // refresh list to show
+                if(filters.length === 2)
+                    this.showoldvsnew = this.oldvsnew;
+                else
+                    filters.forEach(fil =>{
+                        this.showoldvsnew = this.showoldvsnew.concat(this.oldvsnew.filter(testcase => testcase.state === filterMap[fil]));
                     })
-                }
             },
             analyseJars(para,time = 0){
                 // 检查 oldJarName 这个项目的所有用例是否获取
@@ -574,439 +1011,24 @@
                     }
                 }
             },
-            packagesCallHistory(queryString, cb) {
-                // cb([{ "value": "asdasd"}]);
-                cb(this.history.packagesCall);
-            },
-            packagesHistory(queryString, cb) {
-                cb(this.history.packages);
-            },
-            goToNode() {
-                var node = this.findNodeByName(this.adjustForm.selectedClass + ":" + this.adjustForm.selectedMethod)
-                var trans = this.tempTrans
+// -- card 回归测试
 
-                trans.k = 1;
-                this.g.attr('transform',trans);
-                // 根据视野大小定位
-                var width = document.getElementById('container').offsetWidth;
-                var height = document.getElementById('container').offsetHeight;
-                
-                trans.x = (Math.round(width/2) - node.x) * trans.k
-                trans.y = (Math.round(height/2) - node.y) * trans.k
-                
-                this.g.attr('transform', trans)
+// --- card 脚本录制
+            watchReplay(){
+                this.showReplay = true;
+                this.$refs.replayer.startPlay();
             },
-            //显示用例测试结果
-            showTestResult(TestResult,type){
-                // 记录正在显示的测试结果，cancelshow 的时候根据这个来
-                //var type="one";
-                //var TestResult=["com.example.demo.controller.Test1:calculate call com.example.demo.controller.Test1:doublevalue"];
-                // this.$nextTick(() => {
-                //     this.usecasenum = TestResult.length;
-                //     console.log(this.usecasenum);
-                // })
-                console.log("start show ")
-                this.TestResult = TestResult;
-                for(let index in this.relation.links)
-                {
-                    var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
-                    if(TestResult.indexOf(callrelation)<0)
-                        this.uncoverfullname.push(callrelation);
-                }
-                if(type==='one'){
-                    console.log("start one ")
-                    for (let index in TestResult)
-                    {
-                        var result=TestResult[index].split(" ");
-                        if(index===0){
-                            this.moveFirstnode(result[0]);
-                        }
-                        this.changeSingleLine(result[0],result[2]);
-                    }
-                }
-                //如果多个结果
-                else{
-                    console.log("start mouti ")
-                    for(let index in TestResult){
-                        var result=TestResult[index].split(" ");
-                        this.changeMultipleLine(result[0],result[2]);
-                    }
-                }
-                this.setUncover();
+            toggleReplay(){
+                this.$refs.replayer.togglePlay(this.isplay);
+                if (this.isplay)
+                    this.playandpause = '播放';
+                else
+                    this.playandpause = '暂停';
+                this.isplay = !this.isplay;
             },
-           //改变用例测试经过的直线
-            changeSingleLine(SourceName,TargetName){
-                console.log("change one start ")
-                for(let index in this.relation.links) {
-                    if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
-                        var line_id=this.relation.links[index].index
-                        d3.select('#eachline' + line_id).classed('edgelabel',false)
-                        d3.select('#eachline' + line_id).style('stroke-width',3.5)
-                        d3.select('#eachline' + line_id).classed('showsinglepath',true)
-                        this.changeNode(SourceName);
-                        this.changeNode(TargetName);
-                    }
-                    // var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
-                    // if(this.testCaseMap.indexOf(callrelation)<0)
-                    //     this.uncoverfullname.push(callrelation);
-                };
-                console.log("change one end ")
-            },
+// -- card 脚本录制
 
-            moveFirstnode(name){
-                var node = this.findNodeByName(name)
-                var trans = this.tempTrans
-                trans.k = 1;
-                this.g.attr('transform',trans);
-                // 根据视野大小定位
-                var width = document.getElementById('container').offsetWidth;
-                var height = document.getElementById('container').offsetHeight;
-
-                trans.x = (Math.round(width/2) - node.x) * trans.k
-                trans.y = (Math.round(height/2) - node.y) * trans.k
-
-                this.g.attr('transform', trans)
-
-            },
-
-            //多个用例测试结果
-            changeMultipleLine(SourceName,TargetName) {
-                for(let index in this.relation.links) {
-                    if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
-                        var line_id=this.relation.links[index].index
-                        d3.select('#eachline' + line_id).classed('edgelabel',false)
-                        d3.select('#eachline' + line_id).style('stroke-width',3.5).attr('stroke','#ff7438').attr('filter','url(#f2)')
-                        this.changeNode(SourceName);
-                        this.changeNode(TargetName);
-                    }
-                };
-            },
-            //给节点加上边界效果
-            changeNode(Name) {
-                for(let index in this.relation.nodes) {
-                    if(this.relation.nodes[index].name==Name) {
-                        var node_id=this.relation.nodes[index].index
-                        d3.select('#node' + node_id).classed('bling',true)
-                        d3.select('#node' + node_id).attr('stroke-width',3).attr('stroke','#FA8072').attr('filter','url(#f1)')
-                    }
-                };
-            },
-            //取消结果显示
-            cancelShow(TestResult){
-                for(let index in this.TestResult){
-                    var result=this.TestResult[index].split(" ");
-                    this.cancelLine(result[0],result[2]);
-                    this.cancelNode(result[0]);
-                    this.cancelNode(result[2]);
-
-                }
-            },
-            //取消连线效果
-            cancelLine(SourceName,TargetName){
-                for(let index in this.relation.links) {
-                    if(this.relation.links[index].source.name==SourceName && this.relation.links[index].target.name==TargetName) {
-                       var line_id=this.relation.links[index].index
-                    }
-                };
-                d3.select('#eachline' + line_id).classed('showsinglepath',false).attr('filter','')
-                d3.select('#eachline' + line_id).style('stroke-width',2)
-                d3.select('#eachline' + line_id).classed('edgelabel',true)
-            },
-
-            //取消节点边界显示
-            cancelNode(Name){
-                for(let index in this.relation.nodes) {
-                    if(this.relation.nodes[index].name==Name) {
-                        var node_id=this.relation.nodes[index].index
-                    }
-                };
-                d3.select('#node' + node_id).attr('stroke-width',0).attr('stroke','').attr('filter','')
-            },
-
-            findNodeByName(name) {
-                for(let index in this.relation.nodes) {
-                    if(this.relation.nodes[index].name == name) {
-                        return this.relation.nodes[index]
-                    }
-                }
-            },
-
-            getTestClass(prov) {
-                this.selectTestForm.selectedTestCase = '';
-                this.selectTestForm.allTestCases =  this.testCaseMap[this.selectTestForm.selectedTestProject.split('.')[0]][prov]
-            },
-            getTestProject(prov) {
-                this.selectTestForm.selectedTestCase = '';
-                this.selectTestForm.selectedTestClass = '';
-                this.uncoverfullname=[];
-                var prjName = prov.split('.')[0];
-                // prov is "demo.jar" but testCaseMap is {"demo":{...}}
-                this.showTestClass(prjName,1)
-            },
-            showTestClass(prjName,time){
-                if(this.testCaseMap[prjName])
-                    this.selectTestForm.allTestClasses = Object.keys(this.testCaseMap[prjName]);
-                else{
-                    if (time > 3) {
-                        this.$message.error('不存在项目"' + prjName + '"的测试用例，请上传该项目的测试用例，目前有以下项目的测试用例 [' + Object.keys(this.testCaseMap).toString().slice(0,30) + ']');
-                        this.selectTestForm.allTestClasses = [];
-                        this.selectTestForm.allTestCases = [];
-                    }
-                    else
-                        getTestCaseList().then(response=>{
-                            this.testCaseMap = response.result;
-                            console.log(this.testCaseMap)
-                            this.showTestClass(prjName,time+1);
-                        })
-                }
-            },
-            getClass(prov) {
-                this.adjustForm.allMethods = this.classMethodMap[prov]
-                this.adjustForm.selectedMethod = '';
-            },
-            showfilelist(open){
-                if(open) {
-                    let _this = this
-                    getUploadedFileList().then(response => {
-                        _this.uploadedFiles = response.result
-                    })
-                }
-            },
-            generateGraph(){
-                let _this = this
-                this.$nextTick(() => {
-                    getRelationByFileName(this.form.selectedjar, this.form.packages, this.form.packagesCall).then(response => {
-                        _this.relation.nodes = response.nodes
-                        _this.relation.links = response.links
-                        _this.adjustForm.allClasses = response.classes
-                        _this.classMethodMap = response.classMethodMap
-                        _this.showd3()
-                    })
-                    // 保存历史记录
-                    if (this.history.packagesCall.filter(item => item.value == this.form.packagesCall).length == 0) {
-                        this.history.packagesCall.push({"value":this.form.packagesCall})
-                    }
-                    if (this.history.packages.filter(item => item.value == this.form.packages).length == 0) {
-                        this.history.packages.push({"value":this.form.packages})
-                    }
-                    localStorage.setItem('history',JSON.stringify(this.history));
-                })
-            },
-            async showTestProjectList(open) {
-                if(open) {
-                    const [{ result: uploadedFiles }, { result: testCaseMap }] 
-                        = await Promise.all([getUploadedFileList(), getTestCaseList()])
-                    //response is {"result":{"demo":{"TestMethod.java":["allMehtods"],"allTestFiles":[],"Test2.java":["allMehtods"]}}}
-                    this.$nextTick(() => {
-                        this.uploadedFiles = uploadedFiles;
-                        this.testCaseMap = testCaseMap;
-                        if (this.selectTestForm.selectedTestProject) {
-                            this.getTestProject(this.selectTestForm.selectedTestProject)
-                        }
-                    })
-                }
-            },
-    
-            //获取未覆盖信息
-            setUncover(){
-                console.log(this.uncoverfullname)
-                this.uncover=[];
-                for(let index in this.uncoverfullname)
-                {
-                    var temp=this.uncoverfullname[index].split(" ");
-                    var A=temp[0].split(":")[1];
-                    var B=temp[2].split(":")[1];
-                    if(this.uncover.indexOf(A+" call "+B)<0)
-                        this.uncover.push(A+" call "+B);
-                }
-            },
-            //定位到未覆盖边
-            gotoUncover(){
-            var selectA=this.selectTestForm.selectUncoverTest.split(" ")[0];
-            var selectB=this.selectTestForm.selectUncoverTest.split(" ")[2];
-            for(let index in this.uncoverfullname)
-            {
-            var temp=this.uncoverfullname[index].split(" ");
-            var A=temp[0].split(":")[1];
-            var B=temp[2].split(":")[1];
-            if(selectA==A&&selectB==B)
-            {
-                console.log(temp[0]);
-                var node = this.findNodeByName(temp[0]);
-                //console.log(node);
-                var trans = this.tempTrans
-                trans.k = 1;
-                this.g.attr('transform',trans);
-                // 根据视野大小定位
-                var width = document.getElementById('container').offsetWidth;
-                var height = document.getElementById('container').offsetHeight;
-
-                trans.x = (Math.round(width/2) - node.x) * trans.k
-                trans.y = (Math.round(height/2) - node.y) * trans.k
-
-                this.g.attr('transform', trans)
-            }
-            }
-            },
-            //创建新节点并把源节点移到中心
-            createNewNode(){
-            var node;
-            for(let index in this.relation.nodes) {
-                                if(this.relation.nodes[index].name==this.selectnode) {
-                                    node=this.relation.nodes[index];
-                                    //console.log(node);
-                                }
-                            };
-            //var addnode={name:"",type:0,index:7,vx:-0.0034354444444444444,vy:-0.0003758444444444444,x:171.4738754444444,y:45.5769444444444};
-            var addnode={name:"",type:1,index:'',vx:'',vy:'',x:'',y:''};
-            console.log(node.vx);
-            console.log(node.vy);
-            addnode.name=this.newnode;
-            addnode.vx=node.vx-0.0034354444444444444;
-            addnode.vy=node.vy-0.0003758444444444444;
-            addnode.x=node.x-1.0000000000000000000;
-            addnode.y=node.y-1.0000000000000000000;
-            addnode.index=this.relation.nodes.length;
-            addnode.type=this.selectednodetype;
-            var addline={index:7,source:[],target:[]}
-            addline.source=node;
-            addline.target=addnode;
-             this.relation.nodes.push(addnode);
-             this.relation.links.push(addline);
-             console.log(this.relation.links);
-             this.showd3();
-              var node = this.findNodeByName(this.selectnode)
-              var trans = this.tempTrans
-                trans.k = 1;
-                this.g.attr('transform',trans);
-                // 根据视野大小定位
-                var width = document.getElementById('container').offsetWidth;
-                var height = document.getElementById('container').offsetHeight;
-
-                trans.x = (Math.round(width/2) - node.x) * trans.k
-                trans.y = (Math.round(height/2) - node.y) * trans.k
-
-                this.g.attr('transform', trans)
-            },
-            submitUpload() {
-                this.$refs.upload.submit();
-            },
-            submitTestUpload() {
-                this.$refs.uploadTest.submit();
-                this.selectTestForm.selectedTestProject = ''
-                this.selectTestForm.selectedTestClass = ''
-                this.selectTestForm.selectedTestCase = ''
-                this.testCaseMap = {}
-            },
-            onBeforeUpload(file) {
-                const isJAR = file.name.endsWith('.jar')
-                if (!isJAR) {
-                    this.$message.error('只能上传Jar文件!');
-                    return false;
-                }
-                return isJAR
-            },
-            onBeforeUploadTestCase(file) {
-                const isJava = file.name.endsWith('.java')
-                const isZip = file.name.endsWith('.zip')
-                if (!isJava && !isZip) {
-                    this.$message.error('只能上传Java文件或者Zip文件!');
-                    return false;
-                } else {
-                    return true
-                }
-            },
-            startRunTestCase(file) {
-                this.uncoverfullname=[];
-                if(this.TestResult!=null){
-                this.cancelShow(this.TestResult);
-                }
-                var projectname  = this.selectTestForm.selectedTestProject;
-                var testcasename = this.selectTestForm.selectedTestClass;
-                var method       = this.selectTestForm.selectedTestCase;
-                if(!projectname || !testcasename || (testcasename != 'allTestFiles' && !method)){
-                    this.showMsg('请选择完整的项目，测试类以及测试方法')
-                    return
-                }
-                let _this = this;
-                // 传参数给后端跑测试用例
-                runTestCase(projectname, testcasename, method).then(response => {// response 为 ["12123123","many"]
-                    if(response[2]) return; // error msg
-                    _this.taskId = response[0];
-                    _this.taskType = response[1];
-                    // 归零
-                    _this.runTestPercentange = 0;
-                    // 开始监听运行进度
-                    _this._onTestRunning();
-                })
-                // if(this.relation.links) 
-                //     this.setUncover();
-            },
-            // 获取测试进度的时候要调用的
-            _onTestRunning(){
-                let _this = this;
-                getTestRunningStatus(_this.taskId).then(response => {  // 这里的response[0] 和 [1]可能要改，看后端数据结构
-                    if(response[2]) return; // error msg
-                    if(response[0] === "sorry,no this task~")
-                        return _this.showMsg("sorry,no this task~");
-                    _this.runTestPercentange = Math.ceil((response[0] / response[1])*100);
-                    if (_this.runTestPercentange != 100) {
-                        setTimeout(_this._onTestRunning, 500);
-                    }
-                });
-            },
-             uniq(array){
-                var temp = []; //一个新的临时数组
-                for(var i = 0; i < array.length; i++){
-                    if(temp.indexOf(array[i]) == -1){
-                        temp.push(array[i]);
-                    }
-                }
-                return temp;
-            },
-            getTestResult(){
-                let _this = this;
-                getInvokingResults(_this.taskId).then(response => {  // 这里的 response 为测试用例的结果，一个 list
-                    // 展示测试用例的结果
-                    //_this.usecasenum = response.length;
-                    console.log(response)
-                    _this.showTestResult(this.uniq(response), _this.taskType)
-                    _this.branchnum=_this.relation.links.length;
-                    if(_this.selectTestForm.selectedTestClass == "allTestFiles")
-                    {
-                        //this.usecasenum=this.testCaseMap[this.selectedTestProject].length;
-                         var sum=0;
-                         console.log(_this.testCaseMap)
-                         console.log(_this.selectTestForm.selectedTestProject.split('.')[0])
-                         for(let index in _this.testCaseMap[_this.selectTestForm.selectedTestProject.split('.')[0]])
-                         {
-                                sum+=_this.testCaseMap[_this.selectTestForm.selectedTestProject.split('.')[0]][index].length;
-                         }
-                        console.log(_this.usecasenum)
-                         _this.usecasenum  =sum;
-                    }
-                    else
-                    {
-                        if(_this.selectTestForm.selectedTestCase == "allMethods")
-                        {
-                             _this.usecasenum = _this.testCaseMap[_this.selectTestForm.selectedTestProject.split('.')[0]][_this.selectTestForm.selectedTestClass].length;
-                        } else {
-                            _this.usecasenum = 1;
-                        }
-                    }
-                    _this.uncoverlength = _this.uncover.length;
-                    _this.coverrate=((_this.branchnum-_this.uncoverlength)/_this.branchnum)*100;
-                    console.log(_this.uncoverlength)
-                    console.log(_this.coverrate)
-                });
-            },
-            // 显示消息
-            showMsg(content){
-                this.$message({
-                    showClose: true,
-                    message: content
-                });
-            },
+// --- 整体
             showd3 () {
                 //获取body高度和宽度
                 let height = document.body.clientHeight
@@ -1252,6 +1274,20 @@
                         })
                 })
             },
+            findNodeByName(name) {
+                for(let index in this.relation.nodes) {
+                    if(this.relation.nodes[index].name == name) {
+                        return this.relation.nodes[index]
+                    }
+                }
+            },
+            // 显示消息
+            showMsg(content){
+                this.$message({
+                    showClose: true,
+                    message: content
+                });
+            },
             shrink_open(){
                 if (this.toggle) {
                     this.actived = this.activeNames;
@@ -1274,7 +1310,7 @@
                 }
                 this.toggle = !this.toggle;
             },
-        
+// -- 整体
         },
         created () {
             this.$nextTick(() => {
@@ -1301,8 +1337,16 @@
 </script>
 
 <style lang="less">
+    .el-cascader .el-input {
+        width: 240px;
+    }
+
     .el-select .el-input {
-        width: 250px;
+        width: 240px;
+    }
+
+    .el-autocomplete .el-input {
+        width: 240px;
     }
 
     header{

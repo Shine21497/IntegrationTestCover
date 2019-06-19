@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import D3Demo from './components/D3Demo.vue'
 import HelloWorld from './components/HelloWorld.vue'
-import D3Topo from './components/D3Topo.vue'
+import Recorder from './components/Recorder.vue'
 import MethodCallRelationGraph from './components/MethodCallRelationGraph.vue'
 import Player from './components/Player.vue'
 
@@ -23,9 +23,9 @@ export default new Router({
             component: HelloWorld
         },
         {
-            path: '/topo',
-            name: 'topo',
-            component: D3Topo
+            path: '/recorder',
+            name: 'recorder',
+            component: Recorder
         },
         {
             path: '/method',
