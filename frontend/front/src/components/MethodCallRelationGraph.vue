@@ -62,10 +62,10 @@
                             <div>
                                 <div style="color:darkgray;margin: 0 0 10px 10px;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
                                 <el-row :gutter="20" style="margin:10px 0">
-                                    <el-col :span="6">遍历包范围</el-col>
+                                    <el-col :span="6">用于生成源节点的包</el-col>
                                         <el-col :span="18">
                                         <el-autocomplete class="inline-input" v-model="form.packages" :fetch-suggestions="packagesHistory"
-                                            placeholder="请输入遍历包范围"
+                                            placeholder="请输入用于生成源节点的包"
                                         ></el-autocomplete>
                                         </el-col>
                                     </el-row>
@@ -73,10 +73,10 @@
                             <div>
                                 <div style="color:darkgray;margin:0 0 10px 10px;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
                                 <el-row :gutter="20" style="margin:10px 0">
-                                    <el-col :span="6">生成包范围</el-col>
+                                    <el-col :span="6">用于生成目标节点的包</el-col>
                                     <el-col :span="18">
                                         <el-autocomplete class="inline-input" v-model="form.packagesCall" :fetch-suggestions="packagesCallHistory"
-                                            placeholder="请输入遍历包范围"
+                                            placeholder="请输入生成目标节点的包"
                                         ></el-autocomplete>
                                     </el-col>
                                 </el-row>
@@ -159,8 +159,8 @@
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
-                                    <el-form-item label="类选择">
-                                        <el-select ref="selectTestClass" filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestClasses.length == 0" v-model="selectTestForm.selectedTestClass" placeholder="请选择测试类" @change="getTestClass($event)">
+                                    <el-form-item label="测试文件">
+                                        <el-select ref="selectTestClass" filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestClasses.length == 0" v-model="selectTestForm.selectedTestClass" placeholder="选择测试文件" @change="getTestClass($event)">
                                             <el-option
                                                     v-for="item in selectTestForm.allTestClasses"
                                                     :key="item"
@@ -169,8 +169,8 @@
                                             </el-option>
                                         </el-select>
                                     </el-form-item>
-                                    <el-form-item label="方法选择">
-                                        <el-select ref="selectTestMethod" filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestCases.length == 0" v-model="selectTestForm.selectedTestCase" placeholder="请选择测试方法">
+                                    <el-form-item label="测试用例">
+                                        <el-select ref="selectTestMethod" filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestCases.length == 0" v-model="selectTestForm.selectedTestCase" placeholder="选择测试用例">
                                             <el-option
                                                     v-for="item in selectTestForm.allTestCases"
                                                     :key="item"
@@ -193,7 +193,7 @@
                         <el-card :body-style="{ padding: '0px' }" class="card">
                             <el-container class="formbody">
                                <el-form ref="form" :model="selectTestForm" label-width="80px">
-                                  <el-form-item label="未覆盖分支选择">
+                                    <el-form-item label="未覆盖分支选择">
                                         <el-select v-model="selectTestForm.selectUncoverTest" placeholder="请选择未覆盖的边">
                                             <el-option
                                             v-for="item in uncover"
@@ -204,14 +204,17 @@
                                         </el-select>
                                     </el-form-item>
                                     <el-form-item>
+                                        <el-button type="primary" @click="gotoUncover()">立即定位</el-button>
+                                    </el-form-item>
+                                    <div>
                                         <div id="branches">分支总数：{{branchnum}}；</div>
                                         <div id="usecase">执行用例数：{{usecasenum}}；</div>
                                         <div id="uncoverbranch">未覆盖分支数：{{uncoverlength}}；</div>
                                         <div id="coverrate">覆盖率：{{coverrate}}%：</div>
-                                    </el-form-item>
-                                    <el-form-item>
-                                    <el-button type="primary" @click="gotoUncover()">立即定位</el-button>
-                                    </el-form-item>
+                                        <!-- <svg id="piechart" xmlns="http://www.w3.org/2000/svg" style="height:300px;width:300px">
+
+                                        </svg> -->
+                                    </div>
                                 </el-form>
                             </el-container>
                         </el-card>
@@ -310,8 +313,8 @@
                                 </el-col>
                                 <el-col :span="19">
                                     <el-checkbox-group v-model="filterList" @change="filterChange">
-                                        <el-checkbox label="remain"></el-checkbox>
-                                        <el-checkbox label="affected"></el-checkbox>
+                                        <el-checkbox label="未影响"></el-checkbox>
+                                        <el-checkbox label="影响的"></el-checkbox>
                                     </el-checkbox-group>
                                 </el-col>
                             </el-row>
@@ -325,10 +328,16 @@
                 </el-collapse-item>
                 <el-collapse-item class="titlestyle" title="脚本录制" name="9">
                     <!-- 选择框，选择要回放的测试用例 -->
+                    <el-button size="small" type="primary" @click="prepareRecord">准备录制</el-button>
                     <el-button size="small" type="primary" @click="watchReplay">查看回放</el-button>
-                    <el-dialog
-                        :visible.sync="showReplay"
-                        width="60%">
+                    <el-dialog :visible.sync="preparerecord" width="80%">
+                        <iframe ref="frame" src="https://www.baidu.com" style="width: 980px;height: 600px;"></iframe>
+                        
+                        <span slot="footer" class="dialog-footer">
+                            <el-button size="small" type="primary" @click="startRecord">开始录制</el-button>
+                        </span>
+                    </el-dialog>
+                    <el-dialog :visible.sync="showReplay" width="60%">
                         <Player ref="replayer"/>
                         <span slot="footer" class="dialog-footer">
                             <el-button type="primary" @click="toggleReplay">{{playandpause}}</el-button>
@@ -403,7 +412,7 @@
                 selectednode:'',
                 newnode:'',
                 selectednodetype:'',
-                classMethodMap:{"a": ["a","b"], "b": ["a","c"]},
+                classMethodMap:{"classA": ["method_a","method_b"], "classB": ["method_a","method_c"]},
                 testCaseMap:{},
                 g:{},
                 tempTrans: d3.zoomIdentity.translate(0, 0).scale(1),
@@ -432,7 +441,7 @@
                 },
                 oldvsnew:[],          // 用于新旧版本项目测试用例的对比
                 showoldvsnew:[],      // 存在筛选，所以要一个专门用于展示的
-                filterList:["remain", "affected"],    // 过滤回归测试结果测试用例
+                filterList:["未影响", "已影响"],    // 过滤回归测试结果测试用例
                 events:[],            // 脚本录制,
                 showReplay:false,     // 回放
                 isRecording:false,    // 是否正在录制
@@ -440,6 +449,7 @@
                 playandpause:'暂停',
                 cascaderClassMethod:[],  // 添加节点板块的级联选择，已有节点
                 cascaderNode:[],
+                preparerecord:false,
             }
         },
         methods: {
@@ -843,6 +853,61 @@
                     }
                 }
             },
+            // 生成饼状图
+            drawPie(){
+                var svg = d3.select("#piechart"),
+                    width = svg.attr("width"),
+                    height = svg.attr("height"),
+                    radius = Math.min(width, height) / 2;
+                
+                var g = svg.append("g")
+                        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+                var color = d3.scaleOrdinal(['#4daf4a','#377eb8','#ff7f00','#984ea3','#e41a1c']);
+
+                var pie = d3.pie().value(function(d) { 
+                        return d.percent; 
+                    });
+
+                var path = d3.arc()
+                            .outerRadius(radius - 10)
+                            .innerRadius(0);
+
+                var label = d3.arc()
+                            .outerRadius(radius)
+                            .innerRadius(radius - 80);
+
+                var data = [
+                    {"browser": "Chrome0", "percent": 73.70},
+                    {"browser": "Chrome1", "percent": 4.90},
+                    {"browser": "Chrome2", "percent": 15.40},
+                    {"browser": "Chrome3", "percent": 3.60},
+                    {"browser": "Chrome4", "percent": 1.00}
+                ]
+                
+                var arc = g.selectAll(".arc")
+                            .data(pie(data))
+                            .enter().append("g")
+                            .attr("class", "arc");
+
+                arc.append("path")
+                    .attr("d", path)
+                    .attr("fill", function(d) { return color(d.data.browser); });
+                
+                    console.log(arc)
+                
+                arc.append("text")
+                    .attr("transform", function(d) { 
+                            return "translate(" + label.centroid(d) + ")"; 
+                        })
+                    .text(function(d) { return d.data.browser; });
+
+                svg.append("g")
+                    .attr("transform", "translate(" + (width / 2 - 120) + "," + 20 + ")")
+                    .append("text")
+                    .text("Browser use statistics - Jan 2017")
+                    .attr("class", "title")
+            },
 // -- card 未覆盖测试用例
 
 // --- card 添加节点
@@ -963,8 +1028,8 @@
             // 筛选展示的结果
             filterChange(filters){
                 let filterMap = {
-                    "remain": 0,
-                    "affected": 1
+                    "未影响": 0,
+                    "已影响": 1
                 }
                 this.showoldvsnew = [] // refresh list to show
                 if(filters.length === 2)
@@ -979,7 +1044,7 @@
                 if (this.regression.oldcases[para.oldJarName]) {
                     postRegression(para).then(response=> {
                         let newcases = response;                // "oldcases" is all testcases
-                        this.filterList = ["remain", "affected"]         // set filter to all
+                        this.filterList = ["未影响", "已影响"]         // set filter to all
                         this.oldvsnew = [];                              // refresh result
 
                         this.regression.oldcases[para.oldJarName].forEach(testcase => {
@@ -1014,6 +1079,13 @@
 // -- card 回归测试
 
 // --- card 脚本录制
+            prepareRecord(){
+                this.preparerecord = true;
+                // this.$refs.frame.src = "https://www.baidu.com/";
+            },
+            startRecord(){
+
+            },
             watchReplay(){
                 this.showReplay = true;
                 this.$refs.replayer.startPlay();
@@ -1318,7 +1390,9 @@
                 if(historyForm){
                     this.history = historyForm
                 }
-            })
+                // 生成饼状图调试
+                // this.drawPie();
+            });
         }
     }
 
@@ -1337,6 +1411,17 @@
 </script>
 
 <style lang="less">
+    path.slice{
+        stroke-width:2px;
+    }
+
+    polyline{
+        opacity: .3;
+        stroke: black;
+        stroke-width: 2px;
+        fill: none;
+    }
+
     .el-cascader .el-input {
         width: 240px;
     }
