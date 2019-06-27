@@ -1007,7 +1007,7 @@
                 this.analyseJars(this.regression.info);
             },
             uploadSucc(resp,file,filelist){
-                this.showMsg("上传'" + file.name + "'成功");
+                this.showMsg("上传'" + file.name.split('-_-')[1] + "'成功");
             },
             UploadJars(){
                 this.$refs.uploadjar.submit();
