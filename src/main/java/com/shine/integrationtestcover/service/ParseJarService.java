@@ -55,7 +55,7 @@ public class ParseJarService {
                 }
                 if(!entry.getName().startsWith("java")) {
                     for (String packageName : packageNames) {
-                        if (entry.getName().startsWith(packageName.replace(".", "/"))) {
+                        if (entry.getName().contains(packageName.replace(".", "/"))) {
                             cp = new ClassParser(path+"//"+filename, entry.getName());
                             visitor = new ClassVisitor(cp.parse());
                             visitor.start();

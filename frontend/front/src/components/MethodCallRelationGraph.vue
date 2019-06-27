@@ -1014,7 +1014,7 @@
             },
             fileListChange(file, fileList) {
                 var _name = fileList[0].name;
-                fileList[0].name = this.regression.oldVersion + "-_-" + _name;
+                fileList[0].name = this.regression.info.oldVersion + "-_-" + _name;
             },
             // 筛选展示的结果
             filterChange(filters){
