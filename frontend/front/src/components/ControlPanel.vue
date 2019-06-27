@@ -1,264 +1,63 @@
 <template>
-    <el-container>
-        <el-main style="padding:0;">
-            <div id="container" class="container">
-                <svg id="svgCanvas">
-                    <defs>
-                        <!--节点滤波器-->
-                        <filter id="f1">
-                            <feGaussianBlur in="SourceGraphic" stdDeviation="5"/>
-                        </filter>
-                    </defs>
-                    <defs>
-                        <!--直线滤波器-->
-                        <filter id="f2">
-                            <feGaussianBlur in="SourceGraphic" stdDeviation="2"/>
-                        </filter>
-                    </defs>
-                </svg>
-            </div>
-            <!-- <div id="thumb-container">
-                <svg id="thumb" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
-                    <use xlink:href="#svgCanvas" />
-                </svg>
-            </div> -->
-        </el-main>
+    <div id="leftSide" class="left-side">
+        <h2>Method-Call-Relation-Graph
+            <i id="shrink-icon" class="funny el-icon-arrow-left" @click="shrink_open()"></i>
+        </h2>
 
-        <div id="leftSide" class="left-side">
-            <h2>Method Call Relation Graph
-                <i id="shrink-icon" class="funny el-icon-arrow-left" @click="shrink_open()"></i>
-            </h2>
-
-            <el-collapse v-model="activeNames">
-                <el-collapse-item class="titlestyle" title="上传项目" name="1">
-                    <el-card :body-style="{ padding: '0px' }" class="card">
-                        <el-upload class="upload" action="/apiurl/uploadJar" accept="application/jar" :before-upload="onBeforeUpload" ref="upload" :file-list="fileList" :auto-upload="false">
-                            <el-button slot="trigger" type="primary">选取文件</el-button>
-                            <el-button style="margin-left: 10px;" type="success" @click="submitUpload">上传到服务器</el-button>
-                            <div slot="tip" class="el-upload__tip">只能上传jar文件</div>
-                        </el-upload>
-                    </el-card>
-                </el-collapse-item>
-                <el-collapse-item class="titlestyle" name="2">
-                    <template slot="title">
-                        <p class="itemname">调用关系图生成</P>
-                        <p class="require-info">（请先上传项目）</P>
-                    </template>
+        <el-collapse v-model="activeNames">
+            <el-collapse-item class="titlestyle" title="上传项目" name="1">
+                <uploadCard/>
+            </el-collapse-item>
+            <el-collapse-item class="titlestyle" name="2">
+                <template slot="title">
+                    <p class="itemname">调用关系图生成</P>
+                    <p class="require-info">（请先上传项目）</P>
+                </template>
+                <el-container class="formbody">
+                    <graphCard :generateGraph = "generateGraph"/>
+                </el-container>
+            </el-collapse-item>
+            <el-collapse-item class="titlestyle" name="3" :class="JSON.stringify(relation)=='{}'?'disabled': ''">
+                <template slot="title">
+                    <p class="itemname">定位方法</P>
+                    <p class="require-info">（请先生成调用关系图）</P>
+                </template>
+                <el-card :body-style="{ padding: '0px' }" class="card">
                     <el-container class="formbody">
-                        <div ref="form" :model="form" style="width:100%;text-align:left">
-                            <el-row :gutter="20" style="margin:10px 0">
-                                <el-col :span="6">Jar包选择</el-col>
-                                <el-col :span="18">
-                                    <el-select v-model="form.selectedjar" placeholder="请选择jar包" @visible-change="showfilelist">
-                                        <el-option
-                                                v-for="item in uploadedFiles"
-                                                :key="item"
-                                                :label="item"
-                                                :value="item">
-                                        </el-option>
-                                    </el-select>
-                                </el-col>
-                            </el-row>
-                            <div>
-                                <div style="color:darkgray;margin: 0 0 10px 10px;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
-                                <el-row :gutter="20" style="margin:10px 0">
-                                    <el-col :span="6">用于生成源节点的包</el-col>
-                                        <el-col :span="18">
-                                        <el-autocomplete class="inline-input" v-model="form.packages" :fetch-suggestions="packagesHistory"
-                                            placeholder="请输入用于生成源节点的包"
-                                        ></el-autocomplete>
-                                        </el-col>
-                                    </el-row>
-                            </div>
-                            <div>
-                                <div style="color:darkgray;margin:0 0 10px 10px;"> 如果打包时把lib一同打入，一定要输入包的范围 </div>
-                                <el-row :gutter="20" style="margin:10px 0">
-                                    <el-col :span="6">用于生成目标节点的包</el-col>
-                                    <el-col :span="18">
-                                        <el-autocomplete class="inline-input" v-model="form.packagesCall" :fetch-suggestions="packagesCallHistory"
-                                            placeholder="请输入生成目标节点的包"
-                                        ></el-autocomplete>
-                                    </el-col>
-                                </el-row>
-                            </div>
-                            <div style="text-align:center">
-                                <el-button type="primary" :disabled="form.selectedjar.length == 0" size="small" @click="generateGraph()">立即创建</el-button>
-                            </div>
-                        </div>
+                        <el-form ref="adjustForm" :model="adjustForm" label-width="80px">
+                            <el-form-item label="类选择">
+                                <el-select filterable  v-model="adjustForm.selectedClass" placeholder="请选择类" @change="getClass($event)">
+                                    <el-option
+                                            v-for="item in adjustForm.allClasses"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="方法选择">
+                                <el-select filterable  v-model="adjustForm.selectedMethod" placeholder="请选择方法">
+                                    <el-option
+                                            v-for="item in adjustForm.allMethods"
+                                            :key="item"
+                                            :label="item"
+                                            :value="item">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button :disabled="adjustForm.selectedMethod.length == 0" type="primary" size="small" @click="goToNode()">立即定位</el-button>
+                            </el-form-item>
+                        </el-form>
                     </el-container>
-                </el-collapse-item>
-                <el-collapse-item class="titlestyle" name="3" :class="JSON.stringify(relation)=='{}'?'disabled': ''">
-                    <template slot="title">
-                        <p class="itemname">定位方法</P>
-                        <p class="require-info">（请先生成调用关系图）</P>
-                    </template>
-                    <el-card :body-style="{ padding: '0px' }" class="card">
-                        <el-container class="formbody">
-                            <el-form ref="adjustForm" :model="adjustForm" label-width="80px">
-                                <el-form-item label="类选择">
-                                    <el-select filterable  v-model="adjustForm.selectedClass" placeholder="请选择类" @change="getClass($event)">
-                                        <el-option
-                                                v-for="item in adjustForm.allClasses"
-                                                :key="item"
-                                                :label="item"
-                                                :value="item">
-                                        </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item label="方法选择">
-                                    <el-select filterable  v-model="adjustForm.selectedMethod" placeholder="请选择方法">
-                                        <el-option
-                                                v-for="item in adjustForm.allMethods"
-                                                :key="item"
-                                                :label="item"
-                                                :value="item">
-                                        </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item>
-                                    <el-button :disabled="adjustForm.selectedMethod.length == 0" type="primary" size="small" @click="goToNode()">立即定位</el-button>
-                                </el-form-item>
-                            </el-form>
-                        </el-container>
-                    </el-card>
-                </el-collapse-item>
-                <el-collapse-item class="titlestyle" title="上传测试用例" name="4">
-                    <el-card :body-style="{ padding: '0px' }" class="card">
-                        <el-container class="formbody">
-                            <el-form ref="uploadTestData" :model="uploadTestData" label-width="80px">
-                                <el-form-item label="被测项目">
-                                    <el-select v-model="uploadTestData.selectedProject" placeholder="请选择项目">
-                                        <el-option
-                                            v-for="item in uploadedFiles"
-                                            :key="item"
-                                            :label="item"
-                                            :value="item">
-                                        </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-upload class="upload" action="/apiurl/uploadTestCase" accept="application/jar" :before-upload="onBeforeUploadTestCase" ref="uploadTest" :file-list="fileList" :auto-upload="false" :data="uploadTestData">
-                                    <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-                                    <el-button style="margin-left: 10px;" size="small" type="success" @click="submitTestUpload">上传到服务器</el-button>
-                                    <div slot="tip" class="el-upload__tip">只能上传java文件或者zip文件</div>
-                                </el-upload>
-                            </el-form>
-                        </el-container>
-                    </el-card>
-                </el-collapse-item>
-                <el-collapse-item class="titlestyle" title="运行测试用例" name="5">
-                        <el-card :body-style="{ padding: '0px' }" class="card">
-                            <el-container class="formbody">
-                                <el-form ref="selectTestForm" :model="selectTestForm" label-width="80px">
-                                    <el-form-item label="项目选择">
-                                        <el-select ref="selectTestProject" filterable  v-model="selectTestForm.selectedTestProject" placeholder="请选择项目" @change="getTestProject($event)" @visible-change="showTestProjectList">
-                                            <el-option
-                                                    v-for="item in uploadedFiles"
-                                                    :key="item"
-                                                    :label="item"
-                                                    :value="item">
-                                            </el-option>
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-form-item label="测试文件">
-                                        <el-select ref="selectTestClass" filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestClasses.length == 0" v-model="selectTestForm.selectedTestClass" placeholder="选择测试文件" @change="getTestClass($event)">
-                                            <el-option
-                                                    v-for="item in selectTestForm.allTestClasses"
-                                                    :key="item"
-                                                    :label="item"
-                                                    :value="item">
-                                            </el-option>
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-form-item label="测试用例">
-                                        <el-select ref="selectTestMethod" filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestCases.length == 0" v-model="selectTestForm.selectedTestCase" placeholder="选择测试用例">
-                                            <el-option
-                                                    v-for="item in selectTestForm.allTestCases"
-                                                    :key="item"
-                                                    :label="item"
-                                                    :value="item">
-                                            </el-option>
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-progress :text-inside="true" :stroke-width="18" :percentage="runTestPercentange"></el-progress>
-                                    <el-form-item>
-                                            <el-button type="primary" size="small" @click="startRunTestCase()">执行用例</el-button>
-                                            <el-button type="primary" size="small" @click="getTestResult()" :disabled="runTestPercentange!=100">显示效果</el-button>
-                                            <el-button type="primary" size="small" @click="cancelShow()" :disabled="runTestPercentange!=100">取消效果</el-button>
-                                    </el-form-item>
-                                </el-form>
-                            </el-container>
-                        </el-card>
-                </el-collapse-item>
-                <el-collapse-item class="titlestyle" title="未覆盖测试用例" name="6">
-                        <el-card :body-style="{ padding: '0px' }" class="card">
-                            <el-container class="formbody">
-                               <el-form ref="form" :model="selectTestForm" label-width="80px">
-                                    <el-form-item label="未覆盖分支选择">
-                                        <el-select v-model="selectTestForm.selectUncoverTest" placeholder="请选择未覆盖的边">
-                                            <el-option
-                                            v-for="item in uncover"
-                                            :key="item"
-                                            :label="item"
-                                            :value="item">
-                                            </el-option>
-                                        </el-select>
-                                    </el-form-item>
-                                    <el-form-item>
-                                        <el-button type="primary" @click="gotoUncover()">立即定位</el-button>
-                                    </el-form-item>
-                                    <div>
-                                        <div id="branches">分支总数：{{branchnum}}；</div>
-                                        <div id="usecase">执行用例数：{{usecasenum}}；</div>
-                                        <div id="uncoverbranch">未覆盖分支数：{{uncoverlength}}；</div>
-                                        <div id="coverrate">覆盖率：{{coverrate}}%：</div>
-                                        <!-- <svg id="piechart" xmlns="http://www.w3.org/2000/svg" style="height:300px;width:300px">
-
-                                        </svg> -->
-                                    </div>
-                                </el-form>
-                            </el-container>
-                        </el-card>
-                </el-collapse-item>
-                <el-collapse-item class="titlestyle" title="添加节点" name="7">
-                    <el-card :body-style="{ padding: '0px' }" class="card">
-                        <el-container class="formbody">
-                            <el-form ref="form" :model="selectTestForm" label-width="80px">
-                                <el-form-item label="现有节点">
-                                    <el-cascader
-                                        v-model="cascaderNode"
-                                        :options="cascaderClassMethod"
-                                        @visible-change="praseClassMethod"
-                                        @change="selectNode">
-                                    </el-cascader>
-                                </el-form-item>
-                                <el-form-item label="新节点">
-                                    <el-input type="textarea" v-model="newnode" placeholder="请输入新节点名称"></el-input>
-                                </el-form-item>
-                                <el-form-item label="类型选择">
-                                    <el-select v-model="selectednodetype" filterable placeholder="请选择节点类型" @change="getnodetype()">
-                                        <el-option label="数据库" value="1"> </el-option>
-                                        <el-option label="外设" value="2"> </el-option>
-                                        <el-option label="前端" value="3"> </el-option>
-                                        <el-option label="其他系统" value="4"> </el-option>
-                                    </el-select>
-                                </el-form-item>
-                                <el-form-item>
-                                    <el-button type="primary" @click="createNewNode()">立即创建</el-button>
-                                </el-form-item>
-                            </el-form>
-                        </el-container>
-                    </el-card>
-                </el-collapse-item>
-                <el-collapse-item class="titlestyle" title="回归测试" name="8">
-                    <el-card :body-style="{ padding: '0px 5px' }" class="card">
-                        <el-row :gutter="20" style="margin:10px 0">
-                            <el-col :span="6" style="padding:5px 0;">项目选择</el-col>
-                            <el-col :span="18" style="padding:0;">
-                                <el-select
-                                    v-model="regression.info.oldJarName" 
-                                    placeholder="请选择进行回归测试的项目" 
-                                    @visible-change="showfilelist" 
-                                    @change="getRegressionProj($event)">
+                </el-card>
+            </el-collapse-item>
+            <el-collapse-item class="titlestyle" title="上传测试用例" name="4">
+                <el-card :body-style="{ padding: '0px' }" class="card">
+                    <el-container class="formbody">
+                        <el-form ref="uploadTestData" :model="uploadTestData" label-width="80px">
+                            <el-form-item label="被测项目">
+                                <el-select v-model="uploadTestData.selectedProject" placeholder="请选择项目">
                                     <el-option
                                         v-for="item in uploadedFiles"
                                         :key="item"
@@ -266,87 +65,217 @@
                                         :value="item">
                                     </el-option>
                                 </el-select>
-                            </el-col>
-                        </el-row>
-                        <el-input
-                            type="textarea"
-                            autosize
-                            placeholder="请输入包范围"
-                            v-model="regression.info.packageName">
-                        </el-input>
-                        <!-- action="https://jsonplaceholder.typicode.com/posts/" -->
-                        <el-upload
-                            style="margin:10px 0;height:100px"
-                            ref="uploadjar"
-                            action="/apiurl/uploadRegressiveJar"
-                            :file-list="regression.jarFiles"
-                            :on-change="fileListChange"
-                            :on-remove="fileListChange"
-                            :on-success="uploadSucc"
-                            :limit="1"
-                            :auto-upload="false">
-                            <el-button slot="trigger" size="small" type="primary" :disabled="regression.disable">{{regression.status}}</el-button>
-                            <el-button style="margin-left: 10px;" size="small" type="success" @click="UploadJars"  :disabled="!regression.info.newJarName || !regression.info.oldJarName">上传</el-button>
-                            <div slot="tip" class="el-upload__tip">请上传新版本的Jar包</div>
-                        </el-upload>
+                            </el-form-item>
+                            <el-upload class="upload" action="/apiurl/uploadTestCase" accept="application/jar" :before-upload="onBeforeUploadTestCase" ref="uploadTest" :file-list="fileList" :auto-upload="false" :data="uploadTestData">
+                                <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+                                <el-button style="margin-left: 10px;" size="small" type="success" @click="submitTestUpload">上传到服务器</el-button>
+                                <div slot="tip" class="el-upload__tip">只能上传java文件或者zip文件</div>
+                            </el-upload>
+                        </el-form>
+                    </el-container>
+                </el-card>
+            </el-collapse-item>
+            <el-collapse-item class="titlestyle" title="运行测试用例" name="5">
+                    <el-card :body-style="{ padding: '0px' }" class="card">
+                        <el-container class="formbody">
+                            <el-form ref="selectTestForm" :model="selectTestForm" label-width="80px">
+                                <el-form-item label="项目选择">
+                                    <el-select ref="selectTestProject" filterable  v-model="selectTestForm.selectedTestProject" placeholder="请选择项目" @change="getTestProject($event)" @visible-change="showTestProjectList">
+                                        <el-option
+                                                v-for="item in uploadedFiles"
+                                                :key="item"
+                                                :label="item"
+                                                :value="item">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="测试文件">
+                                    <el-select ref="selectTestClass" filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestClasses.length == 0" v-model="selectTestForm.selectedTestClass" placeholder="选择测试文件" @change="getTestClass($event)">
+                                        <el-option
+                                                v-for="item in selectTestForm.allTestClasses"
+                                                :key="item"
+                                                :label="item"
+                                                :value="item">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="测试用例">
+                                    <el-select ref="selectTestMethod" filterable  :disabled="Object.entries(testCaseMap).length == 0 || selectTestForm.allTestCases.length == 0" v-model="selectTestForm.selectedTestCase" placeholder="选择测试用例">
+                                        <el-option
+                                                v-for="item in selectTestForm.allTestCases"
+                                                :key="item"
+                                                :label="item"
+                                                :value="item">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-progress :text-inside="true" :stroke-width="18" :percentage="runTestPercentange"></el-progress>
+                                <el-form-item>
+                                        <el-button type="primary" size="small" @click="startRunTestCase()">执行用例</el-button>
+                                        <el-button type="primary" size="small" @click="getTestResult()" :disabled="runTestPercentange!=100">显示效果</el-button>
+                                        <el-button type="primary" size="small" @click="cancelShow()" :disabled="runTestPercentange!=100">取消效果</el-button>
+                                </el-form-item>
+                            </el-form>
+                        </el-container>
                     </el-card>
+            </el-collapse-item>
+            <el-collapse-item class="titlestyle" title="未覆盖测试用例" name="6">
+                    <el-card :body-style="{ padding: '0px' }" class="card">
+                        <el-container class="formbody">
+                           <el-form ref="form" :model="selectTestForm" label-width="80px">
+                                <el-form-item label="未覆盖分支选择">
+                                    <el-select v-model="selectTestForm.selectUncoverTest" placeholder="请选择未覆盖的边">
+                                        <el-option
+                                        v-for="item in uncover"
+                                        :key="item"
+                                        :label="item"
+                                        :value="item">
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item>
+                                    <el-button type="primary" @click="gotoUncover()">立即定位</el-button>
+                                </el-form-item>
+                                <div>
+                                    <div id="branches">分支总数：{{branchnum}}；</div>
+                                    <div id="usecase">执行用例数：{{usecasenum}}；</div>
+                                    <div id="uncoverbranch">未覆盖分支数：{{uncoverlength}}；</div>
+                                    <div id="coverrate">覆盖率：{{coverrate}}%：</div>
+                                    <!-- <svg id="piechart" xmlns="http://www.w3.org/2000/svg" style="height:300px;width:300px">
+
+                                    </svg> -->
+                                </div>
+                            </el-form>
+                        </el-container>
+                    </el-card>
+            </el-collapse-item>
+            <el-collapse-item class="titlestyle" title="添加节点" name="7">
+                <el-card :body-style="{ padding: '0px' }" class="card">
+                    <el-container class="formbody">
+                        <el-form ref="form" :model="selectTestForm" label-width="80px">
+                            <el-form-item label="现有节点">
+                                <el-cascader
+                                    v-model="cascaderNode"
+                                    :options="cascaderClassMethod"
+                                    @visible-change="praseClassMethod"
+                                    @change="selectNode">
+                                </el-cascader>
+                            </el-form-item>
+                            <el-form-item label="新节点">
+                                <el-input type="textarea" v-model="newnode" placeholder="请输入新节点名称"></el-input>
+                            </el-form-item>
+                            <el-form-item label="类型选择">
+                                <el-select v-model="selectednodetype" filterable placeholder="请选择节点类型" @change="getnodetype()">
+                                    <el-option label="数据库" value="1"> </el-option>
+                                    <el-option label="外设" value="2"> </el-option>
+                                    <el-option label="前端" value="3"> </el-option>
+                                    <el-option label="其他系统" value="4"> </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" @click="createNewNode()">立即创建</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </el-container>
+                </el-card>
+            </el-collapse-item>
+            <el-collapse-item class="titlestyle" title="回归测试" name="8">
+                <el-card :body-style="{ padding: '0px 5px' }" class="card">
                     <el-row :gutter="20" style="margin:10px 0">
-                        <el-col :span="18" style="padding:0;text-align:left">
-                            <el-select v-model="regression.chosedInfo" placeholder="做过的回归测试">
+                        <el-col :span="6" style="padding:5px 0;">项目选择</el-col>
+                        <el-col :span="18" style="padding:0;">
+                            <el-select
+                                v-model="regression.info.oldJarName" 
+                                placeholder="请选择进行回归测试的项目" 
+                                @visible-change="showfilelist" 
+                                @change="getRegressionProj($event)">
                                 <el-option
-                                    v-for="item in history.regressionInfos"
-                                    :key="item.name"
-                                    :label="item.name"
-                                    :value="item.name">
+                                    v-for="item in uploadedFiles"
+                                    :key="item"
+                                    :label="item"
+                                    :value="item">
                                 </el-option>
                             </el-select>
                         </el-col>
-                        <el-col :span="6" style="padding:5px 0;">
-                            <el-button size="small" type="success" @click="analyseHistory" :disabled="!regression.chosedInfo">分析</el-button>
-                        </el-col>
                     </el-row>
-                    <div v-if="oldvsnew.length">
-                        <div class="list-header">
-                            <el-row>
-                                <el-col :span="5">
-                                    分析结果
-                                </el-col>
-                                <el-col :span="19">
-                                    <el-checkbox-group v-model="filterList" @change="filterChange">
-                                        <el-checkbox label="未影响"></el-checkbox>
-                                        <el-checkbox label="影响的"></el-checkbox>
-                                    </el-checkbox-group>
-                                </el-col>
-                            </el-row>
-                        </div>
-                        <div class="list-container">
-                            <el-tooltip v-for="(testcase,index) in showoldvsnew" :key="index" :content="['(不变)','(有影响)'][testcase.state] + testcase.casename" placement="right" effect="light">
-                                <div class="hjr-list-item" :style="'border-left-color:'+ ['red','green'][testcase.state] + ';'">{{testcase.casename}}</div>
-                            </el-tooltip>
-                        </div>
+                    <el-input
+                        type="textarea"
+                        autosize
+                        placeholder="请输入包范围"
+                        v-model="regression.info.packageName">
+                    </el-input>
+                    <!-- action="https://jsonplaceholder.typicode.com/posts/" -->
+                    <el-upload
+                        style="margin:10px 0;height:100px"
+                        ref="uploadjar"
+                        action="/apiurl/uploadRegressiveJar"
+                        :file-list="regression.jarFiles"
+                        :on-change="fileListChange"
+                        :on-remove="fileListChange"
+                        :on-success="uploadSucc"
+                        :limit="1"
+                        :auto-upload="false">
+                        <el-button slot="trigger" size="small" type="primary" :disabled="regression.disable">{{regression.status}}</el-button>
+                        <el-button style="margin-left: 10px;" size="small" type="success" @click="UploadJars"  :disabled="!regression.info.newJarName || !regression.info.oldJarName">上传</el-button>
+                        <div slot="tip" class="el-upload__tip">请上传新版本的Jar包</div>
+                    </el-upload>
+                </el-card>
+                <el-row :gutter="20" style="margin:10px 0">
+                    <el-col :span="18" style="padding:0;text-align:left">
+                        <el-select v-model="regression.chosedInfo" placeholder="做过的回归测试">
+                            <el-option
+                                v-for="item in history.regressionInfos"
+                                :key="item.name"
+                                :label="item.name"
+                                :value="item.name">
+                            </el-option>
+                        </el-select>
+                    </el-col>
+                    <el-col :span="6" style="padding:5px 0;">
+                        <el-button size="small" type="success" @click="analyseHistory" :disabled="!regression.chosedInfo">分析</el-button>
+                    </el-col>
+                </el-row>
+                <div v-if="oldvsnew.length">
+                    <div class="list-header">
+                        <el-row>
+                            <el-col :span="5">
+                                分析结果
+                            </el-col>
+                            <el-col :span="19">
+                                <el-checkbox-group v-model="filterList" @change="filterChange">
+                                    <el-checkbox label="未影响"></el-checkbox>
+                                    <el-checkbox label="影响的"></el-checkbox>
+                                </el-checkbox-group>
+                            </el-col>
+                        </el-row>
                     </div>
-                </el-collapse-item>
-                <el-collapse-item class="titlestyle" title="脚本录制" name="9">
-                    <!-- 选择框，选择要回放的测试用例 -->
-                    <el-button size="small" type="primary" @click="prepareRecord">准备录制</el-button>
-                    <el-button size="small" type="primary" @click="watchReplay">查看回放</el-button>
-                    <el-dialog :visible.sync="preparerecord" width="80%">
-                        <iframe ref="frame" src="https://www.baidu.com" width="1024" height="768" style="-webkit-transform:scale(0.8);-moz-transform-scale(0.8);"></iframe>
-                        
-                        <span slot="footer" class="dialog-footer">
-                            <el-button size="small" type="primary" @click="startRecord">开始录制</el-button>
-                        </span>
-                    </el-dialog>
-                    <el-dialog :visible.sync="showReplay" width="60%">
-                        <Player ref="replayer"/>
-                        <span slot="footer" class="dialog-footer">
-                            <el-button type="primary" @click="toggleReplay">{{playandpause}}</el-button>
-                        </span>
-                    </el-dialog>
-                </el-collapse-item>
-            </el-collapse>
-        </div>
-    </el-container>
+                    <div class="list-container">
+                        <el-tooltip v-for="(testcase,index) in showoldvsnew" :key="index" :content="['(不变)','(有影响)'][testcase.state] + testcase.casename" placement="right" effect="light">
+                            <div class="hjr-list-item" :style="'border-left-color:'+ ['red','green'][testcase.state] + ';'">{{testcase.casename}}</div>
+                        </el-tooltip>
+                    </div>
+                </div>
+            </el-collapse-item>
+            <el-collapse-item class="titlestyle" title="脚本录制" name="9">
+                <!-- 选择框，选择要回放的测试用例 -->
+                <el-button size="small" type="primary" @click="prepareRecord">准备录制</el-button>
+                <el-button size="small" type="primary" @click="watchReplay">查看回放</el-button>
+                <el-dialog :visible.sync="preparerecord" width="80%">
+                    <iframe ref="frame" src="https://www.baidu.com" width="1024" height="768" style="-webkit-transform:scale(0.8);-moz-transform-scale(0.8);"></iframe>
+                    
+                    <span slot="footer" class="dialog-footer">
+                        <el-button size="small" type="primary" @click="startRecord">开始录制</el-button>
+                    </span>
+                </el-dialog>
+                <el-dialog :visible.sync="showReplay" width="60%">
+                    <Player ref="replayer"/>
+                    <span slot="footer" class="dialog-footer">
+                        <el-button type="primary" @click="toggleReplay">{{playandpause}}</el-button>
+                    </span>
+                </el-dialog>
+            </el-collapse-item>
+        </el-collapse>
+    </div>
 </template>
 
 <script>
@@ -364,14 +293,17 @@
     import * as d3 from 'd3'
     import { setInterval } from 'timers';
     import { Promise } from 'q';
-    import * as rrweb from "rrweb";
     import Player from '@/components/Player.vue';
+    import uploadCard from '@/components/uploadCard.vue';
+    import graphCard from '@/components/graphCard.vue';
 
     export default {
         components: {
             ElButton,
             ElContainer,
-            Player
+            Player,
+            uploadCard,
+            graphCard
         },
         name: "method-call-relation-graph",
         data () {
@@ -454,17 +386,17 @@
         },
         methods: {
 // --- card 上传项目
-            submitUpload() {
-                this.$refs.upload.submit();
-            },
-            onBeforeUpload(file) {
-                const isJAR = file.name.endsWith('.jar')
-                if (!isJAR) {
-                    this.$message.error('只能上传Jar文件!');
-                    return false;
-                }
-                return isJAR
-            },
+            // submitUpload() {
+            //     this.$refs.upload.submit();
+            // },
+            // onBeforeUpload(file) {
+            //     const isJAR = file.name.endsWith('.jar')
+            //     if (!isJAR) {
+            //         this.$message.error('只能上传Jar文件!');
+            //         return false;
+            //     }
+            //     return isJAR
+            // },
 // -- card 上传项目
 
 // --- card 调用关系图的生成
@@ -475,9 +407,6 @@
                         _this.uploadedFiles = response.result
                     })
                 }
-            },
-            packagesHistory(queryString, cb) {
-                cb(this.history.packages);
             },
             packagesCallHistory(queryString, cb) {
                 // cb([{ "value": "asdasd"}]);
@@ -492,7 +421,7 @@
                         _this.adjustForm.allClasses = response.classes
                         _this.classMethodMap = response.classMethodMap
                         try {
-                            _this.showd3()
+                            _this.$refs.graph.showd3()
 
                             // 选择默认将项目设为此项目
                             _this.uploadTestData.selectedProject = _this.form.selectedjar;      // 上传测试用例部分
@@ -1507,21 +1436,6 @@
         border-radius: 0;
     }
 
-    #thumb {
-        width: 160px;
-        height: 160px;
-        pointer-events: none;
-    }
-
-    #thumb-container {
-        position: absolute;
-        right: 0;
-        bottom: 0;
-        margin: 20px;
-        border: 1px solid silver;
-        background-color: white;
-        box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-    }
     .titlestyle{
         font-family: "Microsoft YaHei";
         font-weight:bold;
@@ -1535,27 +1449,9 @@
     .upload {
         margin:25px 0px 25px 0px;
     }
-    .container {
-        height: 600px;
-        .exit {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            width: 60px;
-            height: 25px;
-            border: none;
-            border-radius: 2px;
-            color: #000;
-            z-index: 200;
-        }
-        overflow-y: scroll;
-    }
+
     .formlabelfont {
         font-size: 12px;
-    }
-
-    .container::-webkit-scrollbar { 
-        display: none;
     }
 
     .labeltext {
