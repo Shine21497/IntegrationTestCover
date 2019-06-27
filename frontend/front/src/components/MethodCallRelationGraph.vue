@@ -137,7 +137,7 @@
                                     </el-select>
                                 </el-form-item>
                                 <el-upload class="upload" action="/apiurl/uploadTestCase" accept="application/jar" :before-upload="onBeforeUploadTestCase" ref="uploadTest" :file-list="fileList" :auto-upload="false" :data="uploadTestData">
-                                    <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
+                                    <el-button slot="trigger" size="small" type="primary">选取测试文件</el-button>
                                     <el-button style="margin-left: 10px;" size="small" type="success" @click="submitTestUpload">上传到服务器</el-button>
                                     <div slot="tip" class="el-upload__tip">只能上传java文件或者zip文件</div>
                                 </el-upload>
@@ -223,17 +223,6 @@
                     <el-card :body-style="{ padding: '0px' }" class="card">
                         <el-container class="formbody">
                             <el-form ref="form" :model="selectTestForm" label-width="80px">
-                                <el-form-item label="现有节点">
-                                    <el-cascader
-                                        v-model="cascaderNode"
-                                        :options="cascaderClassMethod"
-                                        @visible-change="praseClassMethod"
-                                        @change="selectNode">
-                                    </el-cascader>
-                                </el-form-item>
-                                <el-form-item label="新节点">
-                                    <el-input type="textarea" v-model="newnode" placeholder="请输入新节点名称"></el-input>
-                                </el-form-item>
                                 <el-form-item label="类型选择">
                                     <el-select v-model="selectednodetype" filterable placeholder="请选择节点类型" @change="getnodetype()">
                                         <el-option label="数据库" value="1"> </el-option>
@@ -241,6 +230,17 @@
                                         <el-option label="前端" value="3"> </el-option>
                                         <el-option label="其他系统" value="4"> </el-option>
                                     </el-select>
+                                </el-form-item>
+                                <el-form-item label="新节点">
+                                    <el-input type="textarea" v-model="newnode" placeholder="请输入新节点名称"></el-input>
+                                </el-form-item>
+                                <el-form-item label="现有节点">
+                                    <el-cascader
+                                        v-model="cascaderNode"
+                                        :options="cascaderClassMethod"
+                                        @visible-change="praseClassMethod"
+                                        @change="selectNode">
+                                    </el-cascader>
                                 </el-form-item>
                                 <el-form-item>
                                     <el-button type="primary" @click="createNewNode()">立即创建</el-button>
@@ -250,66 +250,56 @@
                     </el-card>
                 </el-collapse-item>
                 <el-collapse-item class="titlestyle" title="回归测试" name="8">
-                    <el-card :body-style="{ padding: '0px 5px' }" class="card">
-                        <el-row :gutter="20" style="margin:10px 0">
-                            <el-col :span="6" style="padding:5px 0;">项目选择</el-col>
-                            <el-col :span="18" style="padding:0;">
-                                <el-select
-                                    v-model="regression.info.oldJarName" 
-                                    placeholder="请选择进行回归测试的项目" 
-                                    @visible-change="showfilelist" 
-                                    @change="getRegressionProj($event)">
-                                    <el-option
-                                        v-for="item in uploadedFiles"
-                                        :key="item"
-                                        :label="item"
-                                        :value="item">
-                                    </el-option>
-                                </el-select>
-                            </el-col>
-                        </el-row>
-                        <el-input
-                            type="textarea"
-                            autosize
-                            placeholder="请输入包范围"
-                            v-model="regression.info.packageName">
-                        </el-input>
-                        <!-- action="https://jsonplaceholder.typicode.com/posts/" -->
-                        <el-upload
-                            style="margin:10px 0;height:100px"
-                            ref="uploadjar"
-                            action="/apiurl/uploadRegressiveJar"
-                            :file-list="regression.jarFiles"
-                            :on-change="fileListChange"
-                            :on-remove="fileListChange"
-                            :on-success="uploadSucc"
-                            :limit="1"
-                            :auto-upload="false">
-                            <el-button slot="trigger" size="small" type="primary" :disabled="regression.disable">{{regression.status}}</el-button>
-                            <el-button style="margin-left: 10px;" size="small" type="success" @click="UploadJars"  :disabled="!regression.info.newJarName || !regression.info.oldJarName">上传</el-button>
-                            <div slot="tip" class="el-upload__tip">请上传新版本的Jar包</div>
-                        </el-upload>
-                    </el-card>
-                    <el-row :gutter="20" style="margin:10px 0">
-                        <el-col :span="18" style="padding:0;text-align:left">
-                            <el-select v-model="regression.chosedInfo" placeholder="做过的回归测试">
+                    <el-row :gutter="20" style="margin:10px 0;text-align: left;">
+                        <el-col :span="6" style="padding:5px;">旧版本</el-col>
+                        <el-col :span="18" style="padding:0;">
+                            <el-select
+                                v-model="regression.info.oldVersion" 
+                                placeholder="请选择进行回归测试的旧版本项目" 
+                                @visible-change="showfilelist"
+                                @change="getVersions($event)">
                                 <el-option
-                                    v-for="item in history.regressionInfos"
-                                    :key="item.name"
-                                    :label="item.name"
-                                    :value="item.name">
+                                    v-for="item in uploadedFiles"
+                                    :key="item"
+                                    :label="item"
+                                    :value="item">
                                 </el-option>
                             </el-select>
                         </el-col>
-                        <el-col :span="6" style="padding:5px 0;">
-                            <el-button size="small" type="success" @click="analyseHistory" :disabled="!regression.chosedInfo">分析</el-button>
+                    </el-row>
+                    <el-row :gutter="20" style="margin:10px 0;text-align: left;">
+                        <el-col :span="6" style="padding:5px;">新版本</el-col>
+                        <el-col :span="18" style="padding:0;">
+                            <el-select
+                                v-model="regression.info.newVersion" 
+                                placeholder="请选择新版本" >
+                                <el-option
+                                    v-for="item in regression.versions"
+                                    :key="item"
+                                    :label="item"
+                                    :value="item">
+                                </el-option>
+                            </el-select>
+                        </el-col>
+                    </el-row>
+                    <el-row :gutter="20" style="margin:10px 0;text-align: left;">
+                        <el-col :span="17" style="padding:5px;">
+                            <el-input
+                                type="textarea"
+                                autosize
+                                placeholder="请输入包范围"
+                                v-model="regression.info.packageName">
+                            </el-input>
+                        </el-col>
+                        <el-col :span="6" style="padding:5px;">
+                            <el-button size="small" type="success" @click="startRegTest">开始测试</el-button>
                         </el-col>
                     </el-row>
                     <div v-if="oldvsnew.length">
                         <div class="list-header">
                             <el-row>
                                 <el-col :span="5">
-                                    分析结果
+                                    被影响的测试用例
                                 </el-col>
                                 <el-col :span="19">
                                     <el-checkbox-group v-model="filterList" @change="filterChange">
@@ -325,6 +315,21 @@
                             </el-tooltip>
                         </div>
                     </div>
+                    <el-button type="text" @click="regression.uploadNewVersion = true">找不到想测的版本？那就上传吧</el-button>
+                    <el-card v-if="regression.uploadNewVersion" :body-style="{ padding: '10px 5px' }" class="card">
+                        <!-- action="https://jsonplaceholder.typicode.com/posts/" -->
+                        <el-upload
+                            style="margin:10px 0;height:100px"
+                            ref="uploadjar"
+                            action="/apiurl/uploadRegressiveJar"
+                            :file-list="regression.jarFiles"
+                            :on-success="uploadSucc"
+                            :limit="3"
+                            :auto-upload="false">
+                            <el-button slot="trigger" size="small" type="primary">选择要上传的版本Jar包</el-button>
+                            <el-button style="margin-left: 10px;" size="small" type="success" @click="UploadJars">上传</el-button>
+                        </el-upload>
+                    </el-card>
                 </el-collapse-item>
                 <el-collapse-item class="titlestyle" title="脚本录制" name="9">
                     <!-- 选择框，选择要回放的测试用例 -->
@@ -360,6 +365,7 @@
         getTestRunningStatus, // 获取指定任务的执行进度，需要一个参数 (task_id_Key）
         getInvokingResults,   // 获取测试用例执行结果，需要一个参数 (task_id_Key）
         postRegression,       // 回归测试上传新旧包，传的参数为 regression.info
+        getVersionsofPrj      // 获取项目所有的版本
     } from '@/api/methodcallrelationgraph.js'
     import * as d3 from 'd3'
     import { setInterval } from 'timers';
@@ -425,19 +431,19 @@
                 history:{
                     packages:[],
                     packagesCall:[],
-                    regressionInfos:[], // store historic regression infos
                 },
-                regression:{          // 回归测试用的新旧版本 Jar 包
-                    jarFiles: [],     // 新 Jar 包列表
+                regression:{                // 回归测试用的新旧版本 Jar 包
+                    jarFiles: [],           // 新 Jar 包列表
+                    project:"",             // 进行回归测试的项目
+                    projectVersions:{},     // 项目所有历史版本，缓存用
+                    versions:[],            // 绑定下拉框
                     info:{
-                        oldJarName:'',
-                        newJarName:'',
+                        oldVersion:'',
+                        newVersion:'',
                         packageName:'',
                     },
-                    status:'选择新版本Jar包', // ui
-                    disable:false,           // ui
-                    oldcases:[],             // 所有的测试用例
-                    chosedInfo:"",
+                    oldcases:{},             // 所有的测试用例
+                    uploadNewVersion:false,
                 },
                 oldvsnew:[],          // 用于新旧版本项目测试用例的对比
                 showoldvsnew:[],      // 存在筛选，所以要一个专门用于展示的
@@ -497,6 +503,7 @@
                             // 选择默认将项目设为此项目
                             _this.uploadTestData.selectedProject = _this.form.selectedjar;      // 上传测试用例部分
                             _this.selectTestForm.selectedTestProject = _this.form.selectedjar;  // 运行测试用例部分
+                            _this.regression.oldVersion = _this.form.selectedjar;  // 回归测试部分
                         } catch (error) {
                             if (!_this.relation.nodes) {
                                 this.$message.error("生成调用图失败，可能的原因是：遍历程序包方法时出错");
@@ -973,8 +980,18 @@
 
 // --- card 回归测试
             // 选择要进行 回归测试 的项目
-            getRegressionProj(prov) {
+            getVersions(prov) {
                 var prjName = prov.split('.')[0];
+                // 获取项目已上传的所有版本
+                if (this.regression.projectVersions[prjName]) {
+                    this.regression.versions = this.regression.projectVersions[prjName];
+                }
+                else{
+                    getVersionsofPrj(prjName).then(response=>{
+                        this.regression.versions = response;
+                        this.regression.projectVersions[prjName] = response;
+                    })
+                }
                 // 回归测试时获取旧版本的所有测试用例
                 try {
                     this.regression.oldcases[prov] = Object.keys(this.testCaseMap[prjName]) 
@@ -985,45 +1002,14 @@
                     })
                 }
             },
-            fileListChange(file, fileList) {
-                if(fileList.length == 1){
-                    this.regression.info.newJarName = fileList[0].name;
-                    this.regression.status = '已选择';
-                    this.regression.disable = true;
-                }
-                else{
-                    this.regression.info.newJarName = '';
-                    this.regression.status = '选择新版本Jar包';
-                    this.regression.disable = false;
-                }
+            startRegTest(){
+                this.analyseJars(this.regression.info);
             },
             uploadSucc(resp,file,filelist){
                 this.showMsg("上传'" + file.name + "'成功");
-                // 保存历史记录
-                let option = {
-                    oldJarName: this.regression.info.oldJarName,
-                    newJarName: this.regression.info.newJarName,
-                    packageName:this.regression.info.packageName,
-                    name:this.regression.info.oldJarName + " --> " + file.name
-                }
-                this.$nextTick(()=>{
-                    if(this.history.regressionInfos)
-                        this.history.regressionInfos.push(option)
-                    else
-                        this.history.regressionInfos = [option];
-                    localStorage.setItem('history',JSON.stringify(this.history));
-                })
-                // 自动获取分析结果
-                this.analyseJars(this.regression.info);
             },
             UploadJars(){
                 this.$refs.uploadjar.submit();
-            },
-            analyseHistory(){
-                // 获取已上传的包的分析结果
-                let chosedInfo = this.history.regressionInfos.filter(info=>{return info.name === this.regression.chosedInfo})[0]
-                this.getRegressionProj(chosedInfo.oldJarName)
-                this.analyseJars(chosedInfo);
             },
             // 筛选展示的结果
             filterChange(filters){
@@ -1039,15 +1025,16 @@
                         this.showoldvsnew = this.showoldvsnew.concat(this.oldvsnew.filter(testcase => testcase.state === filterMap[fil]));
                     })
             },
+            // 获取并分析
             analyseJars(para,time = 0){
-                // 检查 oldJarName 这个项目的所有用例是否获取
-                if (this.regression.oldcases[para.oldJarName]) {
+                // 检查 oldVersion 这个项目的所有用例是否获取
+                if (this.regression.oldcases[para.oldVersion]) {
                     postRegression(para).then(response=> {
-                        let newcases = response;                // "oldcases" is all testcases
-                        this.filterList = ["未影响", "已影响"]         // set filter to all
-                        this.oldvsnew = [];                              // refresh result
+                        let newcases = response;                           // "oldcases" is all testcases
+                        this.filterList = ["未影响", "已影响"]              // set filter to all
+                        this.oldvsnew = [];                                // refresh result
 
-                        this.regression.oldcases[para.oldJarName].forEach(testcase => {
+                        this.regression.oldcases[para.oldVersion].forEach(testcase => {
 
                             if(newcases.includes(testcase)){
                                 // 有影响的

@@ -73,7 +73,6 @@ export function postRegression(params) {
 
 export function uploadRecord(events) {
     const body = JSON.stringify({ events });
-    console.log(events)
     return fetch({
         url: '/apiurl/record',
         method: "POST",
@@ -82,4 +81,14 @@ export function uploadRecord(events) {
         },
         body
     });
+}
+
+export function getVersionsofPrj(prjName) {
+    return fetch({
+        url: '/apiurl/versions',
+        method: 'get',
+        params: {
+            project:prjName
+        }
+    })
 }
