@@ -5,39 +5,215 @@
         <defs>
           <!--节点滤波器-->
           <filter id="f1">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="5"></feGaussianBlur>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="5" />
           </filter>
         </defs>
         <defs>
           <!--直线滤波器-->
           <filter id="f2">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="2"></feGaussianBlur>
+            <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
           </filter>
         </defs>
       </svg>
     </div>
     <!-- <div id="thumb-container">
-                <svg id="thumb" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
-                    <use xlink:href="#svgCanvas" />
-                </svg>
+        <svg id="thumb" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
+            <use xlink:href="#svgCanvas" />
+        </svg>
     </div>-->
   </div>
 </template>
 
 <script>
-import { getHelloWorldData } from "@/api/graph.js";
 import * as d3 from "d3";
 
 export default {
   name: "Graph",
-  props: {
-    relation: Object
-  },
+  props: {},
   data() {
-    return {};
+    return {
+      relation: {},
+      isok: false,
+      tempTrans: d3.zoomIdentity.translate(0, 0).scale(1),
+      g: {},
+      TestResult: []
+    };
   },
   methods: {
-    showd3() {
+    showEffect(result) {
+      if (!isok) {
+        this.$message({
+          showClose: true,
+          message: "请先生成调用关系图"
+        });
+        return;
+      }
+      const { TestResult, taskType } = result;
+      console.log("start show ");
+      this.TestResult = TestResult;
+      for (let index in this.relation.links) {
+        var callrelation =
+          this.relation.links[index].source.name +
+          " CALL " +
+          this.relation.links[index].target.name;
+        if (TestResult.indexOf(callrelation) < 0)
+          this.uncoverfullname.push(callrelation);
+      }
+      if (taskType === "one") {
+        console.log("start one ");
+        for (let index in TestResult) {
+          var result = TestResult[index].split(" ");
+          if (index === 0) {
+            this.moveFirstnode(result[0]);
+          }
+          this.changeSingleLine(result[0], result[2]);
+        }
+      }
+      //如果多个结果
+      else {
+        console.log("start mouti ");
+        for (let index in TestResult) {
+          var result = TestResult[index].split(" ");
+          this.changeMultipleLine(result[0], result[2]);
+        }
+      }
+    },
+    moveFirstnode(name) {
+      var node = this.findNodeByName(name);
+      var trans = this.tempTrans;
+      trans.k = 1;
+      this.g.attr("transform", trans);
+      // 根据视野大小定位
+      var width = document.getElementById("container").offsetWidth;
+      var height = document.getElementById("container").offsetHeight;
+
+      trans.x = (Math.round(width / 2) - node.x) * trans.k;
+      trans.y = (Math.round(height / 2) - node.y) * trans.k;
+
+      this.g.attr("transform", trans);
+    },
+    //多个用例测试结果
+    changeMultipleLine(SourceName, TargetName) {
+      for (let index in this.relation.links) {
+        if (
+          this.relation.links[index].source.name == SourceName &&
+          this.relation.links[index].target.name == TargetName
+        ) {
+          var line_id = this.relation.links[index].index;
+          d3.select("#eachline" + line_id).classed("edgelabel", false);
+          d3.select("#eachline" + line_id)
+            .style("stroke-width", 3.5)
+            .attr("stroke", "#ff7438")
+            .attr("filter", "url(#f2)");
+          this.changeNode(SourceName);
+          this.changeNode(TargetName);
+        }
+      }
+    },
+    //改变用例测试经过的直线
+    changeSingleLine(SourceName, TargetName) {
+      console.log("change one start ");
+      for (let index in this.relation.links) {
+        if (
+          this.relation.links[index].source.name == SourceName &&
+          this.relation.links[index].target.name == TargetName
+        ) {
+          var line_id = this.relation.links[index].index;
+          d3.select("#eachline" + line_id).classed("edgelabel", false);
+          d3.select("#eachline" + line_id).style("stroke-width", 3.5);
+          d3.select("#eachline" + line_id).classed("showsinglepath", true);
+          this.changeNode(SourceName);
+          this.changeNode(TargetName);
+        }
+        // var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
+        // if(this.testCaseMap.indexOf(callrelation)<0)
+        //     this.uncoverfullname.push(callrelation);
+      }
+      console.log("change one end ");
+    },
+    //取消结果显示
+    cancelShow() {
+      for (let index in this.TestResult) {
+        var result = this.TestResult[index].split(" ");
+        this.cancelLine(result[0], result[2]);
+        this.cancelNode(result[0]);
+        this.cancelNode(result[2]);
+      }
+    },
+    //给节点加上边界效果
+    changeNode(Name) {
+      for (let index in this.relation.nodes) {
+        if (this.relation.nodes[index].name == Name) {
+          var node_id = this.relation.nodes[index].index;
+          // d3.select("#node" + node_id).classed("bling", true);
+          d3.select("#node" + node_id)
+            .attr("stroke-width", 3)
+            .attr("stroke", "#FA8072")
+            .attr("filter", "url(#f1)");
+        }
+      }
+    },
+    //取消连线效果
+    cancelLine(SourceName, TargetName) {
+      for (let index in this.relation.links) {
+        if (
+          this.relation.links[index].source.name == SourceName &&
+          this.relation.links[index].target.name == TargetName
+        ) {
+          var line_id = this.relation.links[index].index;
+        }
+      }
+      d3.select("#eachline" + line_id)
+        .classed("showsinglepath", false)
+        .attr("filter", "");
+      d3.select("#eachline" + line_id).style("stroke-width", 2);
+      d3.select("#eachline" + line_id).classed("edgelabel", true);
+    },
+    //取消节点边界显示
+    cancelNode(Name) {
+      for (let index in this.relation.nodes) {
+        if (this.relation.nodes[index].name == Name) {
+          var node_id = this.relation.nodes[index].index;
+        }
+      }
+      d3.select("#node" + node_id)
+        .attr("stroke-width", 0)
+        .attr("stroke", "")
+        .attr("filter", "");
+    },
+    locatenode(node) {
+      var trans = this.tempTrans;
+
+      trans.k = 1;
+      this.g.attr("transform", trans);
+      // 根据视野大小定位
+      var width = document.getElementById("container").offsetWidth;
+      var height = document.getElementById("container").offsetHeight;
+
+      trans.x = (Math.round(width / 2) - node.x) * trans.k;
+      trans.y = (Math.round(height / 2) - node.y) * trans.k;
+
+      this.g.attr("transform", trans);
+    },
+    createGraph(relation) {
+      try {
+        this.show(relation);
+        this.relation = relation;
+        this.isok = true;
+      } catch (error) {
+        if (!relation.nodes) {
+          this.$message.error(
+            "生成调用图失败，可能的原因是：遍历程序包方法时出错"
+          );
+        }
+        if (!relation.links) {
+          this.$message.error(
+            "生成调用图失败，可能的原因是：解析调用关系时出错"
+          );
+        }
+      }
+    },
+    show(relation) {
       //获取body高度和宽度
       let height = document.body.clientHeight;
       let width = document.body.clientWidth;
@@ -47,8 +223,8 @@ export default {
       //初始化时连接线的距离长度
       const linkDistance = 130;
       //赋值数据集
-      var nodes = this.relation.nodes;
-      var links = this.relation.links;
+      var nodes = relation.nodes;
+      var links = relation.links;
 
       //  设置画布
       var svg = d3
@@ -226,7 +402,6 @@ export default {
             });
         })
         .call(drag); //监听拖动事件
-      console.log(nodes);
       // 节点文字
       var nodeText = g
         .selectAll(".nodetext")
@@ -315,11 +490,17 @@ export default {
         colour += ("00" + value.toString(16)).substr(-2);
       }
       return colour;
+    },
+    findNodeByName(name) {
+      for (let index in this.relation.nodes) {
+        if (this.relation.nodes[index].name == name) {
+          return this.relation.nodes[index];
+        }
+      }
     }
   },
   mounted() {},
-  created() {},
-  methods: {}
+  created() {}
 };
 </script>
 
@@ -362,5 +543,67 @@ export default {
   border: 1px solid silver;
   background-color: white;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+}
+
+.showsinglepath {
+  stroke: #fa8072;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  transition : draw 3s infinite ease-in-out;
+  /* -webkit-animation: draw 3s infinite ease-in-out; */
+}
+
+.edgelabel {
+  stroke: #ffd700;
+}
+//    字体火焰效果
+.highlighted {
+  font-style: italic;
+  font-weight: bold;
+  font-size: 18px;
+  font-family: sans-serif;
+  fill: #483d8b;
+  text-shadow: 0 -5px 4px #ffff00, 2px -10px 6px #ffa500,
+    -2px -15px 11px #ff6347, 2px -25px 18px #ff0000;
+  transition: 1s;
+}
+
+@keyframes draw {
+  0% {
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+.linetext {
+  font-size: 12px;
+  font-weight: bold;
+  font-family: SimSun;
+  fill: #000 !important;
+  color: #000;
+  fill-opacity: 1;
+}
+
+/*.bling{ animation: alarm 0.4s  ease-in  infinite ; fill:yellow; font-weight: bold;}
+    @keyframes alarm {
+        0%{ fill:#FF9966;}
+        50%{ fill:#FF3333;}
+        100%{ fill:#FF9966;}
+    }*/
+
+.svg {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.node {
+  position: relative;
+}
+
+.node:hover {
+  cursor: pointer;
 }
 </style>

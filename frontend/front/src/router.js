@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import MethodCallRelationGraph from './components/MethodCallRelationGraph.vue'
 import Player from './components/Player.vue'
-import Main from './views/Main.vue'
+import MainStage from './views/Main.vue'
 
 Vue.use(Router)
 
@@ -12,8 +12,8 @@ export default new Router({
     routes: [
         {
           path: '/',
-          name: 'main',
-          component: Main
+          name: 'MainStage',
+          component: MainStage
         },
         {
             path: '/method',

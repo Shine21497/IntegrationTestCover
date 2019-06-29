@@ -324,9 +324,9 @@
                             action="/apiurl/uploadRegressiveJar"
                             :file-list="regression.jarFiles"
                             :on-success="uploadSucc"
-                            :on-change="fileListChange"
                             :limit="3"
-                            :auto-upload="false">
+                            :auto-upload="false"
+                            :data="regression.info.oldVersion">
                             <el-button slot="trigger" size="small" type="primary">选择要上传的版本Jar包</el-button>
                             <el-button style="margin-left: 10px;" size="small" type="success" @click="UploadJars">上传</el-button>
                         </el-upload>
@@ -1007,14 +1007,10 @@
                 this.analyseJars(this.regression.info);
             },
             uploadSucc(resp,file,filelist){
-                this.showMsg("上传'" + file.name.split('-_-')[1] + "'成功");
+                this.showMsg("上传'" + file.name + "'成功");
             },
             UploadJars(){
                 this.$refs.uploadjar.submit();
-            },
-            fileListChange(file, fileList) {
-                var _name = fileList[0].name;
-                fileList[0].name = this.regression.info.oldVersion + "-_-" + _name;
             },
             // 筛选展示的结果
             filterChange(filters){

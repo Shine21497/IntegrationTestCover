@@ -49,4 +49,7 @@ export default {
 .upload {
   margin: 25px 0px 25px 0px;
 }
+    .card {
+        margin:5px 0px 5px 0px;
+    }
 </style>
