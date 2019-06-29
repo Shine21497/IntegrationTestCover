@@ -9,7 +9,7 @@
       <el-button type="primary" @click="gotoUncover()">立即定位</el-button>
     </el-form-item>
     <div>
-      <div id="branches">分支总数：{{branchnum}}；</div>
+      <div id="branches">分支总数：{{branchNum}}；</div>
       <div id="usecase">执行用例数：{{usecasenum}}；</div>
       <div id="uncoverbranch">未覆盖分支数：{{uncoverlength}}；</div>
       <div id="coverrate">覆盖率：{{coverrate}}%：</div>-->

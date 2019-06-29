@@ -326,7 +326,7 @@
                             :on-success="uploadSucc"
                             :limit="3"
                             :auto-upload="false"
-                            :data="{ projectName: regression.info.oldVersion.split('.')[0] }">
+                            :data="{ projectName: regression.info.oldVersion.split('.jar')[0] }">
                             <el-button slot="trigger" size="small" type="primary">选择要上传的版本Jar包</el-button>
                             <el-button style="margin-left: 10px;" size="small" type="success" @click="UploadJars">上传</el-button>
                         </el-upload>
