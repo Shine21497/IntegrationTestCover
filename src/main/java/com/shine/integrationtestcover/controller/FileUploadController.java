@@ -48,10 +48,21 @@ public class FileUploadController {
     @RequestMapping(value = "/uploadRegressiveJar")
     @ResponseBody
     public String uploadRegressiveJar(@RequestParam("file") MultipartFile file){
+        String project = file.getOriginalFilename();
+
+        System.out.println(project);
+        File projectFile = new File(baseConfig.getRegressionFilePath() + project);
+//如果文件夹不存在则创建
+        if (!projectFile.exists() && !projectFile.isDirectory()) {
+            System.out.println("//不存在");
+            projectFile.mkdir();
+        } else {
+            System.out.println("文件夹存在");
+        }
         String result = "";
         if (!file.isEmpty()) {
             try {
-                BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(baseConfig.getRegressionFilePath() + file.getOriginalFilename())));
+                BufferedOutputStream out = new BufferedOutputStream(new FileOutputStream(new File(baseConfig.getRegressionFilePath()+project+"\\" + file.getOriginalFilename())));
                 System.out.println(file.getName());
                 out.write(file.getBytes());
                 out.flush();
