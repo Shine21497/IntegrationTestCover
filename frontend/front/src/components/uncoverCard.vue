@@ -23,11 +23,18 @@
 <script type="text/ecmascript-6">
 export default {
   name: "uncoverCard",
-  props: {},
+  props: {
+    relation: Object
+  },
   data() {
     return {
       selectUncoverTest: ""
     };
+  },
+  computed: {
+    branchNum: function() {
+      return this.relation.links.length;
+    }
   },
   methods: {
     //获取未覆盖信息
