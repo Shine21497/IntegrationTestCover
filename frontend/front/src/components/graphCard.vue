@@ -48,8 +48,12 @@
 </template>
 
 <script type="text/ecmascript-6">
+import { getUploadedFileList } from "@/api/methodcallrelationgraph.js";
 export default {
   name: "graphCard",
+  props: {
+    uploadedFiles: Array
+  },
   data() {
     return {
       form: {
@@ -57,18 +61,53 @@ export default {
         packages: "",
         packagesCall: ""
       },
-      uploadedFiles: []
+      history: {
+        packages: [],
+        packagesCall: []
+      }
     };
   },
   methods: {
     packagesHistory(queryString, cb) {
       cb(this.history.packages);
     },
-    generateGraph(){
-        this.$emit("generateGraph");
+    generateGraph() {
+      this.$emit("generateGraph", this.form);
+      // 保存历史记录
+      if (
+        this.history.packagesCall.filter(
+          item => item.value == this.form.packagesCall
+        ).length == 0
+      ) {
+        this.history.packagesCall.push({ value: this.form.packagesCall });
+      }
+      if (
+        this.history.packages.filter(item => item.value == this.form.packages)
+          .length == 0
+      ) {
+        this.history.packages.push({ value: this.form.packages });
+      }
+      localStorage.setItem("history", JSON.stringify(this.history));
+    },
+    packagesCallHistory(queryString, cb) {
+      // cb([{ "value": "asdasd"}]);
+      cb(this.history.packagesCall);
+    },
+    showfilelist(open) {
+      if (open) {
+        if (!this.uploadedFiles.length) {
+            this.$emit('getuploadfiles')
+        }
+      }
     }
   },
-  created() {}
+  created() {},
+  mounted() {
+    var historyForm = JSON.parse(localStorage.getItem("history"));
+    if (historyForm) {
+      this.history = historyForm;
+    }
+  }
 };
 </script>
 

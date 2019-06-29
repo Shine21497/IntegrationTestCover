@@ -1,7 +1,12 @@
 <template>
   <div>
-    <Graph ref="graph" :relation="relation"/>
-    <ControlPanel/>
+    <Graph ref="graph" />
+    <ControlPanel
+      @generateGraph="generateGraph"
+      @locatenode="locatenode"
+      @displayResult="displayResult"
+      @cancelResult="cancelResult"
+    />
   </div>
 </template>
 
@@ -11,15 +16,27 @@ import Graph from "@/components/Graph.vue";
 import ControlPanel from "@/components/ControlPanel.vue";
 
 export default {
-  name: "main",
+  name: "MainStage",
   components: {
     Graph,
     ControlPanel
   },
   data() {
-    return {
-      relation: {}
-    };
+    return {};
+  },
+  methods: {
+    generateGraph(relation) {
+      this.$refs.graph.createGraph(relation);
+    },
+    locatenode(node) {
+      this.$refs.graph.locatenode(node);
+    },
+    displayResult(result) {
+      this.$refs.graph.showEffect(result);
+    },
+    cancelResult() {
+      this.$refs.graph.cancelShow();
+    }
   }
 };
 </script>
