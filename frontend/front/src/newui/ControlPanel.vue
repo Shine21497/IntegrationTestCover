@@ -1,5 +1,5 @@
 <template>
-  <div id="leftSide" class="left-side">
+  <!-- <div id="leftSide" class="left-side">
     <h2>
       Method-Call-Relation-Graph
       <i
@@ -63,178 +63,124 @@
               :defaultProject="defaultProject"
               :uploadedFiles="uploadedFiles"
               :testCaseMap="testCaseMap"
+              :relation="relation"
               @getuploadfiles="getuploadedFiles"
               @gettestcasemap="getTestCaseMap"
               @showtestresult="showTestResult"
               @canceltestresult="cancelTestResult"
+              @locatenode="locatenode"
             />
           </el-container>
         </el-card>
       </el-collapse-item>
-      <el-collapse-item class="titlestyle" title="未覆盖测试用例" name="6">
+      <el-collapse-item class="titlestyle" title="添加新节点" name="7">
         <el-card :body-style="{ padding: '0px' }" class="card">
           <el-container class="formbody">
-            <uncoverCard />
-          </el-container>
-        </el-card>
-      </el-collapse-item>
-      <el-collapse-item class="titlestyle" title="添加节点" name="7">
-        <el-card :body-style="{ padding: '0px' }" class="card">
-          <el-container class="formbody">
-            <!-- <el-form ref="form" :model="selectTestForm" label-width="80px">
-              <el-form-item label="现有节点">
-                <el-cascader
-                  v-model="cascaderNode"
-                  :options="cascaderClassMethod"
-                  @visible-change="praseClassMethod"
-                  @change="selectNode"
-                ></el-cascader>
-              </el-form-item>
-              <el-form-item label="新节点">
-                <el-input type="textarea" v-model="newnode" placeholder="请输入新节点名称"></el-input>
-              </el-form-item>
-              <el-form-item label="类型选择">
-                <el-select
-                  v-model="selectednodetype"
-                  filterable
-                  placeholder="请选择节点类型"
-                  @change="getnodetype()"
-                >
-                  <el-option label="数据库" value="1"></el-option>
-                  <el-option label="外设" value="2"></el-option>
-                  <el-option label="前端" value="3"></el-option>
-                  <el-option label="其他系统" value="4"></el-option>
-                </el-select>
-              </el-form-item>
-              <el-form-item>
-                <el-button type="primary" @click="createNewNode()">立即创建</el-button>
-              </el-form-item>
-            </el-form>-->
+            <addNodeCard @addnewnode="addNewNode" :classMethodMap="classMethodMap" />
           </el-container>
         </el-card>
       </el-collapse-item>
       <el-collapse-item class="titlestyle" title="回归测试" name="8">
-        <!-- <el-card :body-style="{ padding: '0px 5px' }" class="card">
-          <el-row :gutter="20" style="margin:10px 0">
-            <el-col :span="6" style="padding:5px 0;">项目选择</el-col>
-            <el-col :span="18" style="padding:0;">
-              <el-select
-                v-model="regression.info.oldJarName"
-                placeholder="请选择进行回归测试的项目"
-                @visible-change="showfilelist"
-                @change="getRegressionProj($event)"
-              >
-                <el-option v-for="item in uploadedFiles" :key="item" :label="item" :value="item"></el-option>
-              </el-select>
-            </el-col>
-          </el-row>
-          <el-input
-            type="textarea"
-            autosize
-            placeholder="请输入包范围"
-            v-model="regression.info.packageName"
-        ></el-input>-->
-        <!-- action="https://jsonplaceholder.typicode.com/posts/" -->
-        <!-- <el-upload
-            style="margin:10px 0;height:100px"
-            ref="uploadjar"
-            action="/apiurl/uploadRegressiveJar"
-            :file-list="regression.jarFiles"
-            :on-change="fileListChange"
-            :on-remove="fileListChange"
-            :on-success="uploadSucc"
-            :limit="1"
-            :auto-upload="false"
-          >
-            <el-button
-              slot="trigger"
-              size="small"
-              type="primary"
-              :disabled="regression.disable"
-            >{{regression.status}}</el-button>
-            <el-button
-              style="margin-left: 10px;"
-              size="small"
-              type="success"
-              @click="UploadJars"
-              :disabled="!regression.info.newJarName || !regression.info.oldJarName"
-            >上传</el-button>
-            <div slot="tip" class="el-upload__tip">请上传新版本的Jar包</div>
-          </el-upload>
-        </el-card>
-        <el-row :gutter="20" style="margin:10px 0">
-          <el-col :span="18" style="padding:0;text-align:left">
-            <el-select v-model="regression.chosedInfo" placeholder="做过的回归测试">
-              <el-option
-                v-for="item in history.regressionInfos"
-                :key="item.name"
-                :label="item.name"
-                :value="item.name"
-              ></el-option>
-            </el-select>
-          </el-col>
-          <el-col :span="6" style="padding:5px 0;">
-            <el-button
-              size="small"
-              type="success"
-              @click="analyseHistory"
-              :disabled="!regression.chosedInfo"
-            >分析</el-button>
-          </el-col>
-        </el-row>
-        <div v-if="oldvsnew.length">
-          <div class="list-header">
-            <el-row>
-              <el-col :span="5">分析结果</el-col>
-              <el-col :span="19">
-                <el-checkbox-group v-model="filterList" @change="filterChange">
-                  <el-checkbox label="未影响"></el-checkbox>
-                  <el-checkbox label="影响的"></el-checkbox>
-                </el-checkbox-group>
-              </el-col>
-            </el-row>
-          </div>
-          <div class="list-container">
-            <el-tooltip
-              v-for="(testcase,index) in showoldvsnew"
-              :key="index"
-              :content="['(不变)','(有影响)'][testcase.state] + testcase.casename"
-              placement="right"
-              effect="light"
-            >
-              <div
-                class="hjr-list-item"
-                :style="'border-left-color:'+ ['red','green'][testcase.state] + ';'"
-              >{{testcase.casename}}</div>
-            </el-tooltip>
-          </div>
-        </div>-->
-      </el-collapse-item>
-      <el-collapse-item class="titlestyle" title="脚本录制" name="9">
-        <!-- 选择框，选择要回放的测试用例 -->
-        <!-- <el-button size="small" type="primary" @click="prepareRecord">准备录制</el-button>
-        <el-button size="small" type="primary" @click="watchReplay">查看回放</el-button>
-        <el-dialog :visible.sync="preparerecord" width="80%">
-          <iframe
-            ref="frame"
-            src="https://www.baidu.com"
-            width="1024"
-            height="768"
-            style="-webkit-transform:scale(0.8);-moz-transform-scale(0.8);"
-          ></iframe>
-
-          <span slot="footer" class="dialog-footer">
-            <el-button size="small" type="primary" @click="startRecord">开始录制</el-button>
-          </span>
-        </el-dialog>
-        <el-dialog :visible.sync="showReplay" width="60%">
-          <Player ref="replayer" />
-          <span slot="footer" class="dialog-footer">
-            <el-button type="primary" @click="toggleReplay">{{playandpause}}</el-button>
-          </span>
-        </el-dialog>-->
+        <regressionCard
+          :testCaseMap="testCaseMap"
+          :defaultProject="defaultProject"
+          :uploadedFiles="uploadedFiles"
+          @gettestcasemap="getTestCaseMap"
+          @getuploadfiles="getuploadedFiles"
+        />
       </el-collapse-item>
     </el-collapse>
+  </div>-->
+  <div>
+    <div class="center-message" v-if="JSON.stringify(relation)==='{}'">{{messageTip}}</div>
+    <div class="button-holder">
+      <div v-if="expanded">
+        <el-tooltip class="item" effect="dark" content="收缩状态栏" placement="left">
+          <i class="el-icon-arrow-up" @click="expanded = false"></i>
+        </el-tooltip>
+      </div>
+      <div v-else>
+        <el-tooltip class="item" effect="dark" content="展开状态栏" placement="left">
+          <i class="el-icon-arrow-down" @click="expanded = true"></i>
+        </el-tooltip>
+      </div>
+      <div>
+        <el-popover placement="bottom-end" trigger="click">
+          <locateCard
+            @locatenode="locatenode"
+            :classMethodMap="classMethodMap"
+            :allClasses="allClasses"
+          />
+          <el-tooltip slot="reference" class="item" effect="dark" content="定位节点" placement="left">
+            <i class="el-icon-location"></i>
+          </el-tooltip>
+        </el-popover>
+      </div>
+      <div>
+        <el-dropdown trigger="click" @command="showUpload">
+          <span class="el-dropdown-link" style="font-size: 36px;">
+            <el-tooltip slot="reference" class="item" effect="dark" content="上传" placement="left">
+              <i class="el-icon-upload"></i>
+            </el-tooltip>
+          </span>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="project">新项目</el-dropdown-item>
+            <el-dropdown-item command="testcase">测试用例</el-dropdown-item>
+            <el-dropdown-item command="regression">回归测试新版本</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+      </div>
+      <div>
+        <el-popover placement="bottom-end" trigger="click">
+          <addNodeCard @addnewnode="addNewNode" :classMethodMap="classMethodMap" />
+          <el-tooltip slot="reference" class="item" effect="dark" content="增加新节点" placement="left">
+            <i class="el-icon-circle-plus-outline"></i>
+          </el-tooltip>
+        </el-popover>
+      </div>
+    </div>
+    <div class="top-status-bar center-bar" :class="!expanded ? 'shrink-top':''"></div>
+    <div class="bottom-control-bar">
+      <el-popover placement="top-start" trigger="click">
+        <graphCard
+          @generateGraph="generateGraph"
+          @getuploadfiles="getuploadedFiles"
+          :uploadedFiles="uploadedFiles"
+        />
+        <el-button slot="reference">生成调用关系图</el-button>
+      </el-popover>
+      <el-popover placement="top" trigger="click">
+        <runTestCard
+          :defaultProject="defaultProject"
+          :uploadedFiles="uploadedFiles"
+          :testCaseMap="testCaseMap"
+          :relation="relation"
+          @getuploadfiles="getuploadedFiles"
+          @gettestcasemap="getTestCaseMap"
+          @showtestresult="showTestResult"
+          @canceltestresult="cancelTestResult"
+          @locatenode="locatenode"
+        />
+        <el-button slot="reference">运行测试用例</el-button>
+      </el-popover>
+      <el-popover placement="top-end" trigger="click">
+        <regressionCard
+          :testCaseMap="testCaseMap"
+          :defaultProject="defaultProject"
+          :uploadedFiles="uploadedFiles"
+          @gettestcasemap="getTestCaseMap"
+          @getuploadfiles="getuploadedFiles"
+          @uploadfile="showUpload"
+        />
+        <el-button slot="reference">回归测试</el-button>
+      </el-popover>
+    </div>
+    <uploadCard
+      ref="uploader"
+      :uploadedFiles="uploadedFiles"
+      :defaultProject="defaultProject"
+      @getuploadfiles="getuploadedFiles"
+    />
   </div>
 </template>
 
@@ -248,12 +194,12 @@ import {
 // -- fetch apis
 
 // !-- custom components
-import uploadCard from "@/components/uploadCard.vue";
-import graphCard from "@/components/graphCard.vue";
-import locateCard from "@/components/locateCard.vue";
-import uploadTestCard from "@/components/uploadTestCard.vue";
-import runTestCard from "@/components/runTestCard.vue";
-import uncoverCard from "@/components/uncoverCard.vue";
+import uploadCard from "@/newui/cards/uploadCard.vue";
+import graphCard from "@/newui/cards/graphCard.vue";
+import locateCard from "@/newui/cards/locateCard.vue";
+import runTestCard from "@/newui/cards/runTestCard.vue";
+import addNodeCard from "@/newui/cards/addNodeCard.vue";
+import regressionCard from "@/newui/cards/regressionCard.vue";
 // -- custom components
 
 export default {
@@ -261,9 +207,9 @@ export default {
     uploadCard,
     graphCard,
     locateCard,
-    uploadTestCard,
     runTestCard,
-    uncoverCard
+    addNodeCard,
+    regressionCard
   },
   name: "method-call-relation-graph",
   props: {},
@@ -271,18 +217,24 @@ export default {
     return {
       // ui 部分
       activeNames: [], // 默认展开
-      toggle: true, // 收缩控制栏
+      toggle: true, // 控制栏展开时为 true
+      expanded: true, // 控制栏展开时为 true
+      messageTip: "还未生成调用关系图", // 中间的文字提示
 
       // data 部分
       uploadedFiles: [], // （已上传的项目）调用关系图 <w/r>，上传测试用例<w/r>，运行测试用例<w/r>
-      relation: {}, // 调用关系图<w/r>
+      relation: {}, // 调用关系图<w/r>，未覆盖率<r>
       allClasses: [], // 调用关系图<w/r>，节点定位<r>
       classMethodMap: {}, // 调用关系图<w/r>，节点定位<r>
-      defaultProject: "", // 调用关系图<w/r>，上传测试用例<r>，运行测试用例<r>
-      testCaseMap: {} // 运行测试用例<w/r>
+      defaultProject: "", // 调用关系图<w/r>，上传测试用例<r>，运行测试用例<r>，回归测试<r>
+      testCaseMap: {} // 运行测试用例<w/r>，回归测试<w/r>
     };
   },
   methods: {
+    showUpload(type, params = {}) {
+      // this.upload.uploadProject = true;
+      this.$refs.uploader.upload(type, params);
+    },
     // 生成图
     generateGraph(params) {
       let _this = this;
@@ -299,7 +251,6 @@ export default {
 
             // 选择默认将项目设为此项目
             this.defaultProject = selectedjar;
-            //   _this.regression.oldVersion = selectedjar; // 回归测试部分
           }
         );
       });
@@ -313,7 +264,6 @@ export default {
     getTestCaseMap() {
       getTestCaseList().then(response => {
         this.testCaseMap = response.result;
-        console.log(this.testCaseMap);
       });
     },
     // 节点定位
@@ -333,6 +283,9 @@ export default {
     },
     cancelTestResult() {
       this.$emit("cancelResult");
+    },
+    addNewNode(params) {
+      this.$emit("addNewNode", params);
     },
     // ui
     shrink_open() {
@@ -383,6 +336,55 @@ export default {
 </script>
 
 <style lang="less">
+.center-message {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.button-holder {
+  position: absolute;
+  right: 20px;
+  top: 30px;
+  font-size: 36px;
+}
+
+.button-holder i:hover {
+  color: #0583f2;
+  cursor: pointer;
+}
+
+.center-bar {
+  left: 50%;
+  transform: translateX(-50%);
+  position: fixed;
+  transition: transform 0.5s ease-in-out;
+}
+
+.top-status-bar {
+  top: 0;
+  width: 500px;
+  height: 100px;
+  background-color: antiquewhite;
+}
+
+.shrink-top {
+  transform: translate(-50%, -100%);
+}
+
+.bottom-control-bar {
+  bottom: 20px;
+  right: 20px;
+  position: fixed;
+  transition: transform 0.5s ease-in-out;
+}
+
+.shrink-bottom {
+  transform: translateY(100%);
+}
+
 .disabled {
   pointer-events: none;
 }

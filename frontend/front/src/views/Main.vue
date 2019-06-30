@@ -6,14 +6,15 @@
       @locatenode="locatenode"
       @displayResult="displayResult"
       @cancelResult="cancelResult"
+      @addNewNode="addNewNode"
     />
   </div>
 </template>
 
 <script>
 // @ is an alias to /src
-import Graph from "@/components/Graph.vue";
-import ControlPanel from "@/components/ControlPanel.vue";
+import Graph from "@/newui/Graph.vue";
+import ControlPanel from "@/newui/ControlPanel.vue";
 
 export default {
   name: "MainStage",
@@ -36,6 +37,9 @@ export default {
     },
     cancelResult() {
       this.$refs.graph.cancelShow();
+    },
+    addNewNode(params) {
+      this.$refs.graph.createNewNode(params);
     }
   }
 };

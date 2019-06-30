@@ -1,6 +1,6 @@
 <template>
-  <div class="Graph-svg">
-    <div id="container" class="container">
+  <div class="background-graph">
+    <div id="svg-container" class="svg-container">
       <svg id="svgCanvas">
         <defs>
           <!--节点滤波器-->
@@ -14,9 +14,20 @@
             <feGaussianBlur in="SourceGraphic" stdDeviation="2" />
           </filter>
         </defs>
+        <defs>
+          <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
+            <path d="M 8 0 L 0 0 0 8" fill="none" stroke="gray" stroke-width="0.5" />
+          </pattern>
+          <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
+            <rect width="80" height="80" fill="url(#smallGrid)" />
+            <path d="M 80 0 L 0 0 0 80" fill="none" stroke="gray" stroke-width="1" />
+          </pattern>
+        </defs>
+
+        <rect width="100%" height="100%" fill="url(#grid)" />
       </svg>
     </div>
-    <!-- <div id="thumb-container">
+    <!-- <div id="thumb-svg-container">
         <svg id="thumb" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
             <use xlink:href="#svgCanvas" />
         </svg>
@@ -40,6 +51,52 @@ export default {
     };
   },
   methods: {
+    //创建新节点并把源节点移到中心
+    createNewNode(params) {
+      const { selectednode, newnode } = params;
+      var node;
+      for (let index in this.relation.nodes) {
+        if (this.relation.nodes[index].name == selectednode) {
+          node = this.relation.nodes[index];
+          //console.log(node);
+        }
+      }
+      //var addnode={name:"",type:0,index:7,vx:-0.0034354444444444444,vy:-0.0003758444444444444,x:171.4738754444444,y:45.5769444444444};
+      var addnode = {
+        name: "",
+        type: 1,
+        index: "",
+        vx: "",
+        vy: "",
+        x: "",
+        y: ""
+      };
+      addnode.name = newnode;
+      addnode.vx = node.vx - 0.0034354444444444444;
+      addnode.vy = node.vy - 0.0003758444444444444;
+      addnode.x = node.x - 1.0;
+      addnode.y = node.y - 1.0;
+      addnode.index = this.relation.nodes.length;
+      addnode.type = this.selectednodetype;
+      var addline = { index: 7, source: [], target: [] };
+      addline.source = node;
+      addline.target = addnode;
+      this.relation.nodes.push(addnode);
+      this.relation.links.push(addline);
+      this.show(this.relation);
+      var node = this.findNodeByName(selectednode);
+      var trans = this.tempTrans;
+      trans.k = 1;
+      this.g.attr("transform", trans);
+      // 根据视野大小定位
+      var width = document.getElementById("svg-container").offsetWidth;
+      var height = document.getElementById("svg-container").offsetHeight;
+
+      trans.x = (Math.round(width / 2) - node.x) * trans.k;
+      trans.y = (Math.round(height / 2) - node.y) * trans.k;
+
+      this.g.attr("transform", trans);
+    },
     showEffect(result) {
       if (!isok) {
         this.$message({
@@ -51,14 +108,7 @@ export default {
       const { TestResult, taskType } = result;
       console.log("start show ");
       this.TestResult = TestResult;
-      for (let index in this.relation.links) {
-        var callrelation =
-          this.relation.links[index].source.name +
-          " CALL " +
-          this.relation.links[index].target.name;
-        if (TestResult.indexOf(callrelation) < 0)
-          this.uncoverfullname.push(callrelation);
-      }
+
       if (taskType === "one") {
         console.log("start one ");
         for (let index in TestResult) {
@@ -84,8 +134,8 @@ export default {
       trans.k = 1;
       this.g.attr("transform", trans);
       // 根据视野大小定位
-      var width = document.getElementById("container").offsetWidth;
-      var height = document.getElementById("container").offsetHeight;
+      var width = document.getElementById("svg-container").offsetWidth;
+      var height = document.getElementById("svg-container").offsetHeight;
 
       trans.x = (Math.round(width / 2) - node.x) * trans.k;
       trans.y = (Math.round(height / 2) - node.y) * trans.k;
@@ -125,9 +175,6 @@ export default {
           this.changeNode(SourceName);
           this.changeNode(TargetName);
         }
-        // var callrelation=this.relation.links[index].source.name+" CALL "+this.relation.links[index].target.name;
-        // if(this.testCaseMap.indexOf(callrelation)<0)
-        //     this.uncoverfullname.push(callrelation);
       }
       console.log("change one end ");
     },
@@ -187,8 +234,8 @@ export default {
       trans.k = 1;
       this.g.attr("transform", trans);
       // 根据视野大小定位
-      var width = document.getElementById("container").offsetWidth;
-      var height = document.getElementById("container").offsetHeight;
+      var width = document.getElementById("svg-container").offsetWidth;
+      var height = document.getElementById("svg-container").offsetHeight;
 
       trans.x = (Math.round(width / 2) - node.x) * trans.k;
       trans.y = (Math.round(height / 2) - node.y) * trans.k;
@@ -506,27 +553,38 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped lang="less">
+.background-graph {
+  position: absolute;
+  border-width: 2px;
+  border-style: dashed;
+  position: absolute;
+  border-width: 2px;
+  border-style: solid;
+  border-color: whitesmoke;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+}
+
 [v-cloak] {
   display: none;
 }
-.container {
-  height: 600px;
-  .exit {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    width: 60px;
-    height: 25px;
-    border: none;
-    border-radius: 2px;
-    color: #000;
-    z-index: 200;
-  }
-  overflow-y: scroll;
+.svg-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
-.container::-webkit-scrollbar {
+.svg-container::-webkit-scrollbar {
   display: none;
+}
+
+#svgCanvas {
+  width: 100%;
+  height: 100%;
 }
 
 #thumb {
@@ -535,7 +593,7 @@ export default {
   pointer-events: none;
 }
 
-#thumb-container {
+#thumb-svg-container {
   position: absolute;
   right: 0;
   bottom: 0;
@@ -549,7 +607,7 @@ export default {
   stroke: #fa8072;
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;
-  transition : draw 3s infinite ease-in-out;
+  transition: draw 3s infinite ease-in-out;
   /* -webkit-animation: draw 3s infinite ease-in-out; */
 }
 

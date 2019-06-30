@@ -41,8 +41,8 @@
                 </el-collapse-item>
                 <el-collapse-item class="titlestyle" name="2">
                     <template slot="title">
-                        <p class="itemname">调用关系图生成</P>
-                        <p class="require-info">（请先上传项目）</P>
+                        <p class="itemname">调用关系图生成</p>
+                        <p class="require-info">（请先上传项目）</p>
                     </template>
                     <el-container class="formbody">
                         <div ref="form" :model="form" style="width:100%;text-align:left">
@@ -89,8 +89,8 @@
                 </el-collapse-item>
                 <el-collapse-item class="titlestyle" name="3" :class="JSON.stringify(relation)=='{}'?'disabled': ''">
                     <template slot="title">
-                        <p class="itemname">定位方法</P>
-                        <p class="require-info">（请先生成调用关系图）</P>
+                        <p class="itemname">定位方法</p>
+                        <p class="require-info">（请先生成调用关系图）</p>
                     </template>
                     <el-card :body-style="{ padding: '0px' }" class="card">
                         <el-container class="formbody">
