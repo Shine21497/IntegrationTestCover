@@ -47,7 +47,7 @@ public class FileUploadController {
     }
     @RequestMapping(value = "/uploadRegressiveJar")
     @ResponseBody
-    public String uploadRegressiveJar(@RequestParam("file") MultipartFile file,@RequestParam("projectName") String projectName){
+    public String uploadRegressiveJar(@RequestParam("file") MultipartFile file,@ RequestParam("projectName") String projectName){
         System.out.println(projectName);
         File projectFile = new File(baseConfig.getRegressionFilePath() + projectName);
 //如果文件夹不存在则创建

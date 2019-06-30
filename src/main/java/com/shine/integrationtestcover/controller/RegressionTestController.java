@@ -42,10 +42,13 @@ public class RegressiontestController {
     }
     @RequestMapping(value="/regressiontest")
     @ResponseBody
-    public List<String> regressiontest(@RequestParam("oldJarName") String oldJarName, @RequestParam("newJarName") String newJarName, @RequestParam("packageName") String packageName) throws Exception {
+    public List<String> regressiontest(@RequestParam("oldVersion") String oldJarName, @RequestParam("newVersion") String newJarName, @RequestParam("packageName") String packageName) throws Exception {
     //判断jar文件是否存在
         String project = oldJarName.substring(0, oldJarName.indexOf("."));
+        System.out.println(project);
         List<String> result= new ArrayList<String>();
+        System.out.println(baseConfig.getUploadedFilePath()+oldJarName);
+        System.out.println(baseConfig.getRegressionFilePath()+"//"+project+"//"+newJarName);
         File oldJar=new File(baseConfig.getUploadedFilePath()+oldJarName);
         File newJar=new File(baseConfig.getRegressionFilePath()+"//"+project+"//"+newJarName);
         if (!oldJar.exists()) {
