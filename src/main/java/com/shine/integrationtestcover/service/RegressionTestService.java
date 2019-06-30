@@ -31,11 +31,12 @@ public class RegressionTestService {
     public List<String> deleteNodeKey = new ArrayList<>();
 
     public void initNodeMap(String oldJarName,String newJarName,String packageName){
+        String project = oldJarName.substring(0, oldJarName.indexOf("."));
         BaseConfig baseConfig = new BaseConfig();
-        PaserJar paserJar = new PaserJar(baseConfig.getRegressionFilePath(), oldJarName, oldGraph);
+        PaserJar paserJar = new PaserJar(baseConfig.getUploadedFilePath(), oldJarName, oldGraph);
         paserJar.setPackageName(packageName);
         oldGraph = paserJar.getInvoking();
-        PaserJar paserJarNew = new PaserJar(baseConfig.getRegressionFilePath(), newJarName, newGraph);
+        PaserJar paserJarNew = new PaserJar(baseConfig.getRegressionFilePath()+"//"+project+"//", newJarName, newGraph);
         paserJarNew.setPackageName(packageName);
         newGraph = paserJarNew.getInvoking();
 
