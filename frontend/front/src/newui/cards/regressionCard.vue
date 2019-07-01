@@ -262,7 +262,7 @@ export default {
   watch: {
     // 设置默认项目
     defaultProject(val) {
-      this.regression.info.oldVersion = this.defaultProject;
+      // this.regression.info.oldVersion = this.defaultProject;
     },
     // 等待从后端获取 testCaseMap
     testCaseMap(val) {
