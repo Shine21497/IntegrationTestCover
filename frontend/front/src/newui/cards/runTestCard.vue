@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-form label-width="80px">
+    <el-form label-width="100px">
       <el-form-item label="项目选择">
         <el-select
           filterable
@@ -12,12 +12,12 @@
           <el-option v-for="item in uploadedFiles" :key="item" :label="item" :value="item"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="测试文件">
+      <el-form-item label="测试脚本文件">
         <el-select
           filterable
           :disabled="allTestFiles.length == 0"
           v-model="selectedTestFile"
-          placeholder="选择测试文件"
+          placeholder="选择测试脚本文件"
           @change="selectTestFile($event)"
         >
           <el-option v-for="item in allTestFiles" :key="item" :label="item" :value="item"></el-option>

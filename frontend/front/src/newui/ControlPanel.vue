@@ -33,7 +33,7 @@
           </span>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item command="project">新项目</el-dropdown-item>
-            <el-dropdown-item command="testcase">测试用例</el-dropdown-item>
+            <el-dropdown-item command="testcase">测试用例脚本文件</el-dropdown-item>
             <el-dropdown-item command="regression">回归测试新版本</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
