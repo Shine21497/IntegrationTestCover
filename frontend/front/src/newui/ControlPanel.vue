@@ -1,100 +1,8 @@
 <template>
-  <!-- <div id="leftSide" class="left-side">
-    <h2>
-      Method-Call-Relation-Graph
-      <i
-        id="shrink-icon"
-        class="funny el-icon-arrow-left"
-        @click="shrink_open()"
-      ></i>
-    </h2>
-
-    <el-collapse v-model="activeNames">
-      <el-collapse-item class="titlestyle" title="上传项目" name="1">
-        <uploadCard />
-      </el-collapse-item>
-      <el-collapse-item class="titlestyle" name="2">
-        <template slot="title">
-          <p class="itemname">生成调用关系图</p>
-          <p class="require-info">（请先上传项目）</p>
-        </template>
-        <el-container class="formbody">
-          <graphCard
-            @generateGraph="generateGraph"
-            @getuploadfiles="getuploadedFiles"
-            :uploadedFiles="uploadedFiles"
-          />
-        </el-container>
-      </el-collapse-item>
-      <el-collapse-item
-        class="titlestyle"
-        name="3"
-        :class="JSON.stringify(relation)==='{}'?'disabled': ''"
-      >
-        <template slot="title">
-          <p class="itemname">定位方法</p>
-          <p class="require-info">（请先生成调用关系图）</p>
-        </template>
-        <el-card :body-style="{ padding: '0px' }" class="card">
-          <el-container class="formbody">
-            <locateCard
-              @locatenode="locatenode"
-              :classMethodMap="classMethodMap"
-              :allClasses="allClasses"
-            />
-          </el-container>
-        </el-card>
-      </el-collapse-item>
-      <el-collapse-item class="titlestyle" title="上传测试用例" name="4">
-        <el-card :body-style="{ padding: '0px' }" class="card">
-          <el-container class="formbody">
-            <uploadTestCard
-              :uploadedFiles="uploadedFiles"
-              :defaultProject="defaultProject"
-              @getuploadfiles="getuploadedFiles"
-            />
-          </el-container>
-        </el-card>
-      </el-collapse-item>
-      <el-collapse-item class="titlestyle" title="运行测试用例" name="5">
-        <el-card :body-style="{ padding: '0px' }" class="card">
-          <el-container class="formbody">
-            <runTestCard
-              :defaultProject="defaultProject"
-              :uploadedFiles="uploadedFiles"
-              :testCaseMap="testCaseMap"
-              :relation="relation"
-              @getuploadfiles="getuploadedFiles"
-              @gettestcasemap="getTestCaseMap"
-              @showtestresult="showTestResult"
-              @canceltestresult="cancelTestResult"
-              @locatenode="locatenode"
-            />
-          </el-container>
-        </el-card>
-      </el-collapse-item>
-      <el-collapse-item class="titlestyle" title="添加新节点" name="7">
-        <el-card :body-style="{ padding: '0px' }" class="card">
-          <el-container class="formbody">
-            <addNodeCard @addnewnode="addNewNode" :classMethodMap="classMethodMap" />
-          </el-container>
-        </el-card>
-      </el-collapse-item>
-      <el-collapse-item class="titlestyle" title="回归测试" name="8">
-        <regressionCard
-          :testCaseMap="testCaseMap"
-          :defaultProject="defaultProject"
-          :uploadedFiles="uploadedFiles"
-          @gettestcasemap="getTestCaseMap"
-          @getuploadfiles="getuploadedFiles"
-        />
-      </el-collapse-item>
-    </el-collapse>
-  </div>-->
   <div>
     <div class="center-message" v-if="JSON.stringify(relation)==='{}'">{{messageTip}}</div>
     <div class="button-holder">
-      <div v-if="expanded">
+      <!-- <div v-if="expanded">
         <el-tooltip class="item" effect="dark" content="收缩状态栏" placement="left">
           <i class="el-icon-arrow-up" @click="expanded = false"></i>
         </el-tooltip>
@@ -103,7 +11,7 @@
         <el-tooltip class="item" effect="dark" content="展开状态栏" placement="left">
           <i class="el-icon-arrow-down" @click="expanded = true"></i>
         </el-tooltip>
-      </div>
+      </div> -->
       <div>
         <el-popover placement="bottom-end" trigger="click">
           <locateCard
@@ -112,7 +20,7 @@
             :allClasses="allClasses"
           />
           <el-tooltip slot="reference" class="item" effect="dark" content="定位节点" placement="left">
-            <i class="el-icon-location"></i>
+            <i class="el-icon-location-outline"></i>
           </el-tooltip>
         </el-popover>
       </div>
@@ -120,7 +28,7 @@
         <el-dropdown trigger="click" @command="showUpload">
           <span class="el-dropdown-link" style="font-size: 36px;">
             <el-tooltip slot="reference" class="item" effect="dark" content="上传" placement="left">
-              <i class="el-icon-upload"></i>
+              <i class="el-icon-upload2"></i>
             </el-tooltip>
           </span>
           <el-dropdown-menu slot="dropdown">
@@ -139,7 +47,32 @@
         </el-popover>
       </div>
     </div>
-    <div class="top-status-bar center-bar" :class="!expanded ? 'shrink-top':''"></div>
+    <!-- <div class="top-status-bar center-bar" :class="!expanded ? 'shrink-top':''">
+      <el-tabs type="border-card">
+        <el-tab-pane>
+          <span slot="label">
+            <i class="el-icon-share"></i> 调用关系图
+          </span>
+          <div style="text-align: left;">
+            <div class="status-header">Project Name</div>
+            <el-row class="status-content">
+              <el-col :span="10">
+                <div class="ellipsis-text">origin domain</div>
+              </el-col>
+              <el-col :span="4">
+                ———
+              </el-col>
+              <el-col :span="10">
+                <div class="ellipsis-text">target domain</div>
+              </el-col>
+            </el-row>
+          </div>
+        </el-tab-pane>
+        <el-tab-pane label="配置管理">配置管理</el-tab-pane>
+        <el-tab-pane label="角色管理">角色管理</el-tab-pane>
+        <el-tab-pane label="定时任务补偿">定时任务补偿</el-tab-pane>
+      </el-tabs>
+    </div> -->
     <div class="bottom-control-bar">
       <el-popover placement="top-start" trigger="click">
         <graphCard
@@ -336,6 +269,25 @@ export default {
 </script>
 
 <style lang="less">
+.ellipsis-text {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.status-content {
+  padding: 5px;
+}
+
+.status-header {
+  font-size: 24px;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-bottom-color: black;
+  padding: 5px;
+  color: #519efe;
+}
+
 .center-message {
   position: fixed;
   left: 50%;
@@ -349,6 +301,10 @@ export default {
   right: 20px;
   top: 30px;
   font-size: 36px;
+  background-color: white;
+  border: lightgray 2px solid;
+  border-radius: 22px;
+  padding: 4px;
 }
 
 .button-holder i:hover {
@@ -365,8 +321,6 @@ export default {
 
 .top-status-bar {
   top: 0;
-  width: 500px;
-  height: 100px;
 }
 
 .shrink-top {
@@ -382,69 +336,5 @@ export default {
 
 .shrink-bottom {
   transform: translateY(100%);
-}
-
-.disabled {
-  pointer-events: none;
-}
-
-.disabled .itemname {
-  color: gray;
-}
-
-.disabled .require-info {
-  color: #ff0000;
-  opacity: 1;
-}
-
-.titlestyle {
-  font-family: "Microsoft YaHei";
-  font-weight: bold;
-}
-
-.formbody {
-  margin: 20px 0px 0px 0px;
-}
-.funny {
-  position: fixed;
-  margin-left: 33px;
-  background-color: white;
-  border-radius: 0 5px 5px 0;
-  box-shadow: lightgrey 5px 0px 5px 2px;
-}
-
-.funny:hover {
-  cursor: pointer;
-  color: #0583f2;
-}
-.left-side {
-  position: absolute;
-  width: 350px;
-  transition: 0.5s ease;
-  background-color: white;
-  box-shadow: lightgrey 0px 0px 5px 5px; //边框内阴影
-  top: 0;
-  left: 0;
-  padding: 0 15px;
-  max-height: 100%;
-  overflow-y: auto;
-}
-
-.left-side::-webkit-scrollbar {
-  /*滚动条整体样式*/
-  width: 4px;
-}
-
-.left-side::-webkit-scrollbar-thumb {
-  /*滚动条里面小方块*/
-  border-radius: 5px;
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-  background: rgba(0, 0, 0, 0.2);
-}
-
-.left-side::-webkit-scrollbar-track {
-  /*滚动条里面轨道*/
-  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
-  border-radius: 0;
 }
 </style>

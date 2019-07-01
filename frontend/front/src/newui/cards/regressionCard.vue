@@ -1,83 +1,4 @@
 <template>
-  <!-- <div>
-    <el-row :gutter="20" style="margin:10px 0;text-align: left;">
-      <el-col :span="6" style="padding:5px;">旧版本</el-col>
-      <el-col :span="18" style="padding:0;">
-        <el-select
-          v-model="regression.info.oldVersion"
-          placeholder="请选择进行回归测试的旧版本项目"
-          @visible-change="showTestProjectList"
-          @change="getVersions($event)"
-        >
-          <el-option v-for="item in uploadedFiles" :key="item" :label="item" :value="item"></el-option>
-        </el-select>
-      </el-col>
-    </el-row>
-    <el-row :gutter="20" style="margin:10px 0;text-align: left;">
-      <el-col :span="6" style="padding:5px;">新版本</el-col>
-      <el-col :span="18" style="padding:0;">
-        <el-select v-model="regression.info.newVersion" placeholder="请选择新版本">
-          <el-option v-for="item in regression.versions" :key="item" :label="item" :value="item"></el-option>
-        </el-select>
-      </el-col>
-    </el-row>
-    <el-row :gutter="20" style="margin:10px 0;text-align: left;">
-      <el-col :span="17" style="padding:5px;">
-        <el-input
-          type="textarea"
-          autosize
-          placeholder="请输入包范围"
-          v-model="regression.info.packageName"
-        ></el-input>
-      </el-col>
-      <el-col :span="6" style="padding:5px;">
-        <el-button size="small" type="success" @click="startRegTest">开始测试</el-button>
-      </el-col>
-    </el-row>
-    <div v-if="oldvsnew.length">
-      <div class="list-header">
-        <el-row>
-          <el-col :span="5">被影响的测试用例</el-col>
-          <el-col :span="19">
-            <el-checkbox-group v-model="filterList" @change="filterChange">
-              <el-checkbox label="未影响"></el-checkbox>
-              <el-checkbox label="影响的"></el-checkbox>
-            </el-checkbox-group>
-          </el-col>
-        </el-row>
-      </div>
-      <div class="list-container">
-        <el-tooltip
-          v-for="(testcase,index) in showoldvsnew"
-          :key="index"
-          :content="['(不变)','(有影响)'][testcase.state] + testcase.casename"
-          placement="right"
-          effect="light"
-        >
-          <div
-            class="hjr-list-item"
-            :style="'border-left-color:'+ ['red','green'][testcase.state] + ';'"
-          >{{testcase.casename}}</div>
-        </el-tooltip>
-      </div>
-    </div>
-    <el-button type="text" @click="regression.uploadNewVersion = true">找不到想测的版本？那就上传吧</el-button>
-    <el-card v-if="regression.uploadNewVersion" :body-style="{ padding: '10px 5px' }" class="card">
-      <el-upload
-        style="margin:10px 0;height:100px"
-        ref="uploadjar"
-        action="/apiurl/uploadRegressiveJar"
-        :file-list="regression.jarFiles"
-        :on-success="uploadSucc"
-        :limit="3"
-        :auto-upload="false"
-        :data="{ projectName: regression.info.oldVersion.split('.jar')[0] }"
-      >
-        <el-button slot="trigger" size="small" type="primary">选择要上传的版本Jar包</el-button>
-        <el-button style="margin-left: 10px;" size="small" type="success" @click="UploadJars">上传</el-button>
-      </el-upload>
-    </el-card>
-  </div>-->
   <div>
     <span>
       <div class="card-head">
@@ -88,7 +9,7 @@
           v-for="(testcase,index) in showoldvsnew"
           :key="index"
           :content="['(不变)','(有影响)'][testcase.state] + testcase.casename"
-          placement="right"
+          placement="left"
           effect="light"
         >
           <div

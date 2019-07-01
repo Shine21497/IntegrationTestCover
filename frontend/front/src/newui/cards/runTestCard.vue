@@ -190,8 +190,6 @@ export default {
         // 开始监听运行进度
         this._onTestRunning();
       });
-      // if(this.relation.links)
-      //     this.setUncover();
     },
     // 获取测试进度的时候要调用的
     _onTestRunning() {
@@ -279,8 +277,6 @@ export default {
       }
     },
     showReport() {
-      console.log(this.relation)
-      console.log(this.testCaseMap)
       if (this.relation.links) {
         this.showreport = true;
         this.calculation.branchNum = this.calculate_branchNum();
@@ -305,7 +301,6 @@ export default {
       }
     },
     drawPie(data) {
-      console.log("draw pie");
       var w = 130,
         h = 150,
         r = Math.min(w, h) / 2,
@@ -380,44 +375,6 @@ export default {
         .attr("x", 30)
         .attr("y", 15);
 
-      arcs
-        .append("path")
-        .attr("class", "pointer")
-        .style("fill", "none")
-        .style("stroke", "black")
-        .attr("d", function(d) {
-          if (d.cx > d.ox) {
-            return (
-              "M" +
-              d.sx +
-              "," +
-              d.sy +
-              "L" +
-              d.ox +
-              "," +
-              d.oy +
-              " " +
-              d.cx +
-              "," +
-              d.cy
-            );
-          } else {
-            return (
-              "M" +
-              d.ox +
-              "," +
-              d.oy +
-              "L" +
-              d.sx +
-              "," +
-              d.sy +
-              " " +
-              d.cx +
-              "," +
-              d.cy
-            );
-          }
-        });
     },
     calculate_branchNum() {
       if (this.relation.links) {
@@ -438,7 +395,7 @@ export default {
       } else {
         if (this.selectedTestCase == "allMethods") {
           return this.testCaseMap[this.selectedTestProject.split(".")[0]][
-            this.selectedTestClass
+            this.selectedTestFile
           ].length;
         } else {
           return 1;
@@ -496,6 +453,7 @@ export default {
   padding: 0;
 }
 .el-progress .el-progress__text {
-  margin: -30px 0 0 20px;
+  margin: -30px 0 0 0;
+  float: right;
 }
 </style>
