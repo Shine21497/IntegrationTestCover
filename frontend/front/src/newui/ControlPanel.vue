@@ -367,7 +367,6 @@ export default {
   top: 0;
   width: 500px;
   height: 100px;
-  background-color: antiquewhite;
 }
 
 .shrink-top {

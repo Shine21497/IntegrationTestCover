@@ -83,7 +83,7 @@
       <div class="card-head">
         <el-checkbox-group v-model="filterList" @change="filterChange">
           <el-checkbox label="未影响"></el-checkbox>
-          <el-checkbox label="影响的"></el-checkbox>
+          <el-checkbox label="已影响"></el-checkbox>
         </el-checkbox-group>
       </div>
       <div class="list-container">
