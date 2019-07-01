@@ -50,21 +50,13 @@
     </el-form>
 
     <div v-if="showreport">
-      <el-row :gutter="20" style="margin:10px 0">
-        <el-col :span="14">
-          <svg
-            id="piechart"
-            xmlns="http://www.w3.org/2000/svg"
-            style="width: 150px;height: 150px;"
-          />
-        </el-col>
-        <el-col :span="10" style="text-align:left;padding:0">
+      <el-row style="margin:10px 0">
           <div>分支总数：{{calculation.branchNum}}</div>
           <div>执行用例数：{{calculation.usecaseNum}}</div>
           <div>未覆盖分支数：{{calculation.uncoverNum}}</div>
           <div>覆盖率：{{calculation.coverRate}}%</div>
-        </el-col>
       </el-row>
+      <svg id="piechart" xmlns="http://www.w3.org/2000/svg" height="120"/>
       <el-row :gutter="20" style="margin:10px 0">
         <el-col :span="18">
           <el-select v-model="selectedUncoverTest" placeholder="请选择未覆盖的边">
@@ -85,6 +77,8 @@
 </template>
 
 <script type="text/ecmascript-6">
+import * as d3 from "d3";
+
 import {
   runTestCase, // 执行测试用例，需要三个参数 (projectname, testcasename, method)，返回值为任务 [id<str>,type<str>]
   getTestRunningStatus, // 获取指定任务的执行进度，需要一个参数 (task_id_Key）
@@ -293,12 +287,134 @@ export default {
         this.calculation.usecaseNum = this.calculate_usecaseNum();
         this.calculation.uncoverNum = this.calculate_uncoverNum();
         this.calculation.coverRate = this.calculate_coverRate();
+        var data = [
+          {
+            name: "已覆盖分支数",
+            val: this.calculation.branchNum - this.calculation.uncoverNum
+          },
+          { name: "未覆盖分支数：", val: this.calculation.uncoverNum }
+        ];
+        this.drawPie(data);
       } else {
         this.$message({
           showClose: true,
-          message: "请先生成调用关系图",
+          message: "请先生成调用关系图"
         });
       }
+    },
+    drawPie(data) {
+      var w = 100,
+        h = 120,
+        r = Math.min(w, h) / 2,
+        labelr = r + 30, // radius for label anchor
+        color = d3.scaleOrdinal(d3.schemeCategory10),
+        donut = d3.pie(),
+        arc = d3
+          .arc()
+          .innerRadius(r * 0.6)
+          .outerRadius(r);
+
+      var vis = d3
+        .select("#piechart")
+        .data([data])
+        .attr("width", w + 200)
+        .attr("height", h);
+
+      // 移除上一个图（如果有的话）
+      if (vis.selectAll("g").size() > 0) {
+        vis.selectAll("g").remove();
+      }
+
+      var arcs = vis
+        .selectAll("g.arc")
+        .data(
+          donut.value(function(d) {
+            return d.val;
+          })
+        )
+        .enter()
+        .append("svg:g")
+        .attr("class", "arc")
+        .attr("transform", "translate(" + (r + 10) + "," + (r + 10) + ")");
+
+      arcs
+        .append("svg:path")
+        .attr("fill", function(d, i) {
+          return color(i);
+        })
+        .attr("d", arc);
+
+      var legends = vis
+        .append("g")
+        .attr("transform", "translate(150,10)")
+        .selectAll(".legends")
+        .data(data);
+
+      var legend = legends
+        .enter()
+        .append("g")
+        .classed("legends", true)
+        .attr("transform", function(d, i) {
+          return "translate(0," + (i + 1) * 30 + ")";
+        });
+
+      legend
+        .append("rect")
+        .attr("width", 20)
+        .attr("height", 20)
+        .attr("fill", function(d, i) {
+          return color(i);
+        });
+
+      legend
+        .append("text")
+        .text(function(d) {
+          return d.name + ":" + d.val;
+        })
+        .attr("fill", function(d, i) {
+          return color(i);
+        })
+        .attr("x", 30)
+        .attr("y", 15);
+
+      arcs
+        .append("path")
+        .attr("class", "pointer")
+        .style("fill", "none")
+        .style("stroke", "black")
+        .attr("d", function(d) {
+          if (d.cx > d.ox) {
+            return (
+              "M" +
+              d.sx +
+              "," +
+              d.sy +
+              "L" +
+              d.ox +
+              "," +
+              d.oy +
+              " " +
+              d.cx +
+              "," +
+              d.cy
+            );
+          } else {
+            return (
+              "M" +
+              d.ox +
+              "," +
+              d.oy +
+              "L" +
+              d.sx +
+              "," +
+              d.sy +
+              " " +
+              d.cx +
+              "," +
+              d.cy
+            );
+          }
+        });
     },
     calculate_branchNum() {
       if (this.relation.links) {
@@ -375,10 +491,10 @@ export default {
 </script>
 
 <style lang="less">
-.el-progress .el-progress-bar{
-    padding: 0;
+.el-progress .el-progress-bar {
+  padding: 0;
 }
-.el-progress .el-progress__text{
-    margin: -30px 0 0 20px;
+.el-progress .el-progress__text {
+  margin: -30px 0 0 20px;
 }
 </style>

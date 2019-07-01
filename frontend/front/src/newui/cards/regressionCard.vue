@@ -81,10 +81,7 @@
   <div>
     <span v-if="oldvsnew.length">
       <div class="card-head">
-        <el-checkbox-group v-model="filterList" @change="filterChange">
-          <el-checkbox label="未影响"></el-checkbox>
-          <el-checkbox label="影响的"></el-checkbox>
-        </el-checkbox-group>
+        受影响的测试用例
       </div>
       <div class="list-container">
         <el-tooltip
@@ -164,7 +161,6 @@ export default {
         // 回归测试用的新旧版本 Jar 包
         jarFiles: [], // 新 Jar 包列表
         project: "", // 进行回归测试的项目
-        projectVersions: {}, // 项目所有历史版本，缓存用
         versions: [], // 绑定下拉框
         info: {
           oldVersion: "",
@@ -194,17 +190,10 @@ export default {
     getVersions(prov) {
       var prjName = prov.split(".")[0];
       // 获取项目已上传的所有版本
-      if (this.regression.projectVersions[prjName]) {
-        // 缓存命中
-        this.regression.versions = this.regression.projectVersions[prjName];
-      } else {
-        getVersionsofPrj(prjName).then(response => {
-          // 绑定下拉框
-          this.regression.versions = response;
-          // 设置缓存
-          this.regression.projectVersions[prjName] = response;
-        });
-      }
+      getVersionsofPrj(prjName).then(response => {
+        // 绑定下拉框
+        this.regression.versions = response;
+      });
       // 回归测试时获取旧版本的所有测试用例
       try {
         this.regression.oldcases[prov] = Object.keys(this.testCaseMap[prjName]);
@@ -218,8 +207,6 @@ export default {
     },
     uploadSucc(resp, file, filelist) {
       let prjName = regression.info.oldVersion.split(".")[0];
-      // 清空缓存，下次重新获取
-      this.regression.projectVersions[prjName] = [];
       this.showMsg("上传'" + file.name + "'成功");
     },
     UploadJars() {
@@ -254,11 +241,6 @@ export default {
               // 有影响的
               this.oldvsnew.push({
                 state: 1,
-                casename: testcase
-              });
-            } else if (testcase != "allTestFiles") {
-              this.oldvsnew.push({
-                state: 0,
                 casename: testcase
               });
             }
