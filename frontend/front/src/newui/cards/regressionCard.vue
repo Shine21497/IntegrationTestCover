@@ -81,10 +81,7 @@
   <div>
     <span v-if="oldvsnew.length">
       <div class="card-head">
-        <el-checkbox-group v-model="filterList" @change="filterChange">
-          <el-checkbox label="未影响"></el-checkbox>
-          <el-checkbox label="已影响"></el-checkbox>
-        </el-checkbox-group>
+        受影响的测试用例
       </div>
       <div class="list-container">
         <el-tooltip
@@ -244,11 +241,6 @@ export default {
               // 有影响的
               this.oldvsnew.push({
                 state: 1,
-                casename: testcase
-              });
-            } else if (testcase != "allTestFiles") {
-              this.oldvsnew.push({
-                state: 0,
                 casename: testcase
               });
             }
