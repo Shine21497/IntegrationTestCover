@@ -23,17 +23,6 @@
           <el-option v-for="item in allTestFiles" :key="item" :label="item" :value="item"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="测试用例">
-        <el-select
-          ref="selectTestMethod"
-          filterable
-          :disabled="allTestCases.length == 0"
-          v-model="selectedTestCase"
-          placeholder="选择测试用例"
-        >
-          <el-option v-for="item in allTestCases" :key="item" :label="item" :value="item"></el-option>
-        </el-select>
-      </el-form-item>
       <div style="margin: 15px 0;">
         <el-button type="primary" size="small" @click="startRunTestCase()">执行用例</el-button>
         <el-button
@@ -60,14 +49,14 @@
       <el-progress :percentage="runTestPercentange"></el-progress>
     </el-form>
 
-    <div v-if="showreport">
+    <div>
       <el-row style="margin:10px 0">
-          <div>分支总数：{{calculation.branchNum}}</div>
-          <div>执行用例数：{{calculation.usecaseNum}}</div>
-          <div>未覆盖分支数：{{calculation.uncoverNum}}</div>
-          <div>覆盖率：{{calculation.coverRate}}%</div>
+        <div>分支总数：{{calculation.branchNum}}</div>
+        <div>执行用例数：{{calculation.usecaseNum}}</div>
+        <div>未覆盖分支数：{{calculation.uncoverNum}}</div>
+        <div>覆盖率：{{calculation.coverRate}}%</div>
       </el-row>
-      <svg id="piechart" xmlns="http://www.w3.org/2000/svg" height="120"/>
+      <svg id="piechart" xmlns="http://www.w3.org/2000/svg" height="150" width="330" />
       <el-row :gutter="20" style="margin:10px 0">
         <el-col :span="18">
           <el-select v-model="selectedUncoverTest" placeholder="请选择未覆盖的边">
@@ -115,7 +104,7 @@ export default {
       // data
       selectedTestProject: "",
       selectedTestFile: "",
-      selectedTestCase: "",
+      selectedTestCase: "allMethods",
       allTestFiles: [], // 所有的测试脚本文件
       allTestCases: [], // 所有的测试用例（函数）
       testResult: [], // 测试结果
@@ -140,7 +129,6 @@ export default {
       }
     },
     selectTestProject(prov) {
-      this.selectedTestCase = "";
       this.selectedTestFile = "";
       var prjName = prov.split(".")[0];
       // prov is "demo.jar" but testCaseMap is {"demo":{...}}
@@ -172,7 +160,6 @@ export default {
       }
     },
     selectTestFile(prov) {
-      this.selectedTestCase = "";
       let Prj = this.selectedTestProject.split(".")[0];
       this.allTestCases = this.testCaseMap[Prj][prov];
     },
@@ -220,9 +207,10 @@ export default {
           }
 
           this.$nextTick(() => {
-            this.runTestPercentange = parseInt(
-              (response[0] * 100) / response[1]
-            );
+            let a = parseInt((response[0] * 100) / response[1]);
+            if (a) {
+              this.runTestPercentange = a;
+            }
           });
         });
       } catch (error) {}
@@ -291,6 +279,8 @@ export default {
       }
     },
     showReport() {
+      console.log(this.relation)
+      console.log(this.testCaseMap)
       if (this.relation.links) {
         this.showreport = true;
         this.calculation.branchNum = this.calculate_branchNum();
@@ -304,7 +294,9 @@ export default {
           },
           { name: "未覆盖分支数：", val: this.calculation.uncoverNum }
         ];
-        this.drawPie(data);
+        this.$nextTick(() => {
+          this.drawPie(data);
+        });
       } else {
         this.$message({
           showClose: true,
@@ -313,8 +305,9 @@ export default {
       }
     },
     drawPie(data) {
-      var w = 100,
-        h = 120,
+      console.log("draw pie");
+      var w = 130,
+        h = 150,
         r = Math.min(w, h) / 2,
         labelr = r + 30, // radius for label anchor
         color = d3.scaleOrdinal(d3.schemeCategory10),
@@ -433,7 +426,7 @@ export default {
       return 0;
     },
     calculate_usecaseNum() {
-      if (this.selectedTestClass == "allTestFiles") {
+      if (this.selectedTestFile == "allTestFiles") {
         var sum = 0;
         for (let index in this.testCaseMap[
           this.selectedTestProject.split(".")[0]
@@ -456,8 +449,11 @@ export default {
       return this.uncover.length;
     },
     calculate_coverRate() {
-      if (this.branchNum) {
-        return (100 * (this.branchNum - this.uncoverNum)) / this.branchNum;
+      if (this.calculation.branchNum) {
+        return (
+          (100 * (this.calculation.branchNum - this.calculation.uncoverNum)) /
+          this.calculation.branchNum
+        );
       }
       return "-";
     },

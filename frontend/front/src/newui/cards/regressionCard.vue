@@ -79,7 +79,7 @@
     </el-card>
   </div>-->
   <div>
-    <span v-if="oldvsnew.length">
+    <span>
       <div class="card-head">
         受影响的测试用例
       </div>
@@ -262,7 +262,7 @@ export default {
   watch: {
     // 设置默认项目
     defaultProject(val) {
-      this.regression.info.oldVersion = this.defaultProject;
+      // this.regression.info.oldVersion = this.defaultProject;
     },
     // 等待从后端获取 testCaseMap
     testCaseMap(val) {
