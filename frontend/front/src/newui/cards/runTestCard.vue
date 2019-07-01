@@ -251,7 +251,7 @@ export default {
               this.relation.links[index].source.name +
               " CALL " +
               this.relation.links[index].target.name;
-            if (this.TestResult.indexOf(callrelation) < 0)
+            if (this.testResult.indexOf(callrelation) < 0)
               this.uncoverfullname.push(callrelation);
           }
 
@@ -291,6 +291,8 @@ export default {
       }
     },
     showReport() {
+      console.log(this.relation)
+      console.log(this.testCaseMap)
       if (this.relation.links) {
         this.showreport = true;
         this.calculation.branchNum = this.calculate_branchNum();
@@ -434,6 +436,7 @@ export default {
     },
     calculate_usecaseNum() {
       if (this.selectedTestClass == "allTestFiles") {
+
         var sum = 0;
         for (let index in this.testCaseMap[
           this.selectedTestProject.split(".")[0]
@@ -444,6 +447,8 @@ export default {
         return sum;
       } else {
         if (this.selectedTestCase == "allMethods") {
+          console.log("======");
+          console.log(this.testCaseMap[this.selectedTestProject.split(".")[0]]);
           return this.testCaseMap[this.selectedTestProject.split(".")[0]][
             this.selectedTestClass
           ].length;

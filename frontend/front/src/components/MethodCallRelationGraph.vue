@@ -295,17 +295,18 @@
                     </el-row>
                     <div v-if="oldvsnew.length">
                         <div class="list-header">
-                            <el-row>
-                                <el-col :span="5">
-                                    被影响的测试用例
-                                </el-col>
-                                <el-col :span="19">
-                                    <el-checkbox-group v-model="filterList" @change="filterChange">
-                                        <el-checkbox label="未影响"></el-checkbox>
-                                        <el-checkbox label="已影响"></el-checkbox>
-                                    </el-checkbox-group>
-                                </el-col>
-                            </el-row>
+                            <!--<el-row>-->
+                                <!--<el-col :span="5">-->
+                                    <!--被影响的测试用例-->
+                                <!--</el-col>-->
+                                <!--<el-col :span="19">-->
+                                    <!--<el-checkbox-group v-model="filterList" @change="filterChange">-->
+                                        <!--<el-checkbox label="未影响"></el-checkbox>-->
+                                        <!--<el-checkbox label="已影响"></el-checkbox>-->
+                                    <!--</el-checkbox-group>-->
+                                <!--</el-col>-->
+                            <!--</el-row>-->
+                            被影响的测试用例
                         </div>
                         <div class="list-container">
                             <el-tooltip v-for="(testcase,index) in showoldvsnew" :key="index" :content="['(不变)','(有影响)'][testcase.state] + testcase.casename" placement="right" effect="light">
@@ -1054,10 +1055,10 @@
                                 })
                             }
                             else if(testcase != "allTestFiles"){
-                                this.oldvsnew.push({
-                                    state:0,
-                                    casename:testcase
-                                })
+                                // this.oldvsnew.push({
+                                //     state:0,
+                                //     casename:testcase
+                                // })
                             }
                         })
                         this.showoldvsnew = this.oldvsnew;
