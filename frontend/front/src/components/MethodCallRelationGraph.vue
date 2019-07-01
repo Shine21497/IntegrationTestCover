@@ -682,7 +682,7 @@
                     _this.coverrate=((_this.branchnum-_this.uncoverlength)/_this.branchnum)*100;
 
                     var data = [
-                        {name: "分支总数：", val: _this.branchnum},  
+                        {name: "已覆盖分支数", val: _this.branchnum - _this.uncoverlength},  
                         {name: "未覆盖分支数：", val: _this.uncoverlength}
                     ];
                     this.drawPie(data);
