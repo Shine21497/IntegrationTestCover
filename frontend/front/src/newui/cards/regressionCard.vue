@@ -2,25 +2,6 @@
   <div>
     <span>
       <div class="card-head">
-        受影响的测试用例
-      </div>
-      <div class="list-container">
-        <el-tooltip
-          v-for="(testcase,index) in showoldvsnew"
-          :key="index"
-          :content="['(不变)','(有影响)'][testcase.state] + testcase.casename"
-          placement="left"
-          effect="light"
-        >
-          <div
-            class="hjr-list-item"
-            :style="'border-left-color:'+ ['red','green'][testcase.state] + ';'"
-          >{{testcase.casename}}</div>
-        </el-tooltip>
-      </div>
-    </span>
-    <span>
-      <div class="card-head">
         <span>回归测试</span>
         <el-button style="float: right; padding: 3px 0" type="text" @click="startRegTest">开始测试</el-button>
       </div>
@@ -46,14 +27,31 @@
           @click="uploadNewVersion"
         >找不到想测的版本？那就上传吧</el-button>
         <el-form-item label="包范围">
-          <el-input
-            type="textarea"
-            autosize
-            placeholder="请输入包范围"
+          <el-autocomplete
+            class="inline-input"
             v-model="regression.info.packageName"
-          ></el-input>
+            :fetch-suggestions="packagesDomainHistory"
+            placeholder="请输入包范围"
+          ></el-autocomplete>
         </el-form-item>
       </el-form>
+    </span>
+    <span>
+      <div class="card-head">受影响的测试用例</div>
+      <div class="list-container">
+        <el-tooltip
+          v-for="(testcase,index) in showoldvsnew"
+          :key="index"
+          :content="['(不变)','(有影响)'][testcase.state] + testcase.casename"
+          placement="left"
+          effect="light"
+        >
+          <div
+            class="hjr-list-item"
+            :style="'border-left-color:'+ ['red','green'][testcase.state] + ';'"
+          >{{testcase.casename}}</div>
+        </el-tooltip>
+      </div>
     </span>
   </div>
 </template>
@@ -90,10 +88,18 @@ export default {
         },
         oldcases: {} // 所有的测试用例
       },
-      oldvsnew: [] // 用于新旧版本项目测试用例的对比
+      oldvsnew: [], // 用于新旧版本项目测试用例的对比
+      history: {
+        packages: [] // 历史纪录缓存
+      },
+      localstorageKey: "regressionHistory"
     };
   },
   methods: {
+    packagesDomainHistory(queryString, cb) {
+      // cb([{ "value": "asdasd"}]);
+      cb(this.history.packages);
+    },
     uploadNewVersion() {
       let data = {
         projectName: this.regression.info.oldVersion.split(".jar")[0]
@@ -125,6 +131,14 @@ export default {
     },
     startRegTest() {
       this.analyseJars(this.regression.info);
+      if (
+        this.history.packages.filter(
+          item => item.value == this.regression.info.packageName
+        ).length == 0
+      ) {
+        this.history.packages.push({ value: this.regression.info.packageName });
+      }
+      localStorage.setItem(this.localstorageKey, JSON.stringify(this.history));
     },
     uploadSucc(resp, file, filelist) {
       let prjName = regression.info.oldVersion.split(".")[0];
@@ -179,7 +193,12 @@ export default {
     }
   },
   created() {},
-  mounted() {},
+  mounted() {
+    var historyForm = JSON.parse(localStorage.getItem(this.localstorageKey));
+    if (historyForm) {
+      this.history = historyForm;
+    }
+  },
   watch: {
     // 设置默认项目
     defaultProject(val) {
@@ -211,7 +230,7 @@ export default {
   margin: 10px 0 6px;
 }
 .list-container {
-  height: 300px;
+  height: 200px;
   overflow: auto;
 }
 
