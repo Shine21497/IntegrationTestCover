@@ -49,14 +49,14 @@
       <el-progress :percentage="runTestPercentange"></el-progress>
     </el-form>
 
-    <div v-if="showreport">
+    <div>
       <el-row style="margin:10px 0">
-          <div>分支总数：{{calculation.branchNum}}</div>
-          <div>执行用例数：{{calculation.usecaseNum}}</div>
-          <div>未覆盖分支数：{{calculation.uncoverNum}}</div>
-          <div>覆盖率：{{calculation.coverRate}}%</div>
+        <div>分支总数：{{calculation.branchNum}}</div>
+        <div>执行用例数：{{calculation.usecaseNum}}</div>
+        <div>未覆盖分支数：{{calculation.uncoverNum}}</div>
+        <div>覆盖率：{{calculation.coverRate}}%</div>
       </el-row>
-      <svg id="piechart" xmlns="http://www.w3.org/2000/svg" height="120"/>
+      <svg id="piechart" xmlns="http://www.w3.org/2000/svg" height="150" width="330" />
       <el-row :gutter="20" style="margin:10px 0">
         <el-col :span="18">
           <el-select v-model="selectedUncoverTest" placeholder="请选择未覆盖的边">
@@ -207,9 +207,7 @@ export default {
           }
 
           this.$nextTick(() => {
-            let a = parseInt(
-              (response[0] * 100) / response[1]
-            );
+            let a = parseInt((response[0] * 100) / response[1]);
             if (a) {
               this.runTestPercentange = a;
             }
@@ -294,7 +292,9 @@ export default {
           },
           { name: "未覆盖分支数：", val: this.calculation.uncoverNum }
         ];
-        this.drawPie(data);
+        this.$nextTick(() => {
+          this.drawPie(data);
+        });
       } else {
         this.$message({
           showClose: true,
@@ -303,8 +303,9 @@ export default {
       }
     },
     drawPie(data) {
-      var w = 100,
-        h = 120,
+      console.log("draw pie");
+      var w = 130,
+        h = 150,
         r = Math.min(w, h) / 2,
         labelr = r + 30, // radius for label anchor
         color = d3.scaleOrdinal(d3.schemeCategory10),
@@ -434,10 +435,10 @@ export default {
         return sum;
       } else {
         if (this.selectedTestCase == "allMethods") {
-          console.log("===")
-          console.log(this.testCaseMap)
-          console.log(this.selectedTestProject.split(".")[0])
-          console.log(this.selectedTestFile)
+          console.log("===");
+          console.log(this.testCaseMap);
+          console.log(this.selectedTestProject.split(".")[0]);
+          console.log(this.selectedTestFile);
           // return this.testCaseMap[this.selectedTestProject.split(".")[0]][
           //   this.selectedTestFile
           // ].length;
@@ -452,7 +453,10 @@ export default {
     },
     calculate_coverRate() {
       if (this.calculation.branchNum) {
-        return (100 * (this.calculation.branchNum - this.calculation.uncoverNum)) / this.calculation.branchNum;
+        return (
+          (100 * (this.calculation.branchNum - this.calculation.uncoverNum)) /
+          this.calculation.branchNum
+        );
       }
       return "-";
     },
