@@ -23,17 +23,6 @@
           <el-option v-for="item in allTestFiles" :key="item" :label="item" :value="item"></el-option>
         </el-select>
       </el-form-item>
-      <el-form-item label="测试用例">
-        <el-select
-          ref="selectTestMethod"
-          filterable
-          :disabled="allTestCases.length == 0"
-          v-model="selectedTestCase"
-          placeholder="选择测试用例"
-        >
-          <el-option v-for="item in allTestCases" :key="item" :label="item" :value="item"></el-option>
-        </el-select>
-      </el-form-item>
       <div style="margin: 15px 0;">
         <el-button type="primary" size="small" @click="startRunTestCase()">执行用例</el-button>
         <el-button
@@ -121,7 +110,7 @@ export default {
       // data
       selectedTestProject: "",
       selectedTestFile: "",
-      selectedTestCase: "",
+      selectedTestCase: "allMethods",
       allTestFiles: [], // 所有的测试脚本文件
       allTestCases: [], // 所有的测试用例（函数）
       testResult: [], // 测试结果
@@ -146,7 +135,6 @@ export default {
       }
     },
     selectTestProject(prov) {
-      this.selectedTestCase = "";
       this.selectedTestFile = "";
       var prjName = prov.split(".")[0];
       // prov is "demo.jar" but testCaseMap is {"demo":{...}}
@@ -178,7 +166,6 @@ export default {
       }
     },
     selectTestFile(prov) {
-      this.selectedTestCase = "";
       let Prj = this.selectedTestProject.split(".")[0];
       this.allTestCases = this.testCaseMap[Prj][prov];
     },
@@ -226,9 +213,12 @@ export default {
           }
 
           this.$nextTick(() => {
-            this.runTestPercentange = parseInt(
+            let a = parseInt(
               (response[0] * 100) / response[1]
             );
+            if (a) {
+              this.runTestPercentange = a;
+            }
           });
         });
       } catch (error) {}
@@ -257,7 +247,7 @@ export default {
               this.relation.links[index].source.name +
               " CALL " +
               this.relation.links[index].target.name;
-            if (this.TestResult.indexOf(callrelation) < 0)
+            if (this.testResult.indexOf(callrelation) < 0)
               this.uncoverfullname.push(callrelation);
           }
 
@@ -317,7 +307,7 @@ export default {
       return 0;
     },
     calculate_usecaseNum() {
-      if (this.selectedTestClass == "allTestFiles") {
+      if (this.selectedTestFile == "allTestFiles") {
         var sum = 0;
         for (let index in this.testCaseMap[
           this.selectedTestProject.split(".")[0]
@@ -328,9 +318,14 @@ export default {
         return sum;
       } else {
         if (this.selectedTestCase == "allMethods") {
-          return this.testCaseMap[this.selectedTestProject.split(".")[0]][
-            this.selectedTestClass
-          ].length;
+          console.log("===")
+          console.log(this.testCaseMap)
+          console.log(this.selectedTestProject.split(".")[0])
+          console.log(this.selectedTestFile)
+          // return this.testCaseMap[this.selectedTestProject.split(".")[0]][
+          //   this.selectedTestFile
+          // ].length;
+          return 666;
         } else {
           return 1;
         }
@@ -340,8 +335,8 @@ export default {
       return this.uncover.length;
     },
     calculate_coverRate() {
-      if (this.branchNum) {
-        return (100 * (this.branchNum - this.uncoverNum)) / this.branchNum;
+      if (this.calculation.branchNum) {
+        return (100 * (this.calculation.branchNum - this.calculation.uncoverNum)) / this.calculation.branchNum;
       }
       return "-";
     },
