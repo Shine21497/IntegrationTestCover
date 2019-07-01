@@ -79,7 +79,7 @@
     </el-card>
   </div>-->
   <div>
-    <span v-if="oldvsnew.length">
+    <span>
       <div class="card-head">
         受影响的测试用例
       </div>
