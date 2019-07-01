@@ -304,7 +304,7 @@
                                 <el-col :span="19">
                                     <el-checkbox-group v-model="filterList" @change="filterChange">
                                         <el-checkbox label="未影响"></el-checkbox>
-                                        <el-checkbox label="影响的"></el-checkbox>
+                                        <el-checkbox label="已影响"></el-checkbox>
                                     </el-checkbox-group>
                                 </el-col>
                             </el-row>

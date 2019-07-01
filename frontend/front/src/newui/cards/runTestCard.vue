@@ -257,7 +257,7 @@ export default {
               this.relation.links[index].source.name +
               " CALL " +
               this.relation.links[index].target.name;
-            if (TestResult.indexOf(callrelation) < 0)
+            if (this.TestResult.indexOf(callrelation) < 0)
               this.uncoverfullname.push(callrelation);
           }
 

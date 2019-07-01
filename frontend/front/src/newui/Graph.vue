@@ -98,7 +98,7 @@ export default {
       this.g.attr("transform", trans);
     },
     showEffect(result) {
-      if (!isok) {
+      if (!this.isok) {
         this.$message({
           showClose: true,
           message: "请先生成调用关系图"
