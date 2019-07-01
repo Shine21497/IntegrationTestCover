@@ -109,7 +109,15 @@ export default {
       console.log("start show ");
       this.TestResult = TestResult;
 
-      if (taskType === "one") {
+      for (let index in TestResult) {
+                var result = TestResult[index].split(" ");
+                if (index === 0) {
+                  this.moveFirstnode(result[0]);
+                }
+                this.changeSingleLine(result[0], result[2]);
+              }
+
+      /*if (taskType === "one") {
         console.log("start one ");
         for (let index in TestResult) {
           var result = TestResult[index].split(" ");
@@ -118,15 +126,15 @@ export default {
           }
           this.changeSingleLine(result[0], result[2]);
         }
-      }
+      }*/
       //如果多个结果
-      else {
+      /*else {
         console.log("start mouti ");
         for (let index in TestResult) {
           var result = TestResult[index].split(" ");
           this.changeMultipleLine(result[0], result[2]);
         }
-      }
+      }*/
     },
     moveFirstnode(name) {
       var node = this.findNodeByName(name);
