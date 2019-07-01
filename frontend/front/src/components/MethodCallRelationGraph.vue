@@ -207,13 +207,11 @@
                                         <el-button type="primary" @click="gotoUncover()">立即定位</el-button>
                                     </el-form-item>
                                     <div>
-                                        <div id="branches">分支总数：{{branchnum}}；</div>
                                         <div id="usecase">执行用例数：{{usecasenum}}；</div>
-                                        <div id="uncoverbranch">未覆盖分支数：{{uncoverlength}}；</div>
                                         <div id="coverrate">覆盖率：{{coverrate}}%：</div>
-                                        <!-- <svg id="piechart" xmlns="http://www.w3.org/2000/svg" style="height:300px;width:300px">
+                                        <svg id="piechart" xmlns="http://www.w3.org/2000/svg">
 
-                                        </svg> -->
+                                        </svg>
                                     </div>
                                 </el-form>
                             </el-container>
@@ -304,7 +302,7 @@
                                 <el-col :span="19">
                                     <el-checkbox-group v-model="filterList" @change="filterChange">
                                         <el-checkbox label="未影响"></el-checkbox>
-                                        <el-checkbox label="影响的"></el-checkbox>
+                                        <el-checkbox label="已影响"></el-checkbox>
                                     </el-checkbox-group>
                                 </el-col>
                             </el-row>
@@ -682,8 +680,12 @@
                     }
                     _this.uncoverlength = _this.uncover.length;
                     _this.coverrate=((_this.branchnum-_this.uncoverlength)/_this.branchnum)*100;
-                    console.log(_this.uncoverlength)
-                    console.log(_this.coverrate)
+
+                    var data = [
+                        {name: "分支总数：", val: _this.branchnum},  
+                        {name: "未覆盖分支数：", val: _this.uncoverlength}
+                    ];
+                    this.drawPie(data);
                 });
             },
             uniq(array){
@@ -862,59 +864,73 @@
                 }
             },
             // 生成饼状图
-            drawPie(){
-                var svg = d3.select("#piechart"),
-                    width = svg.attr("width"),
-                    height = svg.attr("height"),
-                    radius = Math.min(width, height) / 2;
-                
-                var g = svg.append("g")
-                        .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+            drawPie(data){
+                var w = 100,
+                    h = 120,
+                    r = Math.min(w, h) / 2,
+                    labelr = r + 30, // radius for label anchor
+                    color = d3.scaleOrdinal(d3.schemeCategory10),
+                    donut = d3.pie(),
+                    arc = d3.arc().innerRadius(r*.6).outerRadius(r);
 
-                var color = d3.scaleOrdinal(['#4daf4a','#377eb8','#ff7f00','#984ea3','#e41a1c']);
+                var vis = d3.select("#piechart")
+                    .data([data])
+                    .attr("width", w + 200)
+                    .attr("height", h);
 
-                var pie = d3.pie().value(function(d) { 
-                        return d.percent; 
+                // 移除上一个图（如果有的话）
+                if(vis.selectAll("g").size() > 0){
+                    vis.selectAll("g").remove();
+                }
+
+                var arcs = vis.selectAll("g.arc")
+                    .data(donut.value(function(d) { return d.val }))
+                    .enter().append("svg:g")
+                    .attr("class", "arc")
+                    .attr("transform", "translate(" + (r + 10) + "," + (r + 10) + ")");
+
+                arcs.append("svg:path")
+                    .attr("fill", function(d, i) { return color(i); })
+                    .attr("d", arc);
+
+                var legends = vis.append("g")
+                    .attr("transform","translate(150,10)")
+                    .selectAll(".legends")
+                    .data(data);
+
+                var legend = legends.enter().append("g")
+                    .classed("legends",true)
+                    .attr("transform",function(d,i){
+                        return "translate(0," + (i+1)*30 + ")";
                     });
-
-                var path = d3.arc()
-                            .outerRadius(radius - 10)
-                            .innerRadius(0);
-
-                var label = d3.arc()
-                            .outerRadius(radius)
-                            .innerRadius(radius - 80);
-
-                var data = [
-                    {"browser": "Chrome0", "percent": 73.70},
-                    {"browser": "Chrome1", "percent": 4.90},
-                    {"browser": "Chrome2", "percent": 15.40},
-                    {"browser": "Chrome3", "percent": 3.60},
-                    {"browser": "Chrome4", "percent": 1.00}
-                ]
                 
-                var arc = g.selectAll(".arc")
-                            .data(pie(data))
-                            .enter().append("g")
-                            .attr("class", "arc");
-
-                arc.append("path")
-                    .attr("d", path)
-                    .attr("fill", function(d) { return color(d.data.browser); });
+                legend.append("rect")
+                    .attr("width", 20)
+                    .attr("height",20)
+                    .attr("fill",function (d,i) {
+                        return color(i);
+                    });
                 
-                    console.log(arc)
-                
-                arc.append("text")
-                    .attr("transform", function(d) { 
-                            return "translate(" + label.centroid(d) + ")"; 
-                        })
-                    .text(function(d) { return d.data.browser; });
+                legend.append("text")
+                    .text(function (d) {
+                        return d.name + ":" + d.val;
+                    }).attr("fill",function(d, i){
+                        return color(i);
+                    })
+                    .attr("x", 30)
+                    .attr("y", 15);
 
-                svg.append("g")
-                    .attr("transform", "translate(" + (width / 2 - 120) + "," + 20 + ")")
-                    .append("text")
-                    .text("Browser use statistics - Jan 2017")
-                    .attr("class", "title")
+                arcs.append("path")
+                    .attr("class", "pointer")
+                    .style("fill", "none")
+                    .style("stroke", "black")
+                    .attr("d", function(d) {
+                        if(d.cx > d.ox) {
+                            return "M" + d.sx + "," + d.sy + "L" + d.ox + "," + d.oy + " " + d.cx + "," + d.cy;
+                        } else {
+                            return "M" + d.ox + "," + d.oy + "L" + d.sx + "," + d.sy + " " + d.cx + "," + d.cy;
+                        }
+                    });
             },
 // -- card 未覆盖测试用例
 
@@ -1379,8 +1395,14 @@
                     this.history = historyForm
                 }
                 // 生成饼状图调试
-                // this.drawPie();
             });
+        },
+        mounted(){
+            // var data = [
+            //     {name: "分支总数：", val: 11975},  
+            //     {name: "未覆盖分支数：", val: 5871}
+            // ];
+            // this.drawPie(data);
         }
     }
 
