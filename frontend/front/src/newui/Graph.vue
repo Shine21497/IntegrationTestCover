@@ -34,11 +34,11 @@
       <span style="font-weight:bold; padding-right:3px">{{hoveredNode.className}}</span>
       <span>{{hoveredNode.methodName}}</span>
     </div>
-    <div id="thumb-svg-container">
+    <!--<div id="thumb-svg-container">
       <svg id="thumb" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
         <use xlink:href="#svgCanvas" />
       </svg>
-    </div>
+    </div>-->
   </div>
 </template>
 
