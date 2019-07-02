@@ -225,7 +225,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .rr-controller {
   width: 100%;
   height: 80px;

@@ -1414,7 +1414,7 @@
     }
 </script>
 
-<style lang="less">
+<style scoped lang="less">
     path.slice{
         stroke-width:2px;
     }

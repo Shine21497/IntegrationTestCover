@@ -6,7 +6,7 @@
   </div>
 </template>
 
-<style>
+<style scoped>
 .switch {
   height: 1em;
   display: flex;

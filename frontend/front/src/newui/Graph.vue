@@ -23,15 +23,22 @@
             <path d="M 80 0 L 0 0 0 80" fill="none" stroke="gray" stroke-width="1" />
           </pattern>
         </defs>
-
         <rect width="100%" height="100%" fill="url(#grid)" />
       </svg>
     </div>
-    <!-- <div id="thumb-svg-container">
-        <svg id="thumb" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
-            <use xlink:href="#svgCanvas" />
-        </svg>
-    </div>-->
+    <div
+      class="tipsArea"
+      v-if="hoveredNode.className.length"
+      :style="'border-left-color:' + hoveredNode.color"
+    >
+      <span style="font-weight:bold; padding-right:3px">{{hoveredNode.className}}</span>
+      <span>{{hoveredNode.methodName}}</span>
+    </div>
+    <div id="thumb-svg-container">
+      <svg id="thumb" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1000 1000">
+        <use xlink:href="#svgCanvas" />
+      </svg>
+    </div>
   </div>
 </template>
 
@@ -47,7 +54,12 @@ export default {
       isok: false,
       tempTrans: d3.zoomIdentity.translate(0, 0).scale(1),
       g: {},
-      TestResult: []
+      TestResult: [],
+      hoveredNode: {
+        className: "",
+        methodName: "",
+        color: ""
+      }
     };
   },
   methods: {
@@ -110,12 +122,12 @@ export default {
       this.TestResult = TestResult;
 
       for (let index in TestResult) {
-                var result = TestResult[index].split(" ");
-                if (index === 0) {
-                  this.moveFirstnode(result[0]);
-                }
-                this.changeSingleLine(result[0], result[2]);
-              }
+        var result = TestResult[index].split(" ");
+        if (index === 0) {
+          this.moveFirstnode(result[0]);
+        }
+        this.changeSingleLine(result[0], result[2]);
+      }
 
       /*if (taskType === "one") {
         console.log("start one ");
@@ -274,7 +286,9 @@ export default {
       let width = document.body.clientWidth;
 
       //节点大小（圆圈大小）
-      const nodeSize = 35;
+      const nodeSize = 25;
+      //节点边界的宽度
+      const nodeStrokeWidth = 4;
       //初始化时连接线的距离长度
       const linkDistance = 130;
       //赋值数据集
@@ -308,7 +322,7 @@ export default {
       //d3.zoom是设置缩放，pc端是滚轮进行缩放，在移动端可以通过两指进行缩放
       var zoomObj = d3
         .zoom()
-        .scaleExtent([0.5, 1.2]) // 设置缩放范围
+        .scaleExtent([0.2, 1.2]) // 设置缩放范围
         .on("zoom", () => {
           //监听zoom事件，zoom发生时，调用该方法
           const transform = d3.event.transform;
@@ -328,15 +342,15 @@ export default {
         //.attr("markerUnits","strokeWidth")  //设置为strokeWidth箭头会随着线的粗细发生变化
         .attr("markerUnits", "userSpaceOnUse") //用于确定marker是否进行缩放。取值strokeWidth和userSpaceOnUse，
         .attr("viewBox", "0 -5 10 10") //坐标系的区域
-        .attr("refX", 39) //箭头坐标
+        .attr("refX", nodeSize + nodeStrokeWidth + 2) //箭头坐标
         .attr("refY", 0)
         .attr("markerWidth", 12) //标识的大小
         .attr("markerHeight", 12)
         .attr("orient", "auto") //绘制方向，可设定为：auto（自动确认方向）和 角度值
         .attr("stroke-width", 2) //箭头宽度
         .append("path")
-        .attr("d", "M0,-5L10,0L0,5"); //箭头的路径
-      //.attr('fill', '#ff7438')//箭头颜色
+        .attr("d", "M0,-5L10,0L0,5") //箭头的路径
+        .attr("fill", "#ff7438"); //箭头颜色
 
       //设置连线
       var edgesLine = g
@@ -353,17 +367,6 @@ export default {
         .style("stroke-width", 2) //连接线粗细度
         .attr("marker-end", "url(#resolved)"); //设置线的末尾为刚刚的箭头
 
-      //设置连接线中间关系文本
-      var edgesText = g
-        .selectAll(".linetext")
-        .data(links)
-        .enter()
-        .append("text")
-        .attr("class", "linetext")
-        .text(d => {
-          //设置关系文本
-          return d.relation;
-        });
       //设置拖拽
       var drag = d3
         .drag()
@@ -390,7 +393,7 @@ export default {
           }
           d.fixed = true;
         });
-
+      let vueCom = this;
       //设置节点
       var node = g
         .selectAll("circle")
@@ -406,42 +409,32 @@ export default {
         .attr("stroke", (d, i) => {
           return this.stringToColour(d.name.split(":")[0]);
         })
-        .attr("stroke-width", 4)
+        .attr("stroke-width", nodeStrokeWidth)
         .attr("id", (d, i) => {
           //为每个节点设置不同的id
           return "node" + i;
         })
-        .on("touchmove", (d, i) => {
-          //设置鼠标监听时间，当移动端手指移动时,设置关系文本透明度
-          edgesText.style("fill-opacity", function(edge) {
-            if (edge.source === d || edge.target === d) {
-              return 1.0;
-            } else {
-              return 0;
-            }
-          });
-        })
-        .on("touchend", (d, i) => {
-          //手指移开后，所有关系文本设置透明度为1
-          edgesText.style("fill-opacity", 1.0);
-        })
         .on("click", (d, i) => {
-          edgesText.style("fill-opacity", function(edge) {
+          edgesLine.style("stroke", function(edge) {
             if (edge.source === d || edge.target === d) {
-              return 1.0;
+              d3.select(this).style("stroke-width", nodeStrokeWidth);
+              return "#ff7438";
             } else {
-              return 0;
+              d3.select(this).style("stroke-width", 2);
+              return "#ffd700";
             }
           });
-          d3.select("#node" + i).raise();
-          d3.select("#nodetext" + i).raise();
         })
         .on("mouseout", (d, i) => {
-          edgesText.style("fill-opacity", 1.0);
+          //   edgesText.style("fill-opacity", 1.0);
           d3.select("#nodetext" + i)
-            .classed("highlighted", false)
+            .classed("node-text-show", false)
             .text(function() {
               var subs = d.name.split(":");
+              // 设置提示的内容
+              (vueCom.hoveredNode.className = ""),
+                (vueCom.hoveredNode.methodName = ""),
+                (vueCom.hoveredNode.color = "");
               return subs[subs.length - 1];
             });
         })
@@ -451,32 +444,31 @@ export default {
         })
         .on("mouseover", (d, i) => {
           d3.select("#nodetext" + i)
-            .classed("highlighted", true)
+            .classed("node-text-show", true)
             .text(function() {
+              var subs = d.name.split(":");
+              (vueCom.hoveredNode.className = subs[0]),
+                (vueCom.hoveredNode.methodName = subs[subs.length - 1]),
+                (vueCom.hoveredNode.color = vueCom.stringToColour(subs[0]));
               return d.name;
             });
         })
         .call(drag); //监听拖动事件
+
       // 节点文字
       var nodeText = g
-        .selectAll(".nodetext")
+        .selectAll(".node-text")
         .data(nodes)
         .enter()
         .append("text")
         .attr("text-anchor", "middle")
-        .attr("class", "nodetext")
+        .attr("class", "node-text")
         .attr("id", (d, i) => {
           return "nodetext" + i;
         })
-        .attr("x", function(d, i) {
-          d3.select(this)
-            .append("tspan")
-            .attr("class", "nodetext")
-            .attr("fill", "#ff7438")
-            .text(function() {
-              var subs = d.name.split(":");
-              return subs[subs.length - 1];
-            });
+        .text(function(d) {
+          var subs = d.name.split(":");
+          return subs[subs.length - 1];
         });
 
       //设置node和edge
@@ -487,7 +479,7 @@ export default {
           d3
             .forceLink(links)
             .distance(linkDistance)
-            .strength(0.1)
+            .strength(1)
         )
         .restart();
 
@@ -506,13 +498,6 @@ export default {
             d.target.y;
           return path;
         });
-        //更新连接线上文字的位置
-        edgesText.attr("x", function(d) {
-          return (d.source.x + d.target.x) / 2;
-        });
-        edgesText.attr("y", function(d) {
-          return (d.source.y + d.target.y) / 2;
-        });
 
         //更新结点图片和文字
         node.attr("cx", function(d) {
@@ -526,8 +511,9 @@ export default {
           return d.x;
         });
         nodeText.attr("y", function(d) {
-          return d.y;
+          return d.y + nodeSize + 16;
         });
+
         //动态更新sptan 的x的坐标
         nodeText.selectAll("tspan").attr("x", function(d) {
           return d.x;
@@ -559,8 +545,75 @@ export default {
 };
 </script>
 
+<style lang="less">
+// 全局样式
+.node-text {
+  fill: #000;
+  position: relative;
+  pointer-events: none;
+}
+
+// 字体高亮
+.node-text-show {
+  font-weight: bold;
+  background-color: whitesmoke;
+  border-radius: 2px;
+}
+
+.edgelabel {
+  stroke: #ffd700;
+}
+
+.node {
+  position: relative;
+}
+
+.node:hover {
+  cursor: pointer;
+}
+
+.showsinglepath {
+  stroke: #fa8072;
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  transition: draw 3s infinite ease-in-out;
+  /* -webkit-animation: draw 3s infinite ease-in-out; */
+}
+
+// 字体火焰效果
+.highlighted {
+  font-style: italic;
+  font-weight: bold;
+  font-size: 18px;
+  font-family: sans-serif;
+  fill: #483d8b;
+  text-shadow: 0 -5px 4px #ffff00, 2px -10px 6px #ffa500,
+    -2px -15px 11px #ff6347, 2px -25px 18px #ff0000;
+  transition: 1s;
+}
+
+@keyframes draw {
+  0% {
+    stroke-dashoffset: 1000;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+</style>
+
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped lang="less">
+<style scoped  lang="less">
+.tipsArea {
+  top: 6px;
+  right: 0;
+  position: fixed;
+  background-color: white;
+  padding: 2px 3px;
+  border-left-style: solid;
+  border-left-width: 5px;
+}
+
 .background-graph {
   position: absolute;
   border-width: 2px;
@@ -578,6 +631,7 @@ export default {
 [v-cloak] {
   display: none;
 }
+
 .svg-container {
   position: absolute;
   top: 0;
@@ -603,53 +657,11 @@ export default {
 
 #thumb-svg-container {
   position: absolute;
-  right: 0;
-  bottom: 0;
-  margin: 20px;
+  left: 10px;
+  bottom: 20px;
   border: 1px solid silver;
   background-color: white;
   box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
-}
-
-.showsinglepath {
-  stroke: #fa8072;
-  stroke-dasharray: 1000;
-  stroke-dashoffset: 1000;
-  transition: draw 3s infinite ease-in-out;
-  /* -webkit-animation: draw 3s infinite ease-in-out; */
-}
-
-.edgelabel {
-  stroke: #ffd700;
-}
-//    字体火焰效果
-.highlighted {
-  font-style: italic;
-  font-weight: bold;
-  font-size: 18px;
-  font-family: sans-serif;
-  fill: #483d8b;
-  text-shadow: 0 -5px 4px #ffff00, 2px -10px 6px #ffa500,
-    -2px -15px 11px #ff6347, 2px -25px 18px #ff0000;
-  transition: 1s;
-}
-
-@keyframes draw {
-  0% {
-    stroke-dashoffset: 1000;
-  }
-  100% {
-    stroke-dashoffset: 0;
-  }
-}
-
-.linetext {
-  font-size: 12px;
-  font-weight: bold;
-  font-family: SimSun;
-  fill: #000 !important;
-  color: #000;
-  fill-opacity: 1;
 }
 
 /*.bling{ animation: alarm 0.4s  ease-in  infinite ; fill:yellow; font-weight: bold;}
@@ -658,18 +670,4 @@ export default {
         50%{ fill:#FF3333;}
         100%{ fill:#FF9966;}
     }*/
-
-.svg {
-  position: relative;
-  width: 100%;
-  height: 100%;
-}
-
-.node {
-  position: relative;
-}
-
-.node:hover {
-  cursor: pointer;
-}
 </style>
