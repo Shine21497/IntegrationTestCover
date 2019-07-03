@@ -1414,7 +1414,8 @@
     }
 </script>
 
-<style scoped lang="less">
+
+<style>
     path.slice{
         stroke-width:2px;
     }
@@ -1424,6 +1425,61 @@
         stroke: black;
         stroke-width: 2px;
         fill: none;
+    }
+    .labeltext {
+        font-size: 16px;
+        font-family: SimSun;
+        fill: #ff7438;
+    }
+
+    .nodetext {
+        font-size: 12px;
+        font-family: SimSun;
+        fill: #000;
+        position: relative;
+        pointer-events: none;
+    }
+
+    /* 箭头颜色 */
+    #resolved{
+        fill:#FFD700;
+    }
+    .edgelabel{
+    stroke:#FFD700;
+    }
+
+    /*    字体火焰效果*/
+    .highlighted {
+        font-style:italic;
+        font-weight:bold;
+        font-size: 18px;
+        font-family:sans-serif;
+        fill:#483D8B;
+        text-shadow: 0 -5px 4px #FFFF00,2px -10px 6px #FFA500,-2px -15px 11px #FF6347,2px -25px 18px #FF0000;
+        transition: 1s;
+    }
+    .showsinglepath{
+         stroke:#FA8072;
+         stroke-dasharray: 1000;
+         stroke-dashoffset: 1000;
+         -webkit-animation: draw 3s infinite ease-in-out;
+    }
+   @keyframes draw{
+        0%{
+            stroke-dashoffset: 1000;
+        }
+        100%{
+            stroke-dashoffset: 0;
+        }
+    }
+
+    .linetext {
+        font-size: 12px;
+        font-weight: bold;
+        font-family: SimSun;
+        fill: #000 !important;
+        color: #000;
+        fill-opacity: 1;
     }
 
     .el-cascader .el-input {
@@ -1437,6 +1493,10 @@
     .el-autocomplete .el-input {
         width: 240px;
     }
+</style>
+
+
+<style scoped lang="less">
 
     header{
         font-family: "Arial Black";
@@ -1562,25 +1622,6 @@
         display: none;
     }
 
-    .labeltext {
-        font-size: 16px;
-        font-family: SimSun;
-        fill: #ff7438;
-    }
-
-    .nodetext {
-        font-size: 12px;
-        font-family: SimSun;
-        fill: #000;
-        position: relative;
-        pointer-events: none;
-    }
-
-    //箭头颜色
-    #resolved{
-        fill:#FFD700;
-    }
-
     //滑动鼠标显示连线效果，移到网页外连线消失
     /*.edgelabel{
         stroke-width: 6px;
@@ -1597,43 +1638,6 @@
         stroke-dashoffset: 0;
         stroke:#FFD700;
     }*/
-    .edgelabel{
-    stroke:#FFD700;
-    }
-
-    //    字体火焰效果
-    .highlighted {
-        font-style:italic;
-        font-weight:bold;
-        font-size: 18px;
-        font-family:sans-serif;
-        fill:#483D8B;
-        text-shadow: 0 -5px 4px #FFFF00,2px -10px 6px #FFA500,-2px -15px 11px #FF6347,2px -25px 18px #FF0000;
-        transition: 1s;
-    }
-    .showsinglepath{
-         stroke:#FA8072;
-         stroke-dasharray: 1000;
-         stroke-dashoffset: 1000;
-         -webkit-animation: draw 3s infinite ease-in-out;
-    }
-   @keyframes draw{
-        0%{
-            stroke-dashoffset: 1000;
-        }
-        100%{
-            stroke-dashoffset: 0;
-        }
-    }
-
-    .linetext {
-        font-size: 12px;
-        font-weight: bold;
-        font-family: SimSun;
-        fill: #000 !important;
-        color: #000;
-        fill-opacity: 1;
-    }
 
     /*.bling{ animation: alarm 0.4s  ease-in  infinite ; fill:yellow; font-weight: bold;}
     @keyframes alarm {
