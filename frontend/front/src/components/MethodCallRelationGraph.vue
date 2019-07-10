@@ -1459,7 +1459,7 @@
         transition: 1s;
     }
     .showsinglepath{
-         stroke:#FA8072;
+         stroke:darkslateblue;
          stroke-dasharray: 1000;
          stroke-dashoffset: 1000;
          -webkit-animation: draw 3s infinite ease-in-out;

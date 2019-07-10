@@ -64,7 +64,7 @@
         accept="application/jar"
         action="/apiurl/uploadTestCase"
         :before-upload="checkJarorZip"
-        :limit="3"
+        :limit="10"
         :file-list="fileList"
         :data="data"
       >

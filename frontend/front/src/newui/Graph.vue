@@ -59,7 +59,8 @@ export default {
         className: "",
         methodName: "",
         color: ""
-      }
+      },
+      whq: false,
     };
   },
   methods: {
@@ -190,8 +191,9 @@ export default {
         ) {
           var line_id = this.relation.links[index].index;
           d3.select("#eachline" + line_id).classed("edgelabel", false);
-          d3.select("#eachline" + line_id).style("stroke-width", 3.5);
+          d3.select("#eachline" + line_id).style("stroke-width", 5);
           d3.select("#eachline" + line_id).classed("showsinglepath", true);
+          d3.select("#eachline" + line_id).style("stroke","darkslateblue")
           this.changeNode(SourceName);
           this.changeNode(TargetName);
         }
@@ -233,6 +235,8 @@ export default {
       d3.select("#eachline" + line_id)
         .classed("showsinglepath", false)
         .attr("filter", "");
+
+      d3.select("#eachline" + line_id).style("stroke","#ffd700")
       d3.select("#eachline" + line_id).style("stroke-width", 2);
       d3.select("#eachline" + line_id).classed("edgelabel", true);
     },
@@ -415,15 +419,22 @@ export default {
           return "node" + i;
         })
         .on("click", (d, i) => {
-          edgesLine.style("stroke", function(edge) {
-            if (edge.source === d || edge.target === d) {
-              d3.select(this).style("stroke-width", nodeStrokeWidth);
-              return "#ff7438";
-            } else {
-              d3.select(this).style("stroke-width", 2);
-              return "#ffd700";
-            }
-          });
+          vueCom.whq = !vueCom.whq;
+            edgesLine.style("stroke", function (edge) {
+              if (edge.source === d || edge.target === d) {
+                if(vueCom.whq) {
+                  d3.select(this).style("stroke-width", nodeStrokeWidth);
+                  return "#ff7438";
+                }
+                else{
+                  d3.select(this).style("stroke-width", 2);
+                  return "#ffd700";
+                }
+              } else {
+                d3.select(this).style("stroke-width", 2);
+                return "#ffd700";
+              }
+            });
         })
         .on("mouseout", (d, i) => {
           //   edgesText.style("fill-opacity", 1.0);
@@ -479,7 +490,7 @@ export default {
           d3
             .forceLink(links)
             .distance(linkDistance)
-            .strength(1)
+            .strength(0.8)
         )
         .restart();
 
@@ -573,7 +584,7 @@ export default {
 }
 
 .showsinglepath {
-  stroke: #fa8072;
+  stroke: darkslateblue;
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;
   transition: draw 3s infinite ease-in-out;
